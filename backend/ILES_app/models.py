@@ -4,9 +4,8 @@ from django.db import models
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
         ('student', 'Student'),
-        ('academic supervisor', 'Academic Supervisor'),
-        ('workplace supervisor', 'Workplace Supervisor'),
-        ('internship coordinator', 'Internship Coordinator')
+        ('supervisor', 'Supervisor'),
+        ('admin', 'Admin')
     ]
     name = models.CharField(max_length=50)
     role = models.CharField(max_length=50, choices = ROLE_CHOICES)
@@ -35,25 +34,19 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.user.username} -STUDENT"
     
-class Acadamic_supervisor(models.Model):
+class Supervisor(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
+    place_of_work = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
     staff_ID = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
-        return f"{self.user.username} -ACADEMIC SUPERVISOR"
+        return f"{self.user.username} -SUPERVISOR"
 
-class Workplace_supervisor(models.Model):
-    users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-    place_of_work = models.CharField(max_length=100)
-    department = models.CharField(max_length=100)
 
-    def __str__(self):
-        return f"{self.user.username} -WORKPLACE SUPERVISOR"
-
-class Internship_coordinator(models.Model):
+class Admin(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
     department = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.user.username} -INTERNSHIP COORDINATOR"
+        return f"{self.user.username} -ADMIN"
