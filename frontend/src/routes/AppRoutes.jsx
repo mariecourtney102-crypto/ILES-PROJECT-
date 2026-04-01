@@ -1,5 +1,5 @@
 import {BrowserRouter , Routes , Route } from "react-router-dom";
-const Login = () =>  <h1>Login Page</h1>
+import Login from "../pages/auth/Login";
 const StudentDashhboard = () =>  <h1>Student Dashboard</h1>
 const SupervisorDashboard = () =>  <h1>Supervisor Dashboard</h1>
 const AdmiDashboard= () =>  <h1>Admin Dashboard</h1>
