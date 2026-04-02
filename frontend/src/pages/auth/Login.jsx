@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import Signup from "./Signup";
+
+
 
 const Login = () =>{
     const navigate = useNavigate();
@@ -28,49 +31,59 @@ const Login = () =>{
         if (role === "admin") navigate("/admin");
     };
     return (
-        <div style={{ maxWidth: "400px", margin: "auto", padding: "20px" }}>
-          <h2>ILES Login</h2>
-          <form onSubmit={handleSubmit}>
-            <select onChange={(e) => setRole(e.target.value) }>
-                <option value = "student ">Student</option>
-                <option value = "supervisor ">Supervisor</option>
-                <option value = "admin ">Admin</option>
-            </select>
+  <div className="h-screen flex items-center justify-center bg-gradient-to-br from-teal-700 to-teal-400">
 
-            <input 
-            type = "email"
-            placeholder="Email"
-            onChange={(e) => setEmail(e.target.value)}
-            />
-            <input 
-            type="password"
-            placeholder="Password"
-            onchange = {(e) => setPassword(e.target.value) }/>
+    <div className="bg-white p-10 rounded-2xl shadow-xl w-80">
 
-            {role === "Student" && (
-                <input
-                  type="text"
-                  placeholder="Student Number"
-                  onChange={(e) => setIdentifier (e.target.value)}
-                />
-                )}
-            {role === "supervisor" && (
-                <input
-                  type="text"
-                  placeholder="Staff ID"
-                  onChange={(e) => setIdentifier(e.target.value)}
-                />
-            )}
-            {role === "admin" && (
-          <input
-            type="text"
-            placeholder="Admin Code"
-            onChange={(e) => setIdentifier(e.target.value)}
-          />
-        )}
-           <button type="submit">Login</button>
-          </form>
-        </div>
-    );
+      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+        ILES Login
+      </h2>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+        <select
+          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+          onChange={(e) => setRole(e.target.value)}
+        >
+          <option value="">Supervisor</option>
+          <option value="student">Student</option>
+          <option value="admin">Admin</option>
+        </select>
+
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-semibold transition duration-300 shadow-md hover:shadow-lg hover:-translate-y-1"
+        >
+          Login
+        </button>
+
+      </form>
+
+      <p className="mt-5 text-sm text-center">
+        Don't have an account?{" "}
+        <span
+          onClick={() => navigate("/signup")}
+          className="text-teal-500 font-semibold cursor-pointer hover:underline"
+        >
+          Sign up
+        </span>
+      </p>
+
+    </div>
+  </div>
+);
 };
 export default Login;
