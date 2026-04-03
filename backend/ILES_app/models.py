@@ -50,3 +50,46 @@ class Admin(models.Model):
 
     def __str__(self):
         return f"{self.user.username} -ADMIN"
+    
+class InternshipPlacement(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    place_of_internship = models.CharField(max_length=100)
+    department = models.CharField(max_length=100)
+    supervisor_name = models.CharField(max_length=50)
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.place_of_internship}"
+    
+class WeeklyLog(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('reviewed', 'Reviewed')
+    ]
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    week_number = models.IntegerField()
+    description = models.TextField()
+    date_submitted = models.DateTimeField(auto_now_add=True)
+    supervisor_comment = models.TextField(blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+
+    def __str__(self):
+        return f"Week {self.week_number} - {self.user.username} - {self.status}"
+    
+class EvaluationCriteria(models.Model):
+    CRITERIA_CHOICES =[
+        ('technical', 'Technical Skills'),
+        ('cognitive', 'Cognitive Skills'),
+        ('soft', 'Soft Skills'),
+        ('professional', 'Professionalism'),
+        ('other', 'Others')
+    ]
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    criteria = models.CharField(max_length=20, choices=CRITERIA_CHOICES, default='other')
+    score = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.criteria}"
+    
