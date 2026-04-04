@@ -12,7 +12,8 @@ function Signup() {
   const handleSignup = (e) => {
     e.preventDefault();
 
-    if (!email || !role || !password || !confirmPassword) {
+    if (!email.trim() || !role || !password || !confirmPassword) 
+    {
       alert("All fields are required");
       return;
     }
@@ -22,9 +23,8 @@ function Signup() {
       return;
     }
 
-    console.log({ email, role, password });
+    console.log({email,role,password});
 
-    // later → backend
   };
 
   return (
@@ -42,8 +42,9 @@ function Signup() {
             className="p-3 border rounded-lg focus:ring-2 focus:ring-teal-400"
             onChange={(e) => setRole(e.target.value)}
           >
-            <option value="">Select role</option>
+            <option value = " " >select role</option>
             <option value="student">Student</option>
+            <option value="supervisor">Supervisor</option>
             <option value="admin">Admin</option>
           </select>
 
@@ -77,7 +78,7 @@ function Signup() {
         <p className="mt-4 text-sm text-center">
           Already have an account?{" "}
           <span
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/")}
             className="text-teal-500 cursor-pointer hover:underline"
           >
             Login
