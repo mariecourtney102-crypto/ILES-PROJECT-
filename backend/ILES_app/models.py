@@ -86,10 +86,20 @@ class EvaluationCriteria(models.Model):
         ('professional', 'Professionalism'),
         ('other', 'Others')
     ]
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    criteria_name =  models.CharField(max_length=150)
     criteria = models.CharField(max_length=20, choices=CRITERIA_CHOICES, default='other')
-    score = models.PositiveIntegerField()
+    criteria_weight = models.FloatField(help_text="Enter the weight as a decimal: ")
 
     def __str__(self):
         return f"{self.user.username} - {self.criteria}"
     
+class Evaluation(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
+    criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.SET_NULL, null=True)
+    score = models.PositiveIntegerField()
+    comment = models.TextField(blank=True)
+    evaluation_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.placement.user.username} - {self.criteria}: {self.score}"
