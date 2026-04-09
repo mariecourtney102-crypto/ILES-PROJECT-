@@ -34,7 +34,7 @@ function Sidebar() {
         </NavLink>
 
         <NavLink
-          to="/submitlog"
+          to="/Submitlog"
           className={({ isActive }) =>
             `${linkClass} ${
               isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
