@@ -45,7 +45,7 @@ function Sidebar() {
         </NavLink>
 
         <NavLink
-          to="/student/internship"
+          to="/student/internship-details"
           className={({ isActive }) =>
             `${linkClass} ${
               isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
