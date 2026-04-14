@@ -1,6 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
+from .serializers import UserSerializer
 
 @api_view(['GET'])
 def test_api(request):
@@ -24,8 +25,6 @@ def signup(request):
     return Response(serializer.errors)
     
     
-
-
 @api_view(['POST'])
 def login(request):
     user = authenticate(
