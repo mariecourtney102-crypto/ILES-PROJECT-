@@ -6,7 +6,7 @@ export const LogProvider = ({ children }) => {
   const [logs, setLogs] = useState([]);
 
   const addLog = (log) => {
-    setLogs((prev) => [...prev, { ...log, status: "pending" }]);
+    setLogs((prev) => [...prev, { ...log,newLog }]);
   };
 
   return (
