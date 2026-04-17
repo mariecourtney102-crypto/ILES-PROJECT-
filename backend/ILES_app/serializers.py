@@ -1,17 +1,19 @@
 from rest_framework import serializers
-from .models import User, Internship
+from .models import CustomUser, InternshipPlacement
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.Charfield(write_only=True)
+    
     class Meta:
-        model = User
-        fields = ['id', 'username', 'password', 'role']
-        extra_kwargs = {'password': {'write_only': True}}
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'password', 'role']
+        read_only_fields = ['id']
 
     def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
+        return CustomUser.objects.create_user(**validated_data)
 
 
 class InternshipSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Internship
+        model = InternshipPlacement
         fields = '__all__'
