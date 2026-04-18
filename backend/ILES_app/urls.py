@@ -1,8 +1,10 @@
 from django.urls import path
-from .views import test_api,signup,login
+from .import views
+
+
 
 urlpatterns = [
-    path('test/', test_api),
-    path('signup/', signup),
-    path('login/', login),
+    path('choose-role/', views.choose_role, name='choose_role'),
+    path('signup/', views.signup, name='signup'),
+    path('login/', views.login, name='login'),
 ]
