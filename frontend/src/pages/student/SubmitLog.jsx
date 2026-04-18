@@ -6,20 +6,38 @@ function SubmitLog() {
   const { addLog } = useLogs();
 
   const [week, setWeek] = useState("");
-  const [tasks, setTasks] = useState("");
+  const [description, setDescription] = useState("");
+  const [challenges, setChallenges] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!week || !tasks) {
-      alert("Fill all fields");
+    
+    if (week <= 0) {
+      alert("Week number must be greater than 0");
       return;
     }
 
-    addLog({ week, tasks });
+    const newLog = {
+      week,
+      description,
+      challenges,
+      dateSubmitted: new Date().toLocaleDateString(),
+    };
 
-    setWeek("");
-    setTasks("");
+    // Save as draft if missing important fields
+    if (week === " " || description.trim() === "") {
+      addLog({ ...newLog, status: "draft" });
+      alert("Saved as draft. Please complete later.");
+      return;
+    }
+
+    // Submit as pending
+    addLog({ ...newLog, status: "pending" });
+    alert("Log submitted successfully!");
+
+    // Reset form
+   
   };
 
   return (
@@ -33,12 +51,20 @@ function SubmitLog() {
           value={week}
           onChange={(e) => setWeek(e.target.value)}
           className="p-3 border rounded-lg"
+          min="1" 
         />
 
         <textarea
-          placeholder="Tasks done"
-          value={tasks}
-          onChange={(e) => setTasks(e.target.value)}
+          placeholder="Describe tasks accomplished"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="p-3 border rounded-lg"
+        />
+
+        <textarea
+          placeholder="Challenges faced (optional)"
+          value={challenges}
+          onChange={(e) => setChallenges(e.target.value)}
           className="p-3 border rounded-lg"
         />
 
