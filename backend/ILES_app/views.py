@@ -1,96 +1,77 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login as auth_login, logout
-from django.contrib import messages
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
 from .models import CustomUser, Student, Supervisor, Admin
+from .serializers import CustomUserSerializer, StudentSerializer, SupervisorSerializer, AdminSerializer
 
 
-# CHOOSE ROLE VIEW
+# CHOOSE ROLE
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def choose_role(request):
-    return render(request, 'choose_role.html')
+    roles = ['student', 'supervisor', 'admin', 'workplace_supervisor']
+    return Response({"available_roles": roles})
 
 
-# SIGNUP VIEW
+# SIGNUP
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def signup(request):
-    role = request.GET.get('role', None)  # gets role from URL e.g. /signup/?role=student
-
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        username = request.POST.get('username')
-        id_number = request.POST.get('id_number')
-        telephone = request.POST.get('telephone_number')
-        password = request.POST.get('password')
-        role = request.POST.get('role')
-
-        # Check if ID number already exists
-        if CustomUser.objects.filter(ID_number=id_number).exists():
-            messages.error(request, 'A user with this ID number already exists.')
-            return redirect('signup')
-
-        # Create the user
-        user = CustomUser.objects.create_user(
-            username=username,
-            password=password,
-            name=name,
-            role=role,
-            ID_number=id_number,
-            telephone_number=telephone
-        )
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
 
         # Create role-specific profile
+        role = user.role
         if role == 'student':
             Student.objects.create(
                 users=user,
-                course_title=request.POST.get('course_title'),
-                university_name=request.POST.get('university_name'),
-                year_of_study=request.POST.get('year_of_study')
+                course_title=request.data.get('course_title'),
+                university_name=request.data.get('university_name'),
+                year_of_study=request.data.get('year_of_study')
             )
         elif role == 'supervisor':
             Supervisor.objects.create(
                 users=user,
-                place_of_work=request.POST.get('place_of_work'),
-                department=request.POST.get('department'),
-                staff_ID=request.POST.get('staff_ID')
+                place_of_work=request.data.get('place_of_work'),
+                department=request.data.get('department'),
+                staff_ID=request.data.get('staff_ID')
             )
         elif role == 'admin':
             Admin.objects.create(
                 users=user,
-                department=request.POST.get('department')
+                department=request.data.get('department')
             )
 
-        messages.success(request, 'Account created successfully. Please log in.')
-        return redirect('login')
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            "message": "Account created successfully",
+            "token": token.key,
+            "role": user.role
+        }, status=status.HTTP_201_CREATED)
 
-    return render(request, 'signup.html', {'role': role})
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# LOGIN VIEW
+# LOGIN
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+    username = request.data.get('username')
+    password = request.data.get('password')
 
-        user = authenticate(request, username=username, password=password)
+    user = authenticate(username=username, password=password)
 
-        if user is not None:
-            auth_login(request, user)
-            messages.success(request, f'Welcome back, {user.name}!')
+    if user:
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            "message": "Login successful",
+            "token": token.key,
+            "role": user.role,
+            "name": user.name
+        }, status=status.HTTP_200_OK)
 
-            # Redirect based on role
-            if user.role == 'student':
-                return redirect('student_dashboard')
-            elif user.role == 'supervisor':
-                return redirect('supervisor_dashboard')
-            elif user.role == 'admin':
-                return redirect('admin_dashboard')
-            elif user.role == 'workplace_supervisor':
-                return redirect('workplace_dashboard')
-        else:
-            messages.error(request, 'Invalid username or password.')
-
-    return render(request, 'login.html')
-
-
-# LOGOUT VIEW
-def logout_view(request):
-    logout(request)
-    return redirect('login')
+    return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
