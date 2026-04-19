@@ -1,6 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
+from .models import internshipPlacement
 
 @api_view(['GET'])
 def test_api(request):
@@ -37,3 +38,16 @@ def login(request):
         }, status=status.HTTP_200_OK)
 
     return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+#IntershipPlacement
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_placement(request):
+    internshipPlacement.objects.create(user=request.user,
+                                       place_of_internship=request,data.get('place_of_internship'),
+                                       department=request.data.get('department'),
+                                       supervisor_name=request.data.get('supervisor_name')
+                                       start_date=request.data.get('start_date'),
+                                       end_date=request.data.get('end_date')
+                                       )
+    return Response({"message":"internship placement created successfully"})
