@@ -51,3 +51,18 @@ def create_placement(request):
                                        end_date=request.data.get('end_date')
                                        )
     return Response({"message":"internship placement created successfully"})
+#view placement
+@api_view(['GET'])
+@permission_classes ([IsAuthenticated])
+def get_placement(request):
+    try:
+        placement = internshipPlacement.object.get(user=request.user)
+        data = {"place_of_internship":placement.place_of_internship,
+                "department": placement.department,
+                "supervisor_name":placement.supervisor_name,
+                "start_date":placement.start_date,
+                "end_date":placement.end_date
+                }
+        return Response(data)
+    except InternshipPlacement.DoesNotExist:
+        return Response({"error":"No placement found"})
