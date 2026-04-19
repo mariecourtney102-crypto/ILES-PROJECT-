@@ -1,9 +1,7 @@
 from rest_framework import serializers
 from .models import CustomUser, Student, Supervisor, Admin
 
-class UserSerializer(serializers.ModelSerializer):
-    password = serializers.Charfield(write_only=True)
-    
+class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser 
         fields = ['name', 'role', 'id_number', 'telephone_number']
@@ -19,7 +17,7 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = ['user', 'course_title', 'unversity_name','year_of_study']
 
 
-class SupervisorSerualizer(serializers.ModelSerializer):
+class SupervisorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supervisor
         fields = ['users', 'place_of_work', 'department', 'staff_ID']
