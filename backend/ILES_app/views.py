@@ -66,3 +66,22 @@ def get_placement(request):
         return Response(data)
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"})
+    
+#Update Placement
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_placement(request):
+    try:
+        placement = internshipPlacement.object.get(user=request.user)
+        placement.place_of_internship=request.data.get('place_of_internship')
+        placement.department=request.data.get('department')
+        placement.supervisor_name=request.data.get('supervisor_name')
+        placement.start_date=request.data.get('start_date')
+        placement.end_date=request.data.get('end_date')
+
+        placement.save()
+
+        return Response({"message":"Placement updated successfully"})
+    except InternshipPlacement.DoesNotExist:
+        return Response({"error":"No placementfound"})
+    
