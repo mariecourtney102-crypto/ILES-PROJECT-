@@ -8,9 +8,23 @@ export const LogProvider = ({ children }) => {
   const addLog = (log) => {
     setLogs((prev) => [...prev, log]);
   };
+  const reviewLog = (index,comment) => {
+    setLogs( (prev) =>
+      prev.map((log,i) =>
+        i === index 
+          ? {
+            ...log,
+            supervisorComment : comment ,
+            status :"reviewed" ,
+           }
+        :log
+  )
+
+    );
+  };
 
   return (
-    <LogContext.Provider value={{ logs, addLog }}>
+    <LogContext.Provider value={{ logs, addLog ,reviewLog}}>
       {children}
     </LogContext.Provider>
   );
