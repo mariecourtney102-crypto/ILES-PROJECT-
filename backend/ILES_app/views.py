@@ -9,7 +9,7 @@ def test_api(request):
     
 @api_view(['POST'])
 def signup(request):
-    serializer = UserSerializer(data=request.data)
+    serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
