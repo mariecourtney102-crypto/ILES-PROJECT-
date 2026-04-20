@@ -1,14 +1,16 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import api_view, permission_classes 
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
-from .models import CustomUser, Student, Supervisor, Admin
-from .serializers import CustomUserSerializer, StudentSerializer, SupervisorSerializer, AdminSerializer
+from .models import InternshipPlacement, WeeklyLog, Evaluation
+from .serializers import ( CustomUserSerializer, 
+                          InternshipPlacementSerializer, WeeklylogSerializer,
+                          EvaluationSerializer
+)
+ 
 
 
-# CHOOSE ROLE
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def choose_role(request):
@@ -16,42 +18,14 @@ def choose_role(request):
     return Response({"available_roles": roles})
 
 
-# SIGNUP
 @api_view(['POST'])
-@permission_classes([AllowAny])
 def signup(request):
-    serializer = UserSerializer(data=request.data)
+    serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.save()
-
-        # Create role-specific profile
-        role = user.role
-        if role == 'student':
-            Student.objects.create(
-                users=user,
-                course_title=request.data.get('course_title'),
-                university_name=request.data.get('university_name'),
-                year_of_study=request.data.get('year_of_study')
-            )
-        elif role == 'supervisor':
-            Supervisor.objects.create(
-                users=user,
-                place_of_work=request.data.get('place_of_work'),
-                department=request.data.get('department'),
-                staff_ID=request.data.get('staff_ID')
-            )
-        elif role == 'admin':
-            Admin.objects.create(
-                users=user,
-                department=request.data.get('department')
-            )
-
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response({
-            "message": "Account created successfully",
-            "token": token.key,
-            "role": user.role
-        }, status=status.HTTP_201_CREATED)
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
+    
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -75,3 +49,44 @@ def login(request):
         }, status=status.HTTP_200_OK)
 
     return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+#IntershipPlacement
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_placement(request):
+    InternshipPlacement.objects.create(user=request.user,
+                                       place_of_internship=request.data.get('place_of_internship'),
+                                       department=request.data.get('department'),
+                                       supervisor_name=request.data.get('supervisor_name'),
+                                       start_date=request.data.get('start_date'),
+                                       end_date=request.data.get('end_date')
+                                       )
+    return Response({"message":"internship placement created successfully"})
+#view placement
+@api_view(['GET'])
+@permission_classes ([IsAuthenticated])
+def get_placement(request):
+    try:
+        placement = InternshipPlacement.object.get(user=request.user)
+        data = {"place_of_internship":placement.place_of_internship,
+                "department": placement.department,
+                "supervisor_name":placement.supervisor_name,
+                "start_date":placement.start_date,
+                "end_date":placement.end_date
+                }
+        return Response(data)
+    except InternshipPlacement.DoesNotExist:
+        return Response({"error":"No placement found"})
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_placement(request):
+    data = request.data.copy()
+    data['user'] = request.user.id
+
+    serializer = InternshipPlacementSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "Placement created"}, status=201)
+
+    return Response(serializer.errors, status=400)
