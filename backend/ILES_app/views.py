@@ -84,4 +84,17 @@ def update_placement(request):
         return Response({"message":"Placement updated successfully"})
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placementfound"})
+
+#delete placement
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_placement(request):
+    try:
+        placement = InternshipPlacement.object.get(user=request.user)
+        placement.delete()
+        return Response({"message":"Placement deleted"})
+    execpt InternshipPlacement.DoesNotExist:
+    return Response({"error":"No placement found"})
+
+
     
