@@ -10,7 +10,6 @@ from .serializers import ( CustomUserSerializer,
  
 
 
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def choose_role(request):
