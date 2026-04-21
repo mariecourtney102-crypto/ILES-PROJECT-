@@ -1,7 +1,7 @@
 import DashboardLayout from "../../Components/dashboard_layout";
 import { useLogs } from "../../context/LogContext";
 function SupervisorDashboard(){
-    const {logs = []} = useLogs() || {};
+    const {logs } = useLogs() ;
     const students = [...new Set(logs.map(l => l.studentName))];
     const totalStudents = students.length;
     const pending = logs.filter(l=> l.status === "pending").length;
@@ -36,4 +36,3 @@ function SupervisorDashboard(){
 };
 export default SupervisorDashboard;
 
-console.log ("supervisor logs ;" , logs);

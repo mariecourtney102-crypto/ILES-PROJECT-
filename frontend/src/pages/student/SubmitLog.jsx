@@ -19,7 +19,7 @@ function SubmitLog() {
     }
 
     const newLog = {
-      studentID : Date.now,
+      studentID : Date.now (),
       studentName : "mariyah",
       week,
       description,
