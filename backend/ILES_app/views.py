@@ -4,6 +4,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
+from django.shortcuts import render, redirect, get_object_or_404
 
 
 from .models import InternshipPlacement, WeeklyLog, Evaluation
