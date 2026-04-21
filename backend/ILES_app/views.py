@@ -1,7 +1,17 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
+<<<<<<< HEAD
+from .models import InternshipPlacement, WeeklyLog, Evaluation
+from .serializers import ( CustomUserSerializer, 
+                          InternshipPlacementSerializer, WeeklylogSerializer,
+                          EvaluationSerializer
+)
+ 
+
+=======
 from .models import internshipPlacement
+>>>>>>> 54f34aeb32e67da1acda16502b70669f6fbe3af4
 
 @api_view(['GET'])
 def test_api(request):
