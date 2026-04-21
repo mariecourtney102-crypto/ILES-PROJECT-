@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout
 
 
 from .models import InternshipPlacement, WeeklyLog, Evaluation
