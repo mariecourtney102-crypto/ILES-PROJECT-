@@ -47,7 +47,7 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
-          {/* ✅ ROLE SELECT */}
+          
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
@@ -58,7 +58,7 @@ const Login = () => {
             <option value="admin">Admin</option>
           </select>
 
-          {/* ✅ IDENTIFIER */}
+          
           <input
             type="text"
             placeholder="Identifier (ID)"
@@ -66,7 +66,7 @@ const Login = () => {
             onChange={(e) => setIdentifier(e.target.value)}
           />
 
-          {/* ✅ EMAIL */}
+          
           <input
             type="email"
             placeholder="Email"
@@ -74,7 +74,7 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          {/* ✅ PASSWORD */}
+          
           <input
             type="password"
             placeholder="Password"
