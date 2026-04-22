@@ -58,9 +58,13 @@ def login(request):
 def dashboard(request):
     internship = internshipPlacement .objects.filter(user=request.user)
 
+    total = internships.count()
+    active = internships.filter(status='approved').count()
+    pending = internships.filter(status='pending').count()
+  
 
-    
-    #IntershipPlacement
+
+    #'IntershipPlacement
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_placement(request):
