@@ -10,13 +10,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from .models import InternshipPlacement
-from .forms import InternshipForm,UserUpdateForm
+#from .forms import InternshipForm,UserUpdateForm
 from .models import InternshipPlacement, WeeklyLog, Evaluation
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
 )
  
+@api_view(['GET'])
+def choose_role(request):
+    return Response ({
+        "available_roles" :["Student","Supervisor","Admin"]
+    })
 
 @api_view(['GET'])
 def test_api(request):
