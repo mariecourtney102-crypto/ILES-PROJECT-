@@ -160,3 +160,6 @@ def search_internships(request):
                                                      Q(company_name__icontains=query)|
                                                      Q(department__iicontains=query)
         )
+        return render(request, 'search.html',{'results': results,
+                                              'query':query,
+                                              })
