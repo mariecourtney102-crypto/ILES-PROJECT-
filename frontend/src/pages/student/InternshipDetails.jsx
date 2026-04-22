@@ -1,5 +1,6 @@
 import React from 'react';
 import { Building2, CalendarDays, Users, UserCheck, Briefcase } from 'lucide-react';
+import DashboardLayout from '../../Components/dashboard_layout';
 
 const InternshipDetails = () => {
   // Details are now blank, ready for your real data or backend integration
@@ -31,12 +32,9 @@ const InternshipDetails = () => {
   ];
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '900px', fontFamily: 'sans-serif' }}>
+    <DashboardLayout title="Internship Details">
+      <div style={{ maxWidth: '900px', fontFamily: 'sans-serif' }}>
       <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ color: '#065f46', fontSize: '1.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
-          <Briefcase size={28} />
-          Internship Details
-        </h2>
         <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>Overview of your current industrial training placement.</p>
       </div>
 
@@ -107,7 +105,7 @@ const InternshipDetails = () => {
            <Briefcase size={60} />
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

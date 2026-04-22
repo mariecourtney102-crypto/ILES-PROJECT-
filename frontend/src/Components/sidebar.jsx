@@ -13,6 +13,7 @@ function Sidebar() {
 
         <NavLink
           to="/student"
+          end
           className={({ isActive }) =>
             `${linkClass} ${
               isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
@@ -34,7 +35,7 @@ function Sidebar() {
         </NavLink>
 
         <NavLink
-          to="/Submitlog"
+          to="/submitlog"
           className={({ isActive }) =>
             `${linkClass} ${
               isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
