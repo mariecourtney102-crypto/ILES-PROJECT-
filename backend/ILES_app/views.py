@@ -18,6 +18,7 @@ from .serializers import ( CustomUserSerializer,
 )
  
 @api_view(['GET'])
+def choose_role(request):
 
 @api_view(['GET'])
 def test_api(request):
