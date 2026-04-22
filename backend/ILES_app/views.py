@@ -17,6 +17,7 @@ from .serializers import ( CustomUserSerializer,
                           EvaluationSerializer
 )
  
+@api_view(['GET'])
 
 @api_view(['GET'])
 def test_api(request):
