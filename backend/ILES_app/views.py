@@ -9,11 +9,8 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-
 from .models import InternshipPlacement
 from .forms import InternshipForm,UserUpdateForm
-
-
 from .models import InternshipPlacement, WeeklyLog, Evaluation
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
@@ -60,9 +57,9 @@ def dashboard(request):
 
     total = internship.count()
     active = internship.filter(status='approved').count()
-    pending = internships.filter(status='pending').count()
+    pending = internship.filter(status='pending').count()
 
-    context = {'internships': internships,
+    context = {'internships': internship,
                'total': total,
                'active': active,
                'pending': pending,
