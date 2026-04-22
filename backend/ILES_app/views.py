@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.db.models import Q
 
 from .models import InternshipPlacement
+from .forms import InternshipForm,UserUpdateForm
 
 
 from .models import InternshipPlacement, WeeklyLog, Evaluation
