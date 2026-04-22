@@ -18,6 +18,7 @@ function App() {
       role : role
     })
     .then(res => console.log(res.data))
+    .catch (err => console.error (err));
 
   };
 
