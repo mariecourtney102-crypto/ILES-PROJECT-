@@ -136,6 +136,15 @@ def delete_placement(request):
         logout(request)
         return redirect('login')
     
+#profile view
 @login_required
 def profile(request):
     if request.method == 'POST':
+        form = UserUpdateForm(request.post,instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request,"profile updated successfully")
+            return redirect('profile')
+        else:
+            form = UserUpdateForm(instance=request.user)
+            return render(request,'prifile.html',{'form':form})
