@@ -72,6 +72,29 @@ function SupervisorDashboard() {
             </div>
           </div>
         </div>
+
+        {/* SUPERVISOR PROFILE SUMMARY */}
+        <div className="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-teal-600">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Users size={24} className="text-teal-600" />
+            Profile Summary
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Name</p>
+              <p className="font-semibold text-gray-800">{user?.identifier || user?.email || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Role</p>
+              <p className="font-semibold text-gray-800 capitalize">{user?.role || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Email</p>
+              <p className="font-semibold text-gray-800">{user?.email || "N/A"}</p>
+            </div>
+          </div>
+        </div>
+
         {/* WEEKLY LOGS REVIEW PANEL */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
