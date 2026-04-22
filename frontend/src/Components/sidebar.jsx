@@ -25,6 +25,7 @@ function Sidebar() {
 
         <NavLink
           to="/weeklylogs"
+          end
           className={({ isActive }) =>
             `${linkClass} ${
               isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
@@ -36,6 +37,7 @@ function Sidebar() {
 
         <NavLink
           to="/submitlog"
+          end
           className={({ isActive }) =>
             `${linkClass} ${
               isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
@@ -47,6 +49,7 @@ function Sidebar() {
 
         <NavLink
           to="/student/internship-details"
+          end
           className={({ isActive }) =>
             `${linkClass} ${
               isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
@@ -58,6 +61,7 @@ function Sidebar() {
 
         <NavLink
           to="/student/feedback"
+          end
           className={({ isActive }) =>
             `${linkClass} ${
               isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"

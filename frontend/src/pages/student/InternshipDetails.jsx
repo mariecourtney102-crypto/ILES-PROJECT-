@@ -105,6 +105,7 @@ const InternshipDetails = () => {
            <Briefcase size={60} />
         </div>
       </div>
+      </div>
     </DashboardLayout>
   );
 };
