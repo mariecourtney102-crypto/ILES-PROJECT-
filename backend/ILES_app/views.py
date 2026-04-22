@@ -10,6 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 
+from .models import InternshipPlacement
+
 
 from .models import InternshipPlacement, WeeklyLog, Evaluation
 from .serializers import ( CustomUserSerializer, 
