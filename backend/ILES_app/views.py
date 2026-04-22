@@ -61,6 +61,13 @@ def dashboard(request):
     total = internships.count()
     active = internships.filter(status='approved').count()
     pending = internships.filter(status='pending').count()
+
+    context = {'internships': internships,
+               'total': total,
+               'active': active,
+               'pending': pending,
+               }
+    return render(request,'dashboard.html', context)
   
 
 
