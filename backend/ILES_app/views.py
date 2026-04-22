@@ -56,7 +56,7 @@ def login(request):
 
 @login_required
 def dashboard(request):
-    internship = internshipPlacement .objects.filter(user=request.user)
+    internship = InternshipPlacement .objects.filter(user=request.user)
 
     total = internships.count()
     active = internships.filter(status='approved').count()
