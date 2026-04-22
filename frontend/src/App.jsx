@@ -14,6 +14,9 @@ function App() {
 
   const handleSelectRole = (role) => {
     console.log("Selected role:", role);
+    axios.post("http://127.0.0.1:8000/api/choose-role/" , {
+      
+    })
   };
 
   return (
