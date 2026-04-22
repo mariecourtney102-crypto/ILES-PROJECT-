@@ -54,7 +54,13 @@ def login(request):
 
     return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
 
-#IntershipPlacement
+@login_required
+def dashboard(request):
+    internship = internshipPlacement .objects.filter(user=request.user)
+
+
+    
+    #IntershipPlacement
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_placement(request):
