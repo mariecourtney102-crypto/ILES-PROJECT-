@@ -156,5 +156,7 @@ def search_internships(request):
     results = []
     
     if query:
-        results = InternshipPlacement.objects.filter(Q(title__icontains=query)|Q(company_name__icontains=query)|Q(department__iicontains=query)
+        results = InternshipPlacement.objects.filter(Q(title__icontains=query)|
+                                                     Q(company_name__icontains=query)|
+                                                     Q(department__iicontains=query)
         )
