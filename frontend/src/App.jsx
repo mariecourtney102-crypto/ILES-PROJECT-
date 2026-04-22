@@ -16,17 +16,7 @@ function App() {
     console.log("Selected role:", role);
   };
 
-  return (
-    <div>
-      <h1>Select Role</h1>
-
-      {roles.map((role, index) => (
-        <button key={index} onClick={() => handleSelectRole(role)}>
-          {role}
-        </button>
-      ))}
-    </div>
-  );
+  
 }
 
 export default App;
