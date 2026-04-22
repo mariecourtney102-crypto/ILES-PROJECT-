@@ -20,7 +20,7 @@ from .serializers import ( CustomUserSerializer,
 @api_view(['GET'])
 def choose_role(request):
     return Response ({
-        "available_roles"
+        "available_roles" ["Student",,]
     })
 
 @api_view(['GET'])
