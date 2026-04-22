@@ -23,7 +23,7 @@ function App() {
         <p> Loading roles ...</p>
       ) : (
         roles.map ((role,index) => (
-          <button key = {index} onClick={() => handleSelectRole}>
+          <button key = {index} onClick={() => handleSelectRole (role)}>
             {role}
           </button>
         ))
