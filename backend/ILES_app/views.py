@@ -148,3 +148,9 @@ def profile(request):
         else:
             form = UserUpdateForm(instance=request.user)
             return render(request,'prifile.html',{'form':form})
+        
+#search/filter internship
+@login_required
+def search_internships(request):
+    query = request.GET.get('9')
+    results = []
