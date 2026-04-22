@@ -131,7 +131,11 @@ def delete_placement(request):
         return Response({"error":"No placement found"},status=status.HTTP_404_NOT_FOUND)
 
 
-    #logout view
+#logout view
     def logout_view(request):
         logout(request)
         return redirect('login')
+    
+@login_required
+def profile(request):
+    if request.method == 'POST':
