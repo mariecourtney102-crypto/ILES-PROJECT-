@@ -17,6 +17,7 @@ function App() {
     axios.post("http://127.0.0.1:8000/api/choose-role/" , {
       role : role
     })
+    .then(res => console.log(res.data))
 
   };
 
