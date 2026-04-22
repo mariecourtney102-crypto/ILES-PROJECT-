@@ -154,3 +154,7 @@ def profile(request):
 def search_internships(request):
     query = request.GET.get('9')
     results = []
+    
+    if query:
+        results = InternshipPlacement.objects.filter(Q(title__icontains=query)|Q(company_name__icontains=query)|Q(department__iicontains=query)
+        )
