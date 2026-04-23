@@ -21,7 +21,7 @@ def test_api(request):
     return Response({"message": "API working"})
     
 @api_view(['POST'])
-@permission_classes ([])
+@permission_classes ([AllowAny])
 def signup(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
