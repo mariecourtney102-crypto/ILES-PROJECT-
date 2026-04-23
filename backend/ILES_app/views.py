@@ -1,26 +1,19 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes 
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.http import JsonResponse
 from rest_framework import status
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.db.models import Q
-from .models import InternshipPlacement
-#from .forms import InternshipForm,UserUpdateForm
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth import authenticate
 from .models import InternshipPlacement, WeeklyLog, Evaluation
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
 )
  
-@api_view(['GET'])
 def choose_role(request):
-    return Response ({
-        "available_roles" :["Student","Supervisor","Admin"]
+    return JsonResponse({
+        "roles": ["student", "supervisor", "admin", "workplace_supervisor"]
     })
 
 @api_view(['GET'])
@@ -92,7 +85,7 @@ def create_placement(request):
 @permission_classes ([IsAuthenticated])
 def get_placement(request):
     try:
-        placement = InternshipPlacement.objects.get(user=request.user)
+        placement = InternshipPlacement.object.get(user=request.user)
         data = {"place_of_internship":placement.place_of_internship,
                 "department": placement.department,
                 "supervisor_name":placement.supervisor_name,
@@ -128,9 +121,9 @@ def delete_placement(request):
     try:
         placement = InternshipPlacement.objects.get(user=request.user)
         placement.delete()
-        return Response({"message":"Placement deleted"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message":"Placement deleted"})
     except InternshipPlacement.DoesNotExist:
-        return Response({"error":"No placement found"},status=status.HTTP_404_NOT_FOUND)
+        return Response({"error":"No placement found"})
 
 
 #logout view
