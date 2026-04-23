@@ -1,17 +1,20 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes 
 from rest_framework.response import Response
+from django.http import JsonResponse
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
-<<<<<<< HEAD
 from .models import InternshipPlacement, WeeklyLog, Evaluation
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
 )
  
-
-=======
-from .models import internshipPlacement
->>>>>>> 54f34aeb32e67da1acda16502b70669f6fbe3af4
+def choose_role(request):
+    return JsonResponse({
+        "roles": ["student", "supervisor", "admin", "workplace_supervisor"]
+    })
 
 @api_view(['GET'])
 def test_api(request):
@@ -53,20 +56,20 @@ def login(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_placement(request):
-    internshipPlacement.objects.create(user=request.user,
-                                       place_of_internship=request,data.get('place_of_internship'),
+    InternshipPlacement.objects.create(user=request.user,
+                                       place_of_internship=request.data.get('place_of_internship'),
                                        department=request.data.get('department'),
-                                       supervisor_name=request.data.get('supervisor_name')
+                                       supervisor_name=request.data.get('supervisor_name'),
                                        start_date=request.data.get('start_date'),
                                        end_date=request.data.get('end_date')
-                                       )
+)
     return Response({"message":"internship placement created successfully"})
 #view placement
 @api_view(['GET'])
 @permission_classes ([IsAuthenticated])
 def get_placement(request):
     try:
-        placement = internshipPlacement.object.get(user=request.user)
+        placement = InternshipPlacement.object.get(user=request.user)
         data = {"place_of_internship":placement.place_of_internship,
                 "department": placement.department,
                 "supervisor_name":placement.supervisor_name,
@@ -82,7 +85,7 @@ def get_placement(request):
 @permission_classes([IsAuthenticated])
 def update_placement(request):
     try:
-        placement = internshipPlacement.object.get(user=request.user)
+        placement = InternshipPlacement.object.get(user=request.user)
         placement.place_of_internship=request.data.get('place_of_internship')
         placement.department=request.data.get('department')
         placement.supervisor_name=request.data.get('supervisor_name')
@@ -103,8 +106,8 @@ def delete_placement(request):
         placement = InternshipPlacement.object.get(user=request.user)
         placement.delete()
         return Response({"message":"Placement deleted"})
-    execpt InternshipPlacement.DoesNotExist:
-    return Response({"error":"No placement found"})
+    except InternshipPlacement.DoesNotExist:
+        return Response({"error":"No placement found"})
 
 
     
