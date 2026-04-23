@@ -14,22 +14,31 @@ function App() {
 
   const handleSelectRole = (role) => {
     console.log("Selected role:", role);
+    axios.post("http://127.0.0.1:8000/api/choose-role/" , {
+      role : role
+    })
+    .then(res => console.log(res.data))
+    .catch (err => console.error (err));
+
   };
 
   return (
     <div>
       <h1>Select Role</h1>
-
-      {roles.map((role, index) => (
-        <button key={index} onClick={() => handleSelectRole(role)}>
-          {role}
-        </button>
-      ))}
+      {roles.length === 0 ? (
+        <p> Loading roles ...</p>
+      ) : (
+        roles.map ((role,index) => (
+          <button key = {index} onClick={() => handleSelectRole (role)}>
+            {role}
+          </button>
+        ))
+      )}
     </div>
+
   );
+
+  
 }
 
 export default App;
-axios.post("http://127.0.0.1:8000/api/choose-role/", {
-  role: role
-});

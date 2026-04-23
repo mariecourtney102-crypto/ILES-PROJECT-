@@ -12,12 +12,12 @@ export const LogProvider = ({ children }) => {
     setLogs( (prev) =>
       prev.map((log,i) =>
         i === index 
-          ? {
+           ? {
             ...log,
             supervisorComment : comment ,
             status :"reviewed" ,
-           }
-        :log
+             }
+           :log
   )
 
     );
