@@ -131,9 +131,9 @@ def delete_placement(request):
 
 
 #logout view
-    def logout_view(request):
-        logout(request)
-        return redirect('login')
+def logout_view(request):
+    logout(request)
+    return redirect('login')
     
 #profile view
 @login_required
