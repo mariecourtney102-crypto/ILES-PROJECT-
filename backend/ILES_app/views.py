@@ -105,7 +105,7 @@ def get_placement(request):
 @permission_classes([IsAuthenticated])
 def update_placement(request):
     try:
-        placement = InternshipPlacement.object.get(user=request.user)
+        placement = InternshipPlacement.objects.get(user=request.user)
         placement.place_of_internship=request.data.get('place_of_internship')
         placement.department=request.data.get('department')
         placement.supervisor_name=request.data.get('supervisor_name')
