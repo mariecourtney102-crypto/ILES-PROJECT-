@@ -21,6 +21,7 @@ def test_api(request):
     return Response({"message": "API working"})
     
 @api_view(['POST'])
+
 def signup(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
