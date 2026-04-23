@@ -4,7 +4,11 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, logout
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.db.models import Q
 from .models import InternshipPlacement, WeeklyLog, Evaluation
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
@@ -51,16 +55,12 @@ def login(request):
 
 @login_required
 def dashboard(request):
-    internship = InternshipPlacement .objects.filter(user=request.user)
+    internship = InternshipPlacement.objects.filter(user=request.user)
 
     total = internship.count()
-    active = internship.filter(status='approved').count()
-    pending = internship.filter(status='pending').count()
 
     context = {'internships': internship,
                'total': total,
-               'active': active,
-               'pending': pending,
                }
     return render(request,'dashboard.html', context)
   
@@ -85,7 +85,7 @@ def create_placement(request):
 @permission_classes ([IsAuthenticated])
 def get_placement(request):
     try:
-        placement = InternshipPlacement.object.get(user=request.user)
+        placement = InternshipPlacement.objects.get(user=request.user)
         data = {"place_of_internship":placement.place_of_internship,
                 "department": placement.department,
                 "supervisor_name":placement.supervisor_name,
@@ -101,7 +101,7 @@ def get_placement(request):
 @permission_classes([IsAuthenticated])
 def update_placement(request):
     try:
-        placement = InternshipPlacement.object.get(user=request.user)
+        placement = InternshipPlacement.objects.get(user=request.user)
         placement.place_of_internship=request.data.get('place_of_internship')
         placement.department=request.data.get('department')
         placement.supervisor_name=request.data.get('supervisor_name')
@@ -112,7 +112,7 @@ def update_placement(request):
 
         return Response({"message":"Placement updated successfully"}, status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
-        return Response({"error":"No placementfound"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error":"No placement found"}, status=status.HTTP_404_NOT_FOUND)
 
 #delete placement
 @api_view(['DELETE'])
@@ -126,34 +126,35 @@ def delete_placement(request):
         return Response({"error":"No placement found"})
 
 
+
 #logout view
-    def logout_view(request):
-        logout(request)
-        return redirect('login')
+def logout_view(request):
+    logout(request)
+    return redirect('login')
     
 #profile view
 @login_required
 def profile(request):
     if request.method == 'POST':
-        form = UserUpdateForm(request.post,instance=request.user)
+        form = UserUpdateForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request,"profile updated successfully")
             return redirect('profile')
-        else:
-            form = UserUpdateForm(instance=request.user)
-            return render(request,'prifile.html',{'form':form})
+    else:
+        form = UserUpdateForm(instance=request.user)
+        return render(request,'profile.html',{'form':form})
         
 #search/filter internship
 @login_required
 def search_internships(request):
-    query = request.GET.get('9')
+    query = request.GET.get('q')
     results = []
     
     if query:
-        results = InternshipPlacement.objects.filter(Q(title__icontains=query)|
-                                                     Q(company_name__icontains=query)|
-                                                     Q(department__iicontains=query)
+        results = InternshipPlacement.objects.filter(Q(place_of_internship__icontains=query)|
+                                                     Q(department__icontains=query)|
+                                                     Q(supervisor_name__icontains=query)
         )
         return render(request, 'search.html',{'results': results,
                                               'query':query,

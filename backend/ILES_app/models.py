@@ -24,8 +24,8 @@ class CustomUser(AbstractUser):
         related_name= 'customuser_permissions',
         blank=True
     )
-    def _str_(self):
-        return f"(self.username) ({self.role})"
+    def __str__(self):
+        return f"{self.username} ({self.role})"
 
 class Student(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
@@ -34,7 +34,7 @@ class Student(models.Model):
     year_of_study = models.IntegerField()
     
     def __str__(self):
-        return f"{self.user.username} -STUDENT"
+        return f"{self.users.username} -STUDENT"
     
 class Supervisor(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
@@ -43,7 +43,7 @@ class Supervisor(models.Model):
     staff_ID = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
-        return f"{self.user.username} -SUPERVISOR"
+        return f"{self.users.username} -SUPERVISOR"
 
 
 class Admin(models.Model):
@@ -51,7 +51,7 @@ class Admin(models.Model):
     department = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.user.username} -ADMIN"
+        return f"{self.users.username} -ADMIN"
     
 class InternshipPlacement(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -93,11 +93,18 @@ class EvaluationCriteria(models.Model):
     criteria_weight = models.FloatField(help_text="Enter the weight as a decimal: ")
 
     def __str__(self):
-        return f"{self.user.username} - {self.criteria}"
+        return f"{self.criteria_name} - {self.criteria}"
     
 class Evaluation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
+    criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
+    score = models.FloatField()
+    comments = models.TextField(blank=True)
+    date_evaluated = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Evaluation for {self.user.username} - {self.placement}"
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.SET_NULL, null=True)
     score = models.PositiveIntegerField()
     comment = models.TextField(blank=True)
