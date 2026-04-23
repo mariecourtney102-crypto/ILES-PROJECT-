@@ -136,18 +136,19 @@ def logout_view(request):
     return redirect('login')
     
 #profile view
-@login_required
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated]) 
 def profile(request):
-    if request.method == 'POST':
-        form = UserUpdateForm(request.post,instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request,"profile updated successfully")
-            return redirect('profile')
-        else:
-            form = UserUpdateForm(instance=request.user)
-            return render(request,'prifile.html',{'form':form})
-        
+    if request.method == 'GET':
+        serializer = CustomUserSerializer(request.user)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = CustomUserSerializer(request.user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+       
 #search/filter internship
 @login_required
 def search_internships(request):
