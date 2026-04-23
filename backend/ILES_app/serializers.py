@@ -4,7 +4,7 @@ from .models import CustomUser, Student, Supervisor, Admin, InternshipPlacement,
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser 
-        fields = ['name', 'role', 'id_number', 'telephone_number']
+        fields = ['name', 'role', 'ID_number', 'telephone_number', 'username', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -40,4 +40,5 @@ class WeeklylogSerializer(serializers.ModelSerializer):
 
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
+        model = Evaluation
         fields = '__all__'
