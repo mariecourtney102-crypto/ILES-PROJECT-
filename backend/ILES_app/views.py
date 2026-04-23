@@ -11,7 +11,6 @@ from django.contrib import messages
 from django.db.models import Q
 
 from .models import InternshipPlacement
-from .forms import InternshipForm,UserUpdateForm
 
 
 from .models import InternshipPlacement, WeeklyLog, Evaluation
@@ -58,11 +57,11 @@ def login(request):
 def dashboard(request):
     internship = InternshipPlacement .objects.filter(user=request.user)
 
-    total = internships.count()
-    active = internships.filter(status='approved').count()
-    pending = internships.filter(status='pending').count()
+    total = internship.count()
+    active = internship.filter(status='approved').count()
+    pending = internship.filter(status='pending').count()
 
-    context = {'internships': internships,
+    context = {'internships': internship,
                'total': total,
                'active': active,
                'pending': pending,
@@ -71,7 +70,7 @@ def dashboard(request):
   
 
 
-    #'IntershipPlacement
+#IntershipPlacement
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_placement(request):
