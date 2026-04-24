@@ -24,22 +24,8 @@ function App() {
 
   };
 
-  return (
-    <div>
-      <h1>Select Role</h1>
-      {roles.length === 0 ? (
-        <p> Loading roles ...</p>
-      ) : (
-        roles.map ((role,index) => (
-          <button key = {index} onClick={() => handleSelectRole (role)}>
-            {role}
-          </button>
-        ))
-      )}
-    </div>
-
-  );
+ 
 
   
-}
+
 
