@@ -163,3 +163,7 @@ def search_internships(request):
         return render(request, 'search.html',{'results': results,
                                               'query':query,
                                               })
+    
+#internship details
+@login_required
+def internship_detail(request,id):
