@@ -67,7 +67,7 @@ function Signup() {
         telephone_number: formData.telephone_number || "",
       };
 
-      const response = await api.post("/api/signup/", signupData);
+      await api.post("/signup/", signupData);
 
       setSuccess("Account created successfully! Redirecting to login...");
       
@@ -109,7 +109,6 @@ function Signup() {
             <option value="student">Student</option>
             <option value="supervisor">Supervisor</option>
             <option value="admin">Admin</option>
-            <option value="workplace_supervisor">Workplace Supervisor</option>
           </select>
 
           <input

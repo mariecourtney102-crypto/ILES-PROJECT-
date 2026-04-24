@@ -1,25 +1,18 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getRoleRoute } from "../utils/roleRoutes";
 
 function ProtectedRoute({ children, requiredRole }) {
   const { user } = useAuth();
 
-  // If NOT logged in → go to login
   if (!user) {
-    return <Navigate to="/" />;
+    return <Navigate to="/login" replace />;
   }
 
-  // If role is required and user doesn't have it → go to their default dashboard
   if (requiredRole && user.role !== requiredRole) {
-    const roleRoutes = {
-      admin: "/admin",
-      supervisor: "/supervisor",
-      student: "/student",
-    };
-    return <Navigate to={roleRoutes[user.role]} />;
+    return <Navigate to={getRoleRoute(user.role)} replace />;
   }
 
-  // If logged in and authorized → show page
   return children;
 }
 

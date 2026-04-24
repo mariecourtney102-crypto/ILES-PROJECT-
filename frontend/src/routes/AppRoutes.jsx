@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
 import UserFeedback from "../pages/student/UserFeedback";
@@ -11,12 +12,15 @@ import SubmitLog from "../pages/student/SubmitLog";
 import WeeklyLogs from "../pages/student/WeeklyLogs";
 import InternshipDetails from "../pages/student/InternshipDetails";
 import ProtectedRoute from "./ProtectedRoute";
+import { getRoleRoute } from "../utils/roleRoutes";
 
 const AppRoutes = () => {
+  const { user } = useAuth();
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to={user ? getRoleRoute(user.role) : "/login"} replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/weeklylogs" element={<ProtectedRoute requiredRole="student"><WeeklyLogs /></ProtectedRoute>} />
