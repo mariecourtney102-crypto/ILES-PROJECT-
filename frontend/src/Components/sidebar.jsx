@@ -165,7 +165,7 @@ function Sidebar() {
       </nav>
       <button
         onClick = {handleLogout}
-        className="p-2 rounded-md bg-white text-teal-600 hover:bg-gray-100 transition font-semibold"
+        className=" mt-auto p-2 rounded-md bg-white text-teal-600 hover:bg-gray-100 transition font-semibold"
       >
         Logout
       </button>
