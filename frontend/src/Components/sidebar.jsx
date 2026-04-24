@@ -11,6 +11,7 @@ function Sidebar() {
     localStorage.removeItem("username");
 
     logout();
+    Navigate("/login");
   };
   const linkClass =
     "p-2 rounded-md transition";
