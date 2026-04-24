@@ -178,4 +178,9 @@ def update_status(required,id):
     internship = get_object_or_404(internshipPlacement
     id=id)
     if request.method == 'POST':
-        
+        status = request.POST.get('status')
+        if status in['approved','rejected']:
+            internship.status = status
+            internship.save()
+            messages.success(request,"status updated")
+            return redirect('dashboard')
