@@ -179,4 +179,4 @@ def update_status(required,id):
     id=id)
     if request.method == 'POST':
         status = request.POST.get('status')
-        
+        if status in['approved','rejected']:
