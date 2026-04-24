@@ -175,3 +175,7 @@ def internship_detail(request,id):
 #Supervisor/Admin views
 @login_required
 def update_status(required,id):
+    internship = get_object_or_404(internshipPlacement
+    id=id)
+    if request.method == 'POST':
+        
