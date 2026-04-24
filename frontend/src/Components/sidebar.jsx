@@ -4,6 +4,11 @@ import { useNavigate } from "react-router-dom";
 
 function Sidebar() {
   const { user ,logout } = useAuth();
+
+  const handleLogout = () =>{
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+  };
   const linkClass =
     "p-2 rounded-md transition";
 
