@@ -169,12 +169,12 @@ def search_internships(request):
 def internship_detail(request,id):
     internship = get_object_or_404(internshipPlacement,
     id=id)
-  return render(request,'internship_detail.html',{'internship': internship})  
+    return render(request,'internship_detail.html',{'internship': internship})  
 
 #Supervisor/Admin views
 @login_required
 def update_status(required,id):
-    internship = get_object_or_404(internshipPlacement
+    internship = get_object_or_404(internshipPlacement,
     id=id)
     if request.method == 'POST':
         status = request.POST.get('status')
