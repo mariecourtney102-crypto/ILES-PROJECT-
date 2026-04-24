@@ -17,7 +17,7 @@ from .serializers import ( CustomUserSerializer,
  
 def choose_role(request):
     return JsonResponse({
-        "roles": ["student", "supervisor", "admin", "workplace_supervisor"]
+        "roles": ["student", "supervisor", "admin"]
     })
 
 @api_view(['GET'])
@@ -25,6 +25,7 @@ def test_api(request):
     return Response({"message": "API working"})
     
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def signup(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
@@ -58,6 +59,8 @@ def dashboard(request):
     internship = InternshipPlacement.objects.filter(user=request.user)
 
     total = internship.count()
+    active = internship.filter(status='approved').count()
+    pending = internship.filter(status='pending').count()
 
     context = {'internships': internship,
                'total': total,
@@ -66,7 +69,7 @@ def dashboard(request):
   
 
 
-    #'IntershipPlacement
+#IntershipPlacement
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_placement(request):
@@ -133,18 +136,19 @@ def logout_view(request):
     return redirect('login')
     
 #profile view
-@login_required
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated]) 
 def profile(request):
-    if request.method == 'POST':
-        form = UserUpdateForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request,"profile updated successfully")
-            return redirect('profile')
-    else:
-        form = UserUpdateForm(instance=request.user)
-        return render(request,'profile.html',{'form':form})
-        
+    if request.method == 'GET':
+        serializer = CustomUserSerializer(request.user)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = CustomUserSerializer(request.user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+       
 #search/filter internship
 @login_required
 def search_internships(request):
@@ -159,3 +163,19 @@ def search_internships(request):
         return render(request, 'search.html',{'results': results,
                                               'query':query,
                                               })
+    
+#internship details
+@login_required
+def internship_detail(request,id):
+    internship = get_object_or_404(internshipPlacement,
+    id=id)
+  return render(request,'internship_detail.html',{'internship': internship
+                                                  })  
+
+#Supervisor/Admin views
+@login_required
+def update_status(required,id):
+    internship = get_object_or_404(internshipPlacement
+    id=id)
+    if request.method == 'POST':
+        

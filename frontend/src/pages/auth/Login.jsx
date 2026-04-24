@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
+import { getRoleRoute } from "../../utils/roleRoutes";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -34,15 +35,7 @@ const Login = () => {
         name: data.name,
       });
 
-      // Navigate based on role
-      const roleRoutes = {
-        admin: "/admin",
-        supervisor: "/supervisor",
-        student: "/student",
-        workplace_supervisor: "/supervisor",
-      };
-
-      navigate(roleRoutes[data.role] || "/student");
+      navigate(getRoleRoute(data.role));
     } catch (err) {
       setError(err.response?.data?.error || "Login failed. Please try again.");
       console.error("Login error:", err);
