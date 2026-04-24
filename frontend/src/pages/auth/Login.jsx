@@ -5,13 +5,7 @@ import { loginUser } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
 import { getRoleRoute } from "../../utils/roleRoutes";
 
-const handleLogout = () =>{
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
-  localStorage.removeItem("username");
 
-   navigate("/login");
-};
 
 
 const Login = () => {
