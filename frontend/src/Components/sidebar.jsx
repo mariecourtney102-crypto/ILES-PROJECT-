@@ -25,7 +25,7 @@ function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-teal-600 text-white min-h-screen p-4">
+    <div className="w-64 bg-teal-600 text-white min-h-screen p-4 flex flex-col">
 
       <h2 className="text-xl font-bold mb-6">{getTitle()}</h2>
 
@@ -165,7 +165,7 @@ function Sidebar() {
       </nav>
       <button
         onClick = {handleLogout}
-        className = "mt-6 p-2 bg-white-200 rounded-md hover:bg-teal-600"
+        className="p-2 rounded-md bg-white text-teal-600 hover:bg-gray-100 transition font-semibold"
       >
         Logout
       </button>
