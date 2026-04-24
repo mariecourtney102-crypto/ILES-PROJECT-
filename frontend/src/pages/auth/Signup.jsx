@@ -13,6 +13,12 @@ function Signup() {
     role: "",
     ID_number: "",
     telephone_number: "",
+    course_title: "",
+    university_name: "",
+    year_of_study: "",
+    place_of_work: "",
+    department: "",
+    staff_ID: "",
   });
 
   const [error, setError] = useState("");
@@ -27,21 +33,41 @@ function Signup() {
     });
   };
 
+  const getRoleFields = () => {
+    if (formData.role === "student") {
+      return ["course_title", "university_name", "year_of_study"];
+    }
+
+    if (formData.role === "supervisor") {
+      return ["place_of_work", "department", "staff_ID"];
+    }
+
+    if (formData.role === "admin") {
+      return ["department"];
+    }
+
+    return [];
+  };
+
   const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
     // Validation
-    if (
-      !formData.username.trim() ||
-      !formData.name.trim() ||
-      !formData.password ||
-      !formData.confirmPassword ||
-      !formData.role ||
-      !formData.ID_number.trim()
-    ) {
+    if (!formData.role) {
+      setError("Please select a role before signing up");
+      return;
+    }
+
+    if (!formData.username.trim() || !formData.name.trim() || !formData.password || !formData.confirmPassword || !formData.ID_number.trim()) {
       setError("All fields (except phone) are required");
+      return;
+    }
+
+    const missingRoleField = getRoleFields().find((field) => !String(formData[field] ?? "").trim());
+    if (missingRoleField) {
+      setError("Please fill in all fields required for the selected role");
       return;
     }
 
@@ -65,6 +91,12 @@ function Signup() {
         role: formData.role,
         ID_number: formData.ID_number,
         telephone_number: formData.telephone_number || "",
+        course_title: formData.course_title,
+        university_name: formData.university_name,
+        year_of_study: formData.year_of_study ? Number(formData.year_of_study) : "",
+        place_of_work: formData.place_of_work,
+        department: formData.department,
+        staff_ID: formData.staff_ID,
       };
 
       await api.post("/signup/", signupData);
@@ -76,10 +108,20 @@ function Signup() {
         navigate("/login");
       }, 2000);
     } catch (err) {
-      const errorMessage = err.response?.data?.detail || 
-                          err.response?.data?.error ||
-                          err.response?.data?.username?.[0] ||
-                          "Signup failed. Please try again.";
+      const errorData = err.response?.data;
+      const errorMessage =
+        errorData?.detail ||
+        errorData?.error ||
+        errorData?.role?.[0] ||
+        errorData?.role ||
+        errorData?.username?.[0] ||
+        errorData?.ID_number?.[0] ||
+        errorData?.staff_ID?.[0] ||
+        errorData?.department?.[0] ||
+        errorData?.course_title?.[0] ||
+        errorData?.university_name?.[0] ||
+        errorData?.year_of_study?.[0] ||
+        "Signup failed. Please try again.";
       setError(errorMessage);
       console.error("Signup error:", err);
     } finally {
@@ -104,8 +146,11 @@ function Signup() {
             onChange={handleChange}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
             disabled={loading}
+            required
           >
-            <option value="">Select Role</option>
+            <option value="" disabled>
+              Select Role
+            </option>
             <option value="student">Student</option>
             <option value="supervisor">Supervisor</option>
             <option value="admin">Admin</option>
@@ -150,6 +195,87 @@ function Signup() {
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
             disabled={loading}
           />
+
+          {formData.role === "student" && (
+            <>
+              <input
+                type="text"
+                name="course_title"
+                placeholder="Course Title"
+                value={formData.course_title}
+                onChange={handleChange}
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                disabled={loading}
+              />
+
+              <input
+                type="text"
+                name="university_name"
+                placeholder="University Name"
+                value={formData.university_name}
+                onChange={handleChange}
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                disabled={loading}
+              />
+
+              <input
+                type="number"
+                name="year_of_study"
+                placeholder="Year of Study"
+                value={formData.year_of_study}
+                onChange={handleChange}
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                disabled={loading}
+                min="1"
+              />
+            </>
+          )}
+
+          {formData.role === "supervisor" && (
+            <>
+              <input
+                type="text"
+                name="place_of_work"
+                placeholder="Place of Work"
+                value={formData.place_of_work}
+                onChange={handleChange}
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                disabled={loading}
+              />
+
+              <input
+                type="text"
+                name="department"
+                placeholder="Department"
+                value={formData.department}
+                onChange={handleChange}
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                disabled={loading}
+              />
+
+              <input
+                type="text"
+                name="staff_ID"
+                placeholder="Staff ID"
+                value={formData.staff_ID}
+                onChange={handleChange}
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                disabled={loading}
+              />
+            </>
+          )}
+
+          {formData.role === "admin" && (
+            <input
+              type="text"
+              name="department"
+              placeholder="Department"
+              value={formData.department}
+              onChange={handleChange}
+              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+              disabled={loading}
+            />
+          )}
 
           <input
             type="password"
