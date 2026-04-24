@@ -2,6 +2,21 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 
+const FRIENDLY_FIELD_NAMES = {
+  role: "role",
+  username: "username",
+  name: "full name",
+  ID_number: "ID number",
+  telephone_number: "phone number",
+  course_title: "course title",
+  university_name: "university name",
+  year_of_study: "year of study",
+  place_of_work: "place of work",
+  department: "department",
+  staff_ID: "staff ID",
+  password: "password",
+};
+
 function Signup() {
   const navigate = useNavigate();
 
@@ -49,6 +64,67 @@ function Signup() {
     return [];
   };
 
+  const buildSignupData = () => {
+    const signupData = {
+      username: formData.username,
+      name: formData.name,
+      password: formData.password,
+      role: formData.role,
+      ID_number: formData.ID_number,
+      telephone_number: formData.telephone_number || "",
+    };
+
+    if (formData.role === "student") {
+      signupData.course_title = formData.course_title.trim();
+      signupData.university_name = formData.university_name.trim();
+      signupData.year_of_study = Number(formData.year_of_study);
+    }
+
+    if (formData.role === "supervisor") {
+      signupData.place_of_work = formData.place_of_work.trim();
+      signupData.department = formData.department.trim();
+      signupData.staff_ID = formData.staff_ID.trim();
+    }
+
+    if (formData.role === "admin") {
+      signupData.department = formData.department.trim();
+    }
+
+    return signupData;
+  };
+
+  const getBackendErrorMessage = (errorData) => {
+    if (!errorData) {
+      return "Signup failed. Please try again.";
+    }
+
+    if (typeof errorData.detail === "string") {
+      return errorData.detail;
+    }
+
+    if (typeof errorData.error === "string") {
+      return errorData.error;
+    }
+
+    for (const [field, value] of Object.entries(errorData)) {
+      const message = Array.isArray(value) ? value[0] : value;
+      if (!message) {
+        continue;
+      }
+
+      if (field === "role" && String(message).toLowerCase().includes("blank")) {
+        return "Please select a role.";
+      }
+
+      if (typeof message === "string") {
+        const label = FRIENDLY_FIELD_NAMES[field];
+        return label ? `${label.charAt(0).toUpperCase() + label.slice(1)}: ${message}` : message;
+      }
+    }
+
+    return "Signup failed. Please try again.";
+  };
+
   const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
@@ -83,21 +159,7 @@ function Signup() {
 
     setLoading(true);
     try {
-      // Prepare data for backend
-      const signupData = {
-        username: formData.username,
-        name: formData.name,
-        password: formData.password,
-        role: formData.role,
-        ID_number: formData.ID_number,
-        telephone_number: formData.telephone_number || "",
-        course_title: formData.course_title,
-        university_name: formData.university_name,
-        year_of_study: formData.year_of_study ? Number(formData.year_of_study) : "",
-        place_of_work: formData.place_of_work,
-        department: formData.department,
-        staff_ID: formData.staff_ID,
-      };
+      const signupData = buildSignupData();
 
       await api.post("/signup/", signupData);
 
@@ -109,20 +171,7 @@ function Signup() {
       }, 2000);
     } catch (err) {
       const errorData = err.response?.data;
-      const errorMessage =
-        errorData?.detail ||
-        errorData?.error ||
-        errorData?.role?.[0] ||
-        errorData?.role ||
-        errorData?.username?.[0] ||
-        errorData?.ID_number?.[0] ||
-        errorData?.staff_ID?.[0] ||
-        errorData?.department?.[0] ||
-        errorData?.course_title?.[0] ||
-        errorData?.university_name?.[0] ||
-        errorData?.year_of_study?.[0] ||
-        "Signup failed. Please try again.";
-      setError(errorMessage);
+      setError(getBackendErrorMessage(errorData));
       console.error("Signup error:", err);
     } finally {
       setLoading(false);
@@ -139,6 +188,9 @@ function Signup() {
         </h2>
 
         <form onSubmit={handleSignup} className="flex flex-col gap-4">
+          <label className="text-sm font-medium text-gray-700">
+            Role
+          </label>
 
           <select
             name="role"
