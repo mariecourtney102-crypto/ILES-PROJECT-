@@ -1,30 +1,31 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes 
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.http import JsonResponse
 from rest_framework import status
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Q
-
-from .models import InternshipPlacement
-
-
 from .models import InternshipPlacement, WeeklyLog, Evaluation
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
 )
  
+def choose_role(request):
+    return JsonResponse({
+        "roles": ["student", "supervisor", "admin"]
+    })
 
 @api_view(['GET'])
 def test_api(request):
     return Response({"message": "API working"})
     
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def signup(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
@@ -55,7 +56,7 @@ def login(request):
 
 @login_required
 def dashboard(request):
-    internship = InternshipPlacement .objects.filter(user=request.user)
+    internship = InternshipPlacement.objects.filter(user=request.user)
 
     total = internship.count()
     active = internship.filter(status='approved').count()
@@ -63,8 +64,6 @@ def dashboard(request):
 
     context = {'internships': internship,
                'total': total,
-               'active': active,
-               'pending': pending,
                }
     return render(request,'dashboard.html', context)
   
@@ -116,7 +115,7 @@ def update_placement(request):
 
         return Response({"message":"Placement updated successfully"}, status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
-        return Response({"error":"No placementfound"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error":"No placement found"}, status=status.HTTP_404_NOT_FOUND)
 
 #delete placement
 @api_view(['DELETE'])
@@ -125,9 +124,10 @@ def delete_placement(request):
     try:
         placement = InternshipPlacement.objects.get(user=request.user)
         placement.delete()
-        return Response({"message":"Placement deleted"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message":"Placement deleted"})
     except InternshipPlacement.DoesNotExist:
-        return Response({"error":"No placement found"},status=status.HTTP_404_NOT_FOUND)
+        return Response({"error":"No placement found"})
+
 
 
 #logout view
@@ -152,13 +152,13 @@ def profile(request):
 #search/filter internship
 @login_required
 def search_internships(request):
-    query = request.GET.get('9')
+    query = request.GET.get('q')
     results = []
     
     if query:
-        results = InternshipPlacement.objects.filter(Q(title__icontains=query)|
-                                                     Q(company_name__icontains=query)|
-                                                     Q(department__iicontains=query)
+        results = InternshipPlacement.objects.filter(Q(place_of_internship__icontains=query)|
+                                                     Q(department__icontains=query)|
+                                                     Q(supervisor_name__icontains=query)
         )
         return render(request, 'search.html',{'results': results,
                                               'query':query,

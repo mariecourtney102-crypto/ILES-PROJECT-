@@ -1,15 +1,18 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getRoleRoute } from "../utils/roleRoutes";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, requiredRole }) {
   const { user } = useAuth();
 
-  // If NOT logged in → go to login
   if (!user) {
-    return <Navigate to="/" />;
+    return <Navigate to="/login" replace />;
   }
 
-  // If logged in → show page
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to={getRoleRoute(user.role)} replace />;
+  }
+
   return children;
 }
 
