@@ -15,7 +15,7 @@ api.interceptors.request.use((config) => {
 
 
 export const loginUser = async (username, password) => {
-  const res = await api.post("/login/", { username, password });
+  const res = await api.post("/api/login/", { username, password });
   localStorage.setItem("token", res.data.token);
   localStorage.setItem("role", res.data.role);
   localStorage.setItem("name", res.data.name);
