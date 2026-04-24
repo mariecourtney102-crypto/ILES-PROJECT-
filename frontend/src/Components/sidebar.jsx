@@ -8,6 +8,9 @@ function Sidebar() {
   const handleLogout = () =>{
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("username");
+
+    logout();
   };
   const linkClass =
     "p-2 rounded-md transition";
