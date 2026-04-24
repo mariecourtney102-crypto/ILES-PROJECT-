@@ -182,4 +182,5 @@ def update_status(required,id):
         if status in['approved','rejected']:
             internship.status = status
             internship.save()
-            
+            messages.success(request,"status updated")
+            return redirect('dashboard')
