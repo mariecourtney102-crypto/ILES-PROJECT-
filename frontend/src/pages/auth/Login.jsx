@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { getRoleRoute } from "../../utils/roleRoutes";
 
 const handleLogout = () =>{
+  localStorage.removeItem("token");
   
 };
 
