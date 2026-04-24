@@ -178,3 +178,5 @@ def update_status(required,id):
         status = request.POST.get('status')
         if status in['approved','rejected']:
             internship.status = status
+            internship.save()
+            
