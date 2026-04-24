@@ -7,6 +7,8 @@ import { getRoleRoute } from "../../utils/roleRoutes";
 
 const handleLogout = () =>{
   localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  
   
 };
 
