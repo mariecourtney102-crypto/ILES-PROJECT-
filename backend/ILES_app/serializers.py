@@ -92,15 +92,48 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='users.username', read_only=True)
+    name = serializers.CharField(source='users.name', read_only=True)
+    student_user_id = serializers.IntegerField(source='users.id', read_only=True)
+    supervisor_id = serializers.IntegerField(source='assigned_supervisor.id', read_only=True)
+    supervisor_name = serializers.CharField(source='assigned_supervisor.users.name', read_only=True)
+
     class Meta:
         model = Student 
-        fields = ['users', 'course_title', 'university_name','year_of_study']
+        fields = [
+            'id',
+            'student_user_id',
+            'users',
+            'username',
+            'name',
+            'course_title',
+            'university_name',
+            'year_of_study',
+            'assigned_supervisor',
+            'supervisor_id',
+            'supervisor_name',
+        ]
 
 
 class SupervisorSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='users.username', read_only=True)
+    name = serializers.CharField(source='users.name', read_only=True)
+    supervisor_user_id = serializers.IntegerField(source='users.id', read_only=True)
+    assigned_students_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Supervisor
-        fields = ['users', 'place_of_work', 'department', 'staff_ID']
+        fields = [
+            'id',
+            'supervisor_user_id',
+            'users',
+            'username',
+            'name',
+            'place_of_work',
+            'department',
+            'staff_ID',
+            'assigned_students_count',
+        ]
 
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
@@ -113,10 +146,38 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class WeeklylogSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='user.name', read_only=True)
+    student_user_id = serializers.IntegerField(source='user.id', read_only=True)
+    supervisor_name = serializers.CharField(source='supervisor.users.name', read_only=True)
+
     class Meta:
         model = WeeklyLog
-        fields = '__all__'
-        read_only_fields = ['user', 'evaluation_data']
+        fields = [
+            'id',
+            'user',
+            'student_name',
+            'student_user_id',
+            'week_number',
+            'description',
+            'date_submitted',
+            'supervisor',
+            'supervisor_name',
+            'supervisor_comment',
+            'evaluation_score',
+            'reviewed_at',
+            'status',
+        ]
+        read_only_fields = [
+            'user',
+            'supervisor',
+            'supervisor_comment',
+            'evaluation_score',
+            'reviewed_at',
+            'status',
+            'student_name',
+            'student_user_id',
+            'supervisor_name',
+        ]
 
 class EvaluationSerializer(serializers.ModelSerializer):
     class Meta:
