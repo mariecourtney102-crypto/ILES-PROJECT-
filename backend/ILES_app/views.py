@@ -167,7 +167,5 @@ def search_internships(request):
 #internship details
 @login_required
 def internship_detail(request,id):
-    internship = get_object_or_404(internshipPlacement,
-    id=id)
-  return render(request,'internship_detail.html',{'internship': internship
-  })  
+    internship = get_object_or_404(internshipPlacement, id=id)
+return render(request,'internship_detail.html',{'internship': internship})  
