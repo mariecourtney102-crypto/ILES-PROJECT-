@@ -163,9 +163,11 @@ function Sidebar() {
         )}
 
       </nav>
-      <button>
+      <button
         onClick = {handleLogout}
         className = "mt-6 p-2 bg-red-500 rounded-md hover:bg-red-600"
+      >
+        Logout
       </button>
     </div>
   );
