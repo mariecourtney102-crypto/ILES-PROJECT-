@@ -10,7 +10,7 @@ const handleLogout = () =>{
   localStorage.removeItem("role");
   localStorage.removeItem("username");
 
- 
+   navigate("/login");
 };
 
 
