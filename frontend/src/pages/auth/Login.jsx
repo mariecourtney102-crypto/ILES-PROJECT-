@@ -5,7 +5,9 @@ import { loginUser } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
 import { getRoleRoute } from "../../utils/roleRoutes";
 
-
+const handleLogout = () =>{
+  
+};
 
 
 const Login = () => {
