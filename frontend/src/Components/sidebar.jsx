@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function Sidebar() {
-  const { user } = useAuth();
+  const { user ,logout } = useAuth();
   const linkClass =
     "p-2 rounded-md transition";
 
