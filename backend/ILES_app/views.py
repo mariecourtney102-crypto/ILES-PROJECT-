@@ -17,7 +17,7 @@ from .serializers import ( CustomUserSerializer,
  
 def choose_role(request):
     return JsonResponse({
-        "roles": ["student", "supervisor", "admin", "workplace_supervisor"]
+        "roles": ["student", "supervisor", "admin"]
     })
 
 @api_view(['GET'])
@@ -25,7 +25,7 @@ def test_api(request):
     return Response({"message": "API working"})
     
 @api_view(['POST'])
-@permission_classes ([AllowAny])
+@permission_classes([AllowAny])
 def signup(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
