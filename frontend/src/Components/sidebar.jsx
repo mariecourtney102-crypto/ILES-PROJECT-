@@ -164,7 +164,8 @@ function Sidebar() {
 
       </nav>
       <button>
-        
+        onClick = {handleLogout}
+        className = "mt-6 p-2 bg-red-500 rounded-md hover:bg-red-600"
       </button>
     </div>
   );
