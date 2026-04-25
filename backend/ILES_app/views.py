@@ -181,3 +181,9 @@ def update_status(required,id):
             internship.save()
             messages.success(request,"status updated")
             return redirect('dashboard')
+def admin_dashboard(request):
+    if not request.user.is_authenticated or request.user.role != 'admin':
+        return redirect('login')
+    
+    internships = InternshipPlacement.objects.all()
+    return render(request,'admin_dashboard.html',{'internships':internships})            
