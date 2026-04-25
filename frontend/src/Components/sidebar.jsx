@@ -126,17 +126,31 @@ function Sidebar() {
         )}
 
         {user.role === "admin" && (
-          <NavLink
-            to="/admin"
-            end
-            className={({ isActive }) =>
-              `${linkClass} ${
-                isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
-              }`
-            }
-          >
-            Dashboard
-          </NavLink>
+          <>
+            <NavLink
+              to="/admin"
+              end
+              className={({ isActive }) =>
+                `${linkClass} ${
+                  isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
+                }`
+              }
+            >
+              Dashboard
+            </NavLink>
+
+            <NavLink
+              to="/admin/users"
+              end
+              className={({ isActive }) =>
+                `${linkClass} ${
+                  isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
+                }`
+              }
+            >
+              Users
+            </NavLink>
+          </>
         )}
 
       </nav>

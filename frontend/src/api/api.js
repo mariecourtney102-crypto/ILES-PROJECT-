@@ -7,7 +7,9 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  if (token) {
+  const publicPaths = ["/login/", "/signup/"];
+
+  if (token && !publicPaths.includes(config.url)) {
     config.headers.Authorization = `Token ${token}`;
   }
   return config;
