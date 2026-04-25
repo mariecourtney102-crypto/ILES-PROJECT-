@@ -144,6 +144,18 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
     class Meta:
         model = InternshipPlacement
         fields = '__all__'
+        read_only_fields = ['user']
+
+    def validate(self, attrs):
+        start_date = attrs.get('start_date', getattr(self.instance, 'start_date', None))
+        end_date = attrs.get('end_date', getattr(self.instance, 'end_date', None))
+
+        if start_date and end_date and end_date < start_date:
+            raise serializers.ValidationError({
+                'end_date': 'End date must be on or after the start date.'
+            })
+
+        return attrs
 
 class WeeklylogSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='user.name', read_only=True)

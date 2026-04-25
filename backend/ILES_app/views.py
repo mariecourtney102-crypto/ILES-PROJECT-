@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, Student, Supervisor
@@ -81,16 +82,30 @@ def dashboard(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_placement(request):
-    placement = InternshipPlacement.objects.create(
-        user=request.user,
-        place_of_internship=request.data.get('place_of_internship'),
-        department=request.data.get('department'),
-        supervisor_name=request.data.get('supervisor_name'),
-        start_date=request.data.get('start_date'),
-        end_date=request.data.get('end_date')
-       )
-    
-    return Response({"message":"Internship placement created successfully"}, status=status.HTTP_201_CREATED)
+    permission_error = require_role(request.user, ['student'])
+    if permission_error:
+        return permission_error
+
+    serializer = InternshipPlacementSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    with transaction.atomic():
+        placement = InternshipPlacement.objects.filter(user=request.user).order_by('-id').first()
+        if placement is not None:
+            serializer = InternshipPlacementSerializer(placement, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            placement = serializer.save(user=request.user)
+        else:
+            placement = serializer.save(user=request.user)
+
+    return Response(
+        {
+            "message": "Internship placement saved successfully",
+            "placement": InternshipPlacementSerializer(placement).data,
+        },
+        status=status.HTTP_201_CREATED
+    )
 
 
 @api_view(['GET'])
@@ -160,15 +175,14 @@ def assign_supervisor(request):
 @api_view(['GET'])
 @permission_classes ([IsAuthenticated])
 def get_placement(request):
+    permission_error = require_role(request.user, ['student'])
+    if permission_error:
+        return permission_error
+
     try:
-        placement = InternshipPlacement.objects.get(user=request.user)
-        data = {"place_of_internship":placement.place_of_internship,
-                "department": placement.department,
-                "supervisor_name":placement.supervisor_name,
-                "start_date":placement.start_date,
-                "end_date":placement.end_date
-                }
-        return Response(data,  status=status.HTTP_200_OK)
+        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
+        serializer = InternshipPlacementSerializer(placement)
+        return Response(serializer.data,  status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"}, status=status.HTTP_404_NOT_FOUND)
     
@@ -176,30 +190,42 @@ def get_placement(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_placement(request):
+    permission_error = require_role(request.user, ['student'])
+    if permission_error:
+        return permission_error
+
     try:
-        placement = InternshipPlacement.objects.get(user=request.user)
-        placement.place_of_internship=request.data.get('place_of_internship')
-        placement.department=request.data.get('department')
-        placement.supervisor_name=request.data.get('supervisor_name')
-        placement.start_date=request.data.get('start_date')
-        placement.end_date=request.data.get('end_date')
-
-        placement.save()
-
-        return Response({"message":"Placement updated successfully"}, status=status.HTTP_200_OK)
+        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = InternshipPlacementSerializer(placement, data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    placement = serializer.save(user=request.user)
+    return Response(
+        {
+            "message":"Placement updated successfully",
+            "placement": InternshipPlacementSerializer(placement).data,
+        },
+        status=status.HTTP_200_OK
+    )
 
 #delete placement
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_placement(request):
+    permission_error = require_role(request.user, ['student'])
+    if permission_error:
+        return permission_error
+
     try:
-        placement = InternshipPlacement.objects.get(user=request.user)
+        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
         placement.delete()
-        return Response({"message":"Placement deleted"})
+        return Response({"message":"Placement deleted"}, status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
-        return Response({"error":"No placement found"})
+        return Response({"error":"No placement found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST'])

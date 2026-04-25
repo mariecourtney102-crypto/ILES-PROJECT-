@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
-from .models import Admin, CustomUser, Student, Supervisor, WeeklyLog
+from .models import Admin, CustomUser, InternshipPlacement, Student, Supervisor, WeeklyLog
 
 
 class SupervisorAssignmentFlowTests(APITestCase):
@@ -121,3 +121,112 @@ class SupervisorAssignmentFlowTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 403)
+
+
+class InternshipPlacementTests(APITestCase):
+    def setUp(self):
+        self.student_user = CustomUser.objects.create_user(
+            username='placementstudent',
+            password='pass12345',
+            role='student',
+            name='Placement Student',
+            ID_number='STD100'
+        )
+        Student.objects.create(
+            users=self.student_user,
+            course_title='Computer Science',
+            university_name='Makerere',
+            year_of_study=3
+        )
+        self.student_token = Token.objects.create(user=self.student_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
+
+    def test_student_can_create_and_fetch_placement(self):
+        response = self.client.post(
+            reverse('create_placement'),
+            {
+                'place_of_internship': 'Open Labs',
+                'department': 'Engineering',
+                'supervisor_name': 'Ms. Amina',
+                'start_date': '2026-05-01',
+                'end_date': '2026-07-31',
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(InternshipPlacement.objects.filter(user=self.student_user).count(), 1)
+
+        fetch_response = self.client.get(reverse('get_placement'))
+        self.assertEqual(fetch_response.status_code, 200)
+        self.assertEqual(fetch_response.data['place_of_internship'], 'Open Labs')
+
+    def test_student_can_update_existing_placement(self):
+        InternshipPlacement.objects.create(
+            user=self.student_user,
+            place_of_internship='Open Labs',
+            department='Engineering',
+            supervisor_name='Ms. Amina',
+            start_date='2026-05-01',
+            end_date='2026-07-31',
+        )
+
+        response = self.client.put(
+            reverse('update_placement'),
+            {
+                'place_of_internship': 'Tech Hub',
+                'department': 'Research',
+                'supervisor_name': 'Mr. Okello',
+                'start_date': '2026-05-15',
+                'end_date': '2026-08-15',
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        placement = InternshipPlacement.objects.get(user=self.student_user)
+        self.assertEqual(placement.place_of_internship, 'Tech Hub')
+        self.assertEqual(placement.department, 'Research')
+
+    def test_create_placement_updates_existing_record_instead_of_duplicating(self):
+        InternshipPlacement.objects.create(
+            user=self.student_user,
+            place_of_internship='Open Labs',
+            department='Engineering',
+            supervisor_name='Ms. Amina',
+            start_date='2026-05-01',
+            end_date='2026-07-31',
+        )
+
+        response = self.client.post(
+            reverse('create_placement'),
+            {
+                'place_of_internship': 'Tech Hub',
+                'department': 'Research',
+                'supervisor_name': 'Mr. Okello',
+                'start_date': '2026-05-15',
+                'end_date': '2026-08-15',
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(InternshipPlacement.objects.filter(user=self.student_user).count(), 1)
+        placement = InternshipPlacement.objects.get(user=self.student_user)
+        self.assertEqual(placement.place_of_internship, 'Tech Hub')
+
+    def test_placement_rejects_end_date_before_start_date(self):
+        response = self.client.post(
+            reverse('create_placement'),
+            {
+                'place_of_internship': 'Open Labs',
+                'department': 'Engineering',
+                'supervisor_name': 'Ms. Amina',
+                'start_date': '2026-08-01',
+                'end_date': '2026-07-31',
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('end_date', response.data)
