@@ -208,3 +208,11 @@ def create_evaluation(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#A USER VIEWING AN EVALUATION
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_evaluation(request):
+    evaluations = Evaluation.objects.filter(user=request.user)
+    serializer = EvaluationSerializer(evaluations, many = True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
