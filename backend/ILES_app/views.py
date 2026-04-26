@@ -184,3 +184,16 @@ def get_logs(request):
     logs = WeeklyLog.objects.filter(user=request.user)
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+#SUPERVISOR REVIEWS LOG
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def review_log(request, log_id):
+    try:
+        log = WeeklyLog.objects.get(id=log_id)
+        log.supervisor_comment = request.data.get('supervisor_comment')
+        log.status = 'reviewed'
+        log.save()
+        return Response({"message": "The log has been successfully reviewed"}, status=status.HTTP_200_OK)
+    except WeeklyLog.DoesNotExist:
+        return Response({"message": "Log not found"}, status=status.HTTP_404_NOT_FOUND)
