@@ -152,13 +152,13 @@ def profile(request):
 #search/filter internship
 @login_required
 def search_internships(request):
-    query = request.GET.get('9')
+    query = request.GET.get('q')
     results = []
     
     if query:
         results = InternshipPlacement.objects.filter(Q(title__icontains=query)|
                                                      Q(company_name__icontains=query)|
-                                                     Q(department__iicontains=query)
+                                                     Q(department__icontains=query)
         )
         return render(request, 'search.html',{'results': results,
                                               'query':query,
