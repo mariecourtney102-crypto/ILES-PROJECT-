@@ -163,3 +163,16 @@ def search_internships(request):
         return render(request, 'search.html',{'results': results,
                                               'query':query,
                                               })
+    
+#WEEKLY LOG VIEWS
+#STUDENT SUBMITS A LOG
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_log(request):
+    data = request.data.copy()
+    data['user'] = request.user.id
+    serializer = WeeklylogSerializer(data = data)
+    if serializer.is_valid():
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
