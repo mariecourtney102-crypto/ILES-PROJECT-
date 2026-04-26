@@ -197,3 +197,14 @@ def review_log(request, log_id):
         return Response({"message": "The log has been successfully reviewed"}, status=status.HTTP_200_OK)
     except WeeklyLog.DoesNotExist:
         return Response({"message": "Log not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+#EVALUATING VIEWS
+#SUPERVISOR SUBMITTING AN EVALUATION
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_evaluation(request):
+    serializer = EvaluationSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
