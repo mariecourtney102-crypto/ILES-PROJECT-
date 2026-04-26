@@ -125,7 +125,7 @@ def delete_placement(request):
     try:
         placement = InternshipPlacement.objects.get(user=request.user)
         placement.delete()
-        return Response({"message":"Placement deleted"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message":"Placement deleted"}, status=status.HTTP_204_NO_CONTENT)
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"},status=status.HTTP_404_NOT_FOUND)
 
