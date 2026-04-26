@@ -10,10 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 
-from .models import InternshipPlacement
-
-
-from .models import InternshipPlacement, WeeklyLog, Evaluation
+from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
@@ -216,3 +213,19 @@ def get_evaluation(request):
     evaluations = Evaluation.objects.filter(user=request.user)
     serializer = EvaluationSerializer(evaluations, many = True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+#GETTING INFORMATION ON THE EVALUATION CRITERIA
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_criteria(request):
+    criteria = EvaluationCriteria.objects.all()
+    data = [
+        {
+            "id": c.id,
+            "criteria_name": c.criteria_name,
+            "criteria": c.criteria,
+            "criteria_weight": c.criteria_weight
+        }
+        for c in criteria
+    ]
+    return Response(data, status=status.HTTP_200_OK)
