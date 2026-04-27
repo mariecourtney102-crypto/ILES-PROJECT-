@@ -14,9 +14,9 @@ from .serializers import ( CustomUserSerializer,
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
 )
- 
+@api_view(['GET']) 
 def choose_role(request):
-    return JsonResponse({
+    return Response({
         "roles": ["student", "supervisor", "admin"]
     })
 
