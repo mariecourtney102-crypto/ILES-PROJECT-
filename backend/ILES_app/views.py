@@ -6,10 +6,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Q
-from .models import InternshipPlacement, WeeklyLog, Evaluation
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
@@ -124,11 +124,10 @@ def delete_placement(request):
     try:
         placement = InternshipPlacement.objects.get(user=request.user)
         placement.delete()
-        return Response({"message":"Placement deleted"})
+
+        return Response({"message":"Placement deleted"}, status=status.HTTP_204_NO_CONTENT)
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"})
-
-
 
 #logout view
 def logout_view(request):
@@ -164,16 +163,85 @@ def search_internships(request):
                                               'query':query,
                                               })
     
+#WEEKLY LOG VIEWS
+#STUDENT SUBMITS A LOG
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_log(request):
+    data = request.data.copy()
+    data['user'] = request.user.id
+    serializer = WeeklylogSerializer(data = data)
+    if serializer.is_valid():
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#STUDENT VIEWS THEIR LOG
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_logs(request):
+    logs = WeeklyLog.objects.filter(user=request.user)
+    serializer = WeeklylogSerializer(logs, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+#SUPERVISOR REVIEWS LOG
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def review_log(request, log_id):
+    try:
+        log = WeeklyLog.objects.get(id=log_id)
+        log.supervisor_comment = request.data.get('supervisor_comment')
+        log.status = 'reviewed'
+        log.save()
+        return Response({"message": "The log has been successfully reviewed"}, status=status.HTTP_200_OK)
+    except WeeklyLog.DoesNotExist:
+        return Response({"message": "Log not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+#EVALUATING VIEWS
+#SUPERVISOR SUBMITTING AN EVALUATION
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_evaluation(request):
+    serializer = EvaluationSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#A USER VIEWING AN EVALUATION
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_evaluation(request):
+    evaluations = Evaluation.objects.filter(user=request.user)
+    serializer = EvaluationSerializer(evaluations, many = True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+#GETTING INFORMATION ON THE EVALUATION CRITERIA
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_criteria(request):
+    criteria = EvaluationCriteria.objects.all()
+    data = [
+        {
+            "id": c.id,
+            "criteria_name": c.criteria_name,
+            "criteria": c.criteria,
+            "criteria_weight": c.criteria_weight
+        }
+        for c in criteria
+    ]
+    return Response(data, status=status.HTTP_200_OK)
+
 #internship details
 @login_required
 def internship_detail(request,id):
-    internship = get_object_or_404(internshipPlacement,id=id)
+    internship = get_object_or_404(InternshipPlacement,id=id)
     return render(request,'internship_detail.html',{'internship': internship})  
 
 #Supervisor/Admin views
 @login_required
-def update_status(required,id):
-    internship = get_object_or_404(internshipPlacement,id=id)
+def update_status(request,id):
+    internship = get_object_or_404(InternshipPlacement,id=id)
     if request.method == 'POST':
         status = request.POST.get('status')
         if status in ['approved','rejected']:
@@ -187,3 +255,4 @@ def admin_dashboard(request):
     
     internships = InternshipPlacement.objects.all()
     return render(request,'admin_dashboard.html',{'internships':internships})            
+
