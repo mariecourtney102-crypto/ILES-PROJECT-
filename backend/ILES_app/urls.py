@@ -10,5 +10,8 @@ urlpatterns = [
     #Profiles and Roles
     path('profile/', views.profile, name='profile'),
     path('choose-role/', views.choose_role, name='choose-role'),
-    path('dashboard/', views.dashboard, name='dashboard')
+    path('dashboard/', views.dashboard, name='dashboard'),
+
+    #Criteria
+    path('criteria/', views.get_criteria, name='get-criteria')
 ]
