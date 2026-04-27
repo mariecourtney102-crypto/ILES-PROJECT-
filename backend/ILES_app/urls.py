@@ -13,5 +13,11 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
 
     #Criteria
-    path('criteria/', views.get_criteria, name='get-criteria')
+    path('criteria/', views.get_criteria, name='get-criteria'),
+
+    #Internship Placement
+    path('placement/create/', views.create_placement, name='create-placement'),
+    path('placement/', views.get_placement, name='get-placement'),
+    path('placement/update/', views.update_placement, name='update-placement'),
+    path('placement/delete/', views.delete_placement, name='delete-placement'),
 ]
