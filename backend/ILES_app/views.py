@@ -6,15 +6,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Q
-<<<<<<< HEAD
-
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
-=======
-from .models import InternshipPlacement, WeeklyLog, Evaluation
->>>>>>> d01939a503e9ffa472c69c26cab1993fadaf3ddb
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
@@ -129,15 +124,10 @@ def delete_placement(request):
     try:
         placement = InternshipPlacement.objects.get(user=request.user)
         placement.delete()
-<<<<<<< HEAD
+
         return Response({"message":"Placement deleted"}, status=status.HTTP_204_NO_CONTENT)
-=======
-        return Response({"message":"Placement deleted"})
->>>>>>> d01939a503e9ffa472c69c26cab1993fadaf3ddb
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"})
-
-
 
 #logout view
 def logout_view(request):
@@ -165,21 +155,14 @@ def search_internships(request):
     results = []
     
     if query:
-<<<<<<< HEAD
-        results = InternshipPlacement.objects.filter(Q(title__icontains=query)|
-                                                     Q(company_name__icontains=query)|
-                                                     Q(department__icontains=query)
-=======
         results = InternshipPlacement.objects.filter(Q(place_of_internship__icontains=query)|
                                                      Q(department__icontains=query)|
                                                      Q(supervisor_name__icontains=query)
->>>>>>> d01939a503e9ffa472c69c26cab1993fadaf3ddb
         )
         return render(request, 'search.html',{'results': results,
                                               'query':query,
                                               })
     
-<<<<<<< HEAD
 #WEEKLY LOG VIEWS
 #STUDENT SUBMITS A LOG
 @api_view(['POST'])
@@ -248,17 +231,17 @@ def get_criteria(request):
         for c in criteria
     ]
     return Response(data, status=status.HTTP_200_OK)
-=======
+
 #internship details
 @login_required
 def internship_detail(request,id):
-    internship = get_object_or_404(internshipPlacement,id=id)
+    internship = get_object_or_404(InternshipPlacement,id=id)
     return render(request,'internship_detail.html',{'internship': internship})  
 
 #Supervisor/Admin views
 @login_required
-def update_status(required,id):
-    internship = get_object_or_404(internshipPlacement,id=id)
+def update_status(request,id):
+    internship = get_object_or_404(InternshipPlacement,id=id)
     if request.method == 'POST':
         status = request.POST.get('status')
         if status in ['approved','rejected']:
@@ -272,4 +255,4 @@ def admin_dashboard(request):
     
     internships = InternshipPlacement.objects.all()
     return render(request,'admin_dashboard.html',{'internships':internships})            
->>>>>>> d01939a503e9ffa472c69c26cab1993fadaf3ddb
+
