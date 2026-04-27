@@ -24,5 +24,9 @@ urlpatterns = [
     #Weekly Logs
     path('logs/create/', views.create_log, name='create-log'),
     path('logs/', views.get_logs, name='get-logs'),
-    path('logs/<int:log_id>/review/', views.review_log, name='review-log')
+    path('logs/<int:log_id>/review/', views.review_log, name='review-log'),
+
+    #Evaluations
+    path('evaluations/create/', views.create_evaluation, name='create-evaluation'),
+    path('evaluations/', views.get_evaluation, name='get-evaluation')
 ]
