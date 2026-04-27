@@ -1,7 +1,33 @@
 import axios from "axios";
+axios.get("api/admin/dashboard/")
 
-const API = axios.create({
-  baseURL: "http://127.0.0.1:8000", // Django backend
+const api = axios.create({
+  baseURL: "http://127.0.0.1:8000/api",
 });
 
-export default API;
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Token ${token}`;
+  }
+  return config;
+});
+
+
+export const loginUser = async (username, password) => {
+  const res = await api.post("/login/", { username, password });
+  localStorage.setItem("token", res.data.token);
+  localStorage.setItem("role", res.data.role);
+  localStorage.setItem("name", res.data.name);
+  return res.data;
+};
+
+
+export const logoutUser = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("name");
+};
+
+export default api;
