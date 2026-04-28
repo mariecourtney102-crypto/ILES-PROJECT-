@@ -1,6 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 function Sidebar() {
   const { user ,logout } = useAuth();
@@ -151,7 +150,7 @@ function Sidebar() {
         
         {user.role === "admin" && (
           <>
-            <NavLink to="/admin" className={({ isActive }) =>
+            <NavLink to="/admin/dashboard" end className={({ isActive }) =>
               `${linkClass} ${
                 isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
               }`
@@ -159,7 +158,7 @@ function Sidebar() {
           >
               Dashboard
             </NavLink>
-            <NavLink to="/admin/users" className={({ isActive }) =>
+            <NavLink to="/admin/dashboard/users" className={({ isActive }) =>
               `${linkClass} ${
                 isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
               }`
@@ -167,7 +166,7 @@ function Sidebar() {
           >
               Users
             </NavLink>
-            <NavLink to="/admin/opportunities" className={({ isActive }) =>
+            <NavLink to="/admin/dashboard/opportunities" className={({ isActive }) =>
                `${linkClass} ${
                 isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
                 }`
@@ -175,7 +174,7 @@ function Sidebar() {
               >
               Opportunities
             </NavLink>
-            <NavLink to="/admin/reports" className={({ isActive }) =>
+            <NavLink to="/admin/dashboard/reports" className={({ isActive }) =>
               `${linkClass} ${
                 isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
               }`
@@ -183,7 +182,7 @@ function Sidebar() {
           >
               Reports
             </NavLink>
-            <NavLink to="/admin/feedback" className={({ isActive }) =>
+            <NavLink to="/admin/dashboard/feedback" className={({ isActive }) =>
               `${linkClass} ${
                 isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
               }`
@@ -191,7 +190,7 @@ function Sidebar() {
           >
               Feedback
             </NavLink>
-            <NavLink to="/admin/settings" className={({ isActive }) =>
+            <NavLink to="/admin/dashboard/settings" className={({ isActive }) =>
               `${linkClass} ${
                 isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
               }`

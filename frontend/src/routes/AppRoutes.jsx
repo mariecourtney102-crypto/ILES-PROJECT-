@@ -11,7 +11,6 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 import SubmitLog from "../pages/student/SubmitLog";
 import WeeklyLogs from "../pages/student/WeeklyLogs";
 import InternshipDetails from "../pages/student/InternshipDetails";
-import Dashboard from "../pages/admin/AdminDashboard";
 import Opportunities from "../pages/admin/Opportunities";
 import Users from "../pages/admin/Users";
 import Reports from "../pages/admin/Reports";
@@ -44,6 +43,8 @@ const AppRoutes = () => {
           <Route path="settings" element={<Settings />} />
           <Route path="feedback" element={<Feedback />} />
         </Route>
+        <Route path="/student/feedback" element={<ProtectedRoute requiredRole="student"><UserFeedback /></ProtectedRoute>} />
+        <Route path="/student/internship-details" element={<ProtectedRoute requiredRole="student"><InternshipDetails /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
