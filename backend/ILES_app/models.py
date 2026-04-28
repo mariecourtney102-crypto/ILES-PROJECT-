@@ -116,3 +116,4 @@ class Evaluation(models.Model):
         return f"{self.placement.user.username} - {self.criteria}: {self.score}"
 #comments on logs
 class Logcomment(models.Model):
+    log = models.foreignKey(LogEntry, on_)delete=models.CASCADE, related_name='Comment'
