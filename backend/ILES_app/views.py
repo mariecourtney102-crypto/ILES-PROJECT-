@@ -264,18 +264,18 @@ def students_without_supervisors(request):
     internships = InternshipPlacement.objects.filter(supervisor__isnull=True)
 
     return render(request, 'admin/students_no_supervisor.html',{
-        'internships':internships}
-    
+        'internships':internships
+    })         
 
 
- #Supervisors without students   
- @login_required
- def supervisors_without_students(requests):
-      supervisors = User.objects.filter(is_staff=True).exclude
-      (supervised_internships__isnull=False
-                                                               )
+#Supervisors without students   
+@login_required
+def supervisors_without_students(request):
+    supervisors = User.objects.filter(is_staff=True).exclude(
+        supervised_internships__isnull=False
+    )
     return render(request, 'admin/supervisors_no_students.html',{
-        'supervisors':students_without_supervisors
+        'supervisors':supervisors
         })
 
 #students without placements
@@ -284,13 +284,13 @@ def student_availability(request):
     students = User.objects.filter(is_staff=False)
       
 
-     data =  []
-     for student in students:
-          has_internship = InternshipPlacement.objects.filter(user=student).exists()
-          data.append({
+    data =  []
+    for student in students:
+        has_internship = InternshipPlacement.objects.filter(user=student).exists()
+        data.append({
               'student':student,
               'has_internship':has_internship
-          })
-          return render(request, 'admin/student_availability.html',{
+        })
+        return render(request, 'admin/student_availability.html',{
               'data':data
               })
