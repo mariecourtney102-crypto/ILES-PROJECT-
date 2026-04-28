@@ -28,5 +28,8 @@ urlpatterns = [
 
     #Evaluations
     path('evaluations/create/', views.create_evaluation, name='create-evaluation'),
-    path('evaluations/', views.get_evaluation, name='get-evaluation')
+    path('evaluations/', views.get_evaluation, name='get-evaluation'),
+
+    #Admin
+    path('admin/dashboard/', views.admin_dashboard, name='admin-dashboard'),
 ]

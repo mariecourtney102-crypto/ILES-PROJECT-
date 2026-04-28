@@ -232,6 +232,35 @@ def get_criteria(request):
     ]
     return Response(data, status=status.HTTP_200_OK)
 
+#ADMIN DASHBOARD API
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_dashboard(request):
+    # Check if user is admin
+    if request.user.role != 'admin':
+        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Get stats
+    total_students = CustomUser.objects.filter(role='student').count()
+    total_supervisors = CustomUser.objects.filter(role='supervisor').count()
+    total_placements = InternshipPlacement.objects.count()
+    pending_placements = InternshipPlacement.objects.filter(status='pending').count()
+    approved_placements = InternshipPlacement.objects.filter(status='approved').count()
+    rejected_placements = InternshipPlacement.objects.filter(status='rejected').count()
+    total_logs = WeeklyLog.objects.count()
+    pending_logs = WeeklyLog.objects.filter(status='pending').count()
+    
+    return Response({
+        "total_students": total_students,
+        "total_supervisors": total_supervisors,
+        "total_placements": total_placements,
+        "pending_placements": pending_placements,
+        "approved_placements": approved_placements,
+        "rejected_placements": rejected_placements,
+        "total_logs": total_logs,
+        "pending_logs": pending_logs
+    }, status=status.HTTP_200_OK)
+
 #internship details
 @login_required
 def internship_detail(request,id):
