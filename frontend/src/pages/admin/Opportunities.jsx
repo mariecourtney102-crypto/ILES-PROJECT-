@@ -13,7 +13,7 @@ const Opportunities = () => {
   return (
     <div>
       <h1 className="text-2xl font-bold text-teal-600 mb-4">
-        Reports
+        Opportunities
       </h1>
 
       <div className="bg-white p-4 rounded-lg shadow">
