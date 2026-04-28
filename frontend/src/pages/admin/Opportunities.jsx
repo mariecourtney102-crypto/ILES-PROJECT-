@@ -17,18 +17,18 @@ const Opportunities = () => {
       </h1>
 
       <div className="bg-white p-4 rounded-lg shadow">
-        {reports.length > 0 ? (
-          reports.map(opportunities => (
+        {opportunities.length > 0 ? (
+          opportunities.map(opportunities => (
             <div key={opportunities.id} className="border-b py-3">
               <p className="font-semibold">{opportunities.title}</p>
               <p className="text-gray-600">{opportunities.summary}</p>
               <p className="text-sm text-gray-400">
-                Date: {report.created_at}
+                Date: {opportunities.created_at}
               </p>
             </div>
           ))
         ) : (
-          <p>No reports available.</p>
+          <p>No opportunities available.</p>
         )}
       </div>
     </div>
