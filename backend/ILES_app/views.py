@@ -265,3 +265,8 @@ def students_without_supervisors(request):
 
     turn render(request, 'admin/students_no_supervisor.html',{
         'internships':internships}
+
+
+ #Supervisors without students   
+ @login_ login_required
+    
