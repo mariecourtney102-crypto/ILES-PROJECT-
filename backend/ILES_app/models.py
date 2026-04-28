@@ -119,3 +119,4 @@ class Logcomment(models.Model):
     log = models.foreignKey(LogEntry, on_)delete=models.CASCADE, related_name='Comment'
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
