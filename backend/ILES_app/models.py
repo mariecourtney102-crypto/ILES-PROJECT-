@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.admin.models import LogEntry
 from django.db import models
 
 
