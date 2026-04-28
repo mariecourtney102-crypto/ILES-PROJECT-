@@ -254,5 +254,10 @@ def admin_dashboard(request):
         return redirect('login')
     
     internships = InternshipPlacement.objects.all()
-    return render(request,'admin_dashboard.html',{'internships':internships})            
+    return render(request,'admin_dashboard.html',{'internships':internships})
+
+    #student without supervisors
+    from django.contrib.auth.models import User
+
+             
 
