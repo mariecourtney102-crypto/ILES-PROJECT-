@@ -13,7 +13,9 @@ const AdminDashboard = () => {
   }, []);
 
   return (
-    <></>
+    <DashboardLayout>
+      
+    </DashboardLayout>
 
 
   );
