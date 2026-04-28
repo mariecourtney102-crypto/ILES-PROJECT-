@@ -275,3 +275,27 @@ def update_status(request,id):
             internship.save()
             messages.success(request,"status updated")
             return redirect('dashboard')
+
+ @api_view(['GET'])
+def get_opportunities(request):
+    return Response([])
+
+@api_view(['GET'])
+def get_students(request):
+    return Response([])
+
+@api_view(['GET'])
+def get_supervisors(request):
+    return Response([])
+
+@api_view(['GET'])
+def get_reports(request):
+    return Response({
+        "students": 0,
+        "supervisors": 0,
+        "opportunities": 0
+    })
+
+@api_view(['POST'])
+def change_password(request):
+    return Response({"message": "Password changed"})           
