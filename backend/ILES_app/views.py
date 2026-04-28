@@ -279,4 +279,6 @@ def students_without_supervisors(request):
 
 #students without placements
 @login_required
+def student_availability(request):
+    
  
