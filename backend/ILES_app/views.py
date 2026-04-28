@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
+from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
