@@ -66,7 +66,8 @@ class InternshipPlacement(models.Model):
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
-        ('reviewed', 'Reviewed')
+        ('reviewed', 'Reviewed'),
+        ('approved','approved'),
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
