@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -245,9 +244,6 @@ def admin_dashboard(request):
     total_students = CustomUser.objects.filter(role='student').count()
     total_supervisors = CustomUser.objects.filter(role='supervisor').count()
     total_placements = InternshipPlacement.objects.count()
-    pending_placements = InternshipPlacement.objects.filter(status='pending').count()
-    approved_placements = InternshipPlacement.objects.filter(status='approved').count()
-    rejected_placements = InternshipPlacement.objects.filter(status='rejected').count()
     total_logs = WeeklyLog.objects.count()
     pending_logs = WeeklyLog.objects.filter(status='pending').count()
     
@@ -255,9 +251,9 @@ def admin_dashboard(request):
         "total_students": total_students,
         "total_supervisors": total_supervisors,
         "total_placements": total_placements,
-        "pending_placements": pending_placements,
-        "approved_placements": approved_placements,
-        "rejected_placements": rejected_placements,
+        "pending_placements": 0,
+        "approved_placements": 0,
+        "rejected_placements": 0,
         "total_logs": total_logs,
         "pending_logs": pending_logs
     }, status=status.HTTP_200_OK)
