@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const Reports = () => {
-  const [reports, setReports] = useState([]);
+const Opportunities = () => {
+  const [opportunities, setOpportunities] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/reports/")
-      .then(res => setReports(res.data))
+    axios.get("http://localhost:8000/api/opportunities/")
+      .then(res => setOpportunities(res.data))
       .catch(err => console.error(err));
   }, []);
 
@@ -18,10 +18,10 @@ const Reports = () => {
 
       <div className="bg-white p-4 rounded-lg shadow">
         {reports.length > 0 ? (
-          reports.map(report => (
-            <div key={report.id} className="border-b py-3">
-              <p className="font-semibold">{report.title}</p>
-              <p className="text-gray-600">{report.summary}</p>
+          reports.map(opportunities => (
+            <div key={opportunities.id} className="border-b py-3">
+              <p className="font-semibold">{opportunities.title}</p>
+              <p className="text-gray-600">{opportunities.summary}</p>
               <p className="text-sm text-gray-400">
                 Date: {report.created_at}
               </p>
@@ -35,4 +35,4 @@ const Reports = () => {
   );
 };
 
-export default Reports;
+export default Opportunities;
