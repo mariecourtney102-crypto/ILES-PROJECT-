@@ -270,5 +270,10 @@ def students_without_supervisors(request):
  #Supervisors without students   
  @login_ login_required
  def supervisors_without_students(requests):
-      supervisors = User.objects.filter(is_staff=True).exclude(supervised_internships__isnull=False
+      supervisors = User.objects.filter(is_staff=True).exclude
+      (supervised_internships__isnull=False
                                                                )
+    return render(request, 'admin/supervisors_no_students.html',{
+        'supervisors':students_without_supervisors
+        })
+ 
