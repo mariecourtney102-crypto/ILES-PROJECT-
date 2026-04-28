@@ -269,4 +269,5 @@ def students_without_supervisors(request):
 
  #Supervisors without students   
  @login_ login_required
-    
+ def supervisors_without_students(requests):
+ 
