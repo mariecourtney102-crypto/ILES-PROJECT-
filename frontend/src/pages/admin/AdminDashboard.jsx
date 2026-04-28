@@ -7,8 +7,9 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     axios.get('http://localhost:8000/api/admin/dashboard/')
-      .then(res => res.json())
-      .then(data => console.log('Data received:', data))
+      .then(res => {
+        setStats(res.data);
+      })
       .catch(err => console.error('Error:', err));
   }, []);
 
