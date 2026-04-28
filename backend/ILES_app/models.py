@@ -116,7 +116,7 @@ class Evaluation(models.Model):
         return f"{self.placement.user.username} - {self.criteria}: {self.score}"
 #comments on logs
 class Logcomment(models.Model):
-    log = models.foreignKey(LogEntry, on_)delete=models.CASCADE, related_name='Comment'
+    log = models.ForeignKey(LogEntry, on_delete=models.CASCADE, related_name='Comment'
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
