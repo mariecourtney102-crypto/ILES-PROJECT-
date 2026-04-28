@@ -281,4 +281,6 @@ def students_without_supervisors(request):
 @login_required
 def student_availability(request):
     students = User.objects.filter(is_staff=False)
- 
+      
+
+     data =  []
