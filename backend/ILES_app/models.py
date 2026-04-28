@@ -117,3 +117,4 @@ class Evaluation(models.Model):
 #comments on logs
 class Logcomment(models.Model):
     log = models.foreignKey(LogEntry, on_)delete=models.CASCADE, related_name='Comment'
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
