@@ -8,14 +8,19 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("Token from localStorage:", token);
+    console.log("User from localStorage:", localStorage.getItem("user"));
+    
     api.get('/admin/dashboard/')
       .then(res => {
         setStats(res.data);
         setLoading(false);
       })
       .catch(err => {
-        console.error('Error:', err);
-        setError(err.message);
+        console.error('Full error:', err);
+        console.error('Response:', err.response);
+        setError(err.response?.data?.message || err.message);
         setLoading(false);
       });
   }, []);
