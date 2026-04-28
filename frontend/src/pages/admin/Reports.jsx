@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../../api/api";
 
 function Reports() {
   const [stats, setStats] = useState(null);
