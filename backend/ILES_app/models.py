@@ -114,3 +114,5 @@ class Evaluation(models.Model):
 
     def __str__(self):
         return f"{self.placement.user.username} - {self.criteria}: {self.score}"
+#comments on logs
+class Logcomment(models.Model):
