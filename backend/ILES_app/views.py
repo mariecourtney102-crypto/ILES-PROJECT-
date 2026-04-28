@@ -276,4 +276,7 @@ def students_without_supervisors(request):
     return render(request, 'admin/supervisors_no_students.html',{
         'supervisors':students_without_supervisors
         })
+
+#students without placements
+@login_required
  
