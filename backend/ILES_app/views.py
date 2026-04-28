@@ -286,3 +286,7 @@ def student_availability(request):
      data =  []
      for student in students:
           has_internship = InternshipPlacement.objects.filter(user=student).exists()
+          data.append({
+              'student':student,
+              'has_internship':has_internship
+          })
