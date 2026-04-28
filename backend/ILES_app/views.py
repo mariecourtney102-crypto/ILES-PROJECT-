@@ -261,3 +261,4 @@ def admin_dashboard(request):
 
 @logi_required             
 def students_without_supervisors(request):
+    internships = InternshipPlacement.objects.filter(supervisor__isnull=True)
