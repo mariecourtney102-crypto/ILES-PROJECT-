@@ -259,7 +259,7 @@ def admin_dashboard(request):
     #student without supervisors
     from django.contrib.auth.models import User
 
-@logi_required             
+@login_required             
 def students_without_supervisors(request):
     internships = InternshipPlacement.objects.filter(supervisor__isnull=True)
 
