@@ -69,6 +69,7 @@ class WeeklyLog(models.Model):
         ('reviewed', 'Reviewed'),
         ('approved','approved'),
         ('Rejected','Rejected'),
+        ('completed','completed'),
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
