@@ -290,3 +290,6 @@ def student_availability(request):
               'student':student,
               'has_internship':has_internship
           })
+          return render(request, 'admin/student_availability.html',{
+              'data':data
+              })
