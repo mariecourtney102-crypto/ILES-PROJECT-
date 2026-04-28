@@ -263,4 +263,5 @@ def admin_dashboard(request):
 def students_without_supervisors(request):
     internships = InternshipPlacement.objects.filter(supervisor__isnull=True)
 
-    turn render(request, 'admin/students_no_supervisor.html',
+    turn render(request, 'admin/students_no_supervisor.html',{
+        'internships':internships}
