@@ -259,5 +259,5 @@ def admin_dashboard(request):
     #student without supervisors
     from django.contrib.auth.models import User
 
-             
+@logi_required             
 
