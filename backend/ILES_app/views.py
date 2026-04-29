@@ -300,5 +300,6 @@ def student_availability(request):
 from django.db.models import count
 
 @login_required
+def students_by_company(request):
 
-              
+          
