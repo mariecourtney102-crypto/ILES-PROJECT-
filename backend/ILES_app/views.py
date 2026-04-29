@@ -323,3 +323,7 @@ def add_log_comment(request, log_id):
             comment=comment_text
             )  
         return redirect('log_detail', log_id=log.id)
+    
+
+#view log comments
+@login_required
