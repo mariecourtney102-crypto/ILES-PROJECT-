@@ -301,5 +301,7 @@ from django.db.models import count
 
 @login_required
 def students_by_company(request):
-
+    companies = InternshipPlacement.objects.values('company_name').annotate(
+        total=count('id')
+    )
           
