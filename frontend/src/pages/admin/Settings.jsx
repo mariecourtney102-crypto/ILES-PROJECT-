@@ -161,25 +161,23 @@ export default function Settings() {
               </div>
 
               {/* Toggle switches */}
-              <div className="flex justify-between items-center mb-3">
-                <span>Allow Registration</span>
-                <input
-                  type="checkbox"
-                  name="allow_registration"
-                  checked={settings.allow_registration}
-                  onChange={handleChange}
-                />
-              </div>
+             <div className="flex justify-between items-center mb-4">
+  <span>Allow Registration</span>
+  <ToggleSwitch
+    name="allow_registration"
+    checked={settings.allow_registration}
+    onChange={handleChange}
+  />
+</div>
 
-              <div className="flex justify-between items-center">
-                <span>Require Admin Approval</span>
-                <input
-                  type="checkbox"
-                  name="require_approval"
-                  checked={settings.require_approval}
-                  onChange={handleChange}
-                />
-              </div>
+<div className="flex justify-between items-center">
+  <span>Require Admin Approval</span>
+  <ToggleSwitch
+    name="require_approval"
+    checked={settings.require_approval}
+    onChange={handleChange}
+  />
+</div>
             </div>
           )}
 
@@ -212,6 +210,44 @@ export default function Settings() {
               </div>
             </div>
           )}
+          {activeTab === "grading" && (
+  <div className="bg-white p-6 rounded-2xl shadow-md">
+    <h2 className="text-lg font-semibold mb-4">Grading Settings</h2>
+
+    <div className="mb-4">
+      <label className="block mb-1 text-gray-600">Grading Scale</label>
+      <select
+        name="grading_scale"
+        value={settings.grading_scale}
+        onChange={handleChange}
+        className="w-full border p-2 rounded-lg"
+      >
+        <option value="percentage">Percentage (%)</option>
+        <option value="letter">Letter (A–F)</option>
+      </select>
+    </div>
+
+    <div className="mb-4">
+      <label className="block mb-1 text-gray-600">Pass Mark</label>
+      <input
+        type="number"
+        name="pass_mark"
+        value={settings.pass_mark}
+        onChange={handleChange}
+        className="w-full border p-2 rounded-lg"
+      />
+    </div>
+
+    <div className="flex justify-between items-center">
+      <span>Enable Supervisor Grading</span>
+      <ToggleSwitch
+        name="enable_supervisor_grading"
+        checked={settings.enable_supervisor_grading}
+        onChange={handleChange}
+      />
+    </div>
+  </div>
+)}
 
           {/* 💾 SAVE */}
           <button
