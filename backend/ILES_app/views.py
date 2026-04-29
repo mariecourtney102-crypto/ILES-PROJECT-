@@ -308,3 +308,5 @@ def students_by_company(request):
         'companies':companies
         })
           
+#comments on logs
+@login_required
