@@ -354,4 +354,10 @@ def get_feedback(request):
         "comments": fb.comments,
         "date": fb.date_evaluated,
     } for fb in feedbacks]
-    return Response(data)           
+    return Response(data) 
+
+    @api_view(['GET'])
+def supervisors_list(request):
+    supervisors = User.objects.filter(role='supervisor')
+    serializer = UserSerializer(supervisors, many=True)
+    return Response(serializer.data)          
