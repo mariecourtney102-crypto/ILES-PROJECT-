@@ -312,3 +312,5 @@ def students_by_company(request):
 @login_required
 def add_log_comment(request, log_id):
     log = get_object_or_404(LogEntry, id=log_id)
+
+    if request.method == 'POST':
