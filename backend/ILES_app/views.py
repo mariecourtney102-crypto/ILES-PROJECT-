@@ -314,3 +314,4 @@ def add_log_comment(request, log_id):
     log = get_object_or_404(LogEntry, id=log_id)
 
     if request.method == 'POST':
+        comment_text = request.POST.get('comment')
