@@ -276,26 +276,82 @@ def update_status(request,id):
             messages.success(request,"status updated")
             return redirect('dashboard')
 
- @api_view(['GET'])
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_opportunities(request):
-    return Response([])
+    opportunities = InternshipPlacement.objects.all().select_related('user')
+    data = [{
+        "id": opp.id,
+        "student_name": opp.user.name,
+        "student_reg_no": opp.user.ID_number,
+        "place_of_internship": opp.place_of_internship,
+        "department": opp.department,
+        "supervisor_name": opp.supervisor_name,
+        "start_date": opp.start_date,
+        "end_date": opp.end_date,
+    } for opp in opportunities]
+    return Response(data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_students(request):
-    return Response([])
+    students = CustomUser.objects.filter(role='student')
+    data = [{
+        "id": s.id,
+        "name": s.name,
+        "username": s.username,
+        "reg_no": s.ID_number,
+        "email": s.email,
+        "telephone": s.telephone_number,
+    } for s in students]
+    return Response(data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_supervisors(request):
-    return Response([])
+    supervisors = CustomUser.objects.filter(role='supervisor')
+    data = [{
+        "id": s.id,
+        "name": s.name,
+        "username": s.username,
+        "staff_id": s.ID_number,
+        "email": s.email,
+        "telephone": s.telephone_number,
+    } for s in supervisors]
+    return Response(data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_reports(request):
     return Response({
-        "students": 0,
-        "supervisors": 0,
-        "opportunities": 0
+        "students": CustomUser.objects.filter(role='student').count(),
+        "supervisors": CustomUser.objects.filter(role='supervisor').count(),
+        "opportunities": InternshipPlacement.objects.count()
     })
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def change_password(request):
-    return Response({"message": "Password changed"})           
+    new_password = request.data.get('password')
+    if not new_password:
+        return Response({"error": "Password is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    request.user.set_password(new_password)
+    request.user.save()
+    return Response({"message": "Password changed successfully"})
+
+# Feedback endpoint for admin
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_feedback(request):
+    # Get evaluations as feedback
+    feedbacks = Evaluation.objects.all().select_related('user', 'placement')
+    data = [{
+        "id": fb.id,
+        "student_name": fb.user.name if fb.user else "Unknown",
+        "placement": fb.placement.place_of_internship if fb.placement else "Unknown",
+        "score": fb.score,
+        "comments": fb.comments,
+        "date": fb.date_evaluated,
+    } for fb in feedbacks]
+    return Response(data)           
