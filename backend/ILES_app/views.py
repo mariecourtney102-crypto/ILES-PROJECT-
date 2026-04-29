@@ -295,3 +295,7 @@ def student_availability(request):
         return render(request, 'admin/student_availability.html',{
               'data':data
               })
+
+#Students grouped by company
+from django.db.models import count
+              
