@@ -319,4 +319,5 @@ def add_log_comment(request, log_id):
 
         LogComment.objects.create(
             log=log,
+            author=request.user,
         )
