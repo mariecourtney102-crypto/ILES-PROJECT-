@@ -39,4 +39,5 @@ urlpatterns = [
     path('admin/change-password/', views.change_password),
     path('feedback/', views.get_feedback, name='get-feedback'),
     path('admin/supervisors/', views.supervisors_list),
+    path('admin/users/<int:pk>/', views.assign_supervisor),
 ]

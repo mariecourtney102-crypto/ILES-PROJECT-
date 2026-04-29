@@ -14,6 +14,12 @@ from .serializers import ( CustomUserSerializer,
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
 )
+@api_view(['GET'])
+def supervisors_list(request):
+    supervisors = User.objects.filter(role='supervisor')
+    serializer = UserSerializer(supervisors, many=True)
+    return Response(serializer.data)
+
 @api_view(['GET']) 
 def choose_role(request):
     return Response({
@@ -355,9 +361,17 @@ def get_feedback(request):
         "date": fb.date_evaluated,
     } for fb in feedbacks]
     return Response(data) 
+@api_view(['PATCH'])
+def assign_supervisor(request, pk):
+    try:
+        user = User.objects.get(id=pk)
 
-    @api_view(['GET'])
-def supervisors_list(request):
-    supervisors = User.objects.filter(role='supervisor')
-    serializer = UserSerializer(supervisors, many=True)
-    return Response(serializer.data)          
+        supervisor_id = request.data.get("supervisor_id")
+        supervisor = User.objects.get(id=supervisor_id)
+
+        user.supervisor = supervisor
+        user.save()
+
+        return Response({"message": "Supervisor assigned successfully"})
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)          
