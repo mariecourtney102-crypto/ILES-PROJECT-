@@ -1,42 +1,46 @@
 import { useState } from "react";
-import axiosInstance from "@/api/api";
 
-function Settings() {
-  const [password, setPassword] = useState("");
+export default function Settings() {
+  const [form, setForm] = useState({
+    siteName: "",
+    adminEmail: "",
+  });
 
-  const handlePasswordChange = async () => {
-    try {
-      await axiosInstance.post("/admin/change-password/", {
-        password,
-      });
-      alert("Password updated");
-    } catch (err) {
-      console.error(err);
-    }
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-teal-700">Settings</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-semibold mb-6">Settings</h1>
 
-      <div className="mt-4 bg-white p-4 rounded shadow">
-        <input
-          type="password"
-          placeholder="New Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border p-2 w-full"
-        />
+      <div className="bg-white shadow-lg rounded-2xl p-6 max-w-lg">
+        <div className="mb-4">
+          <label className="block text-gray-600 mb-1">Site Name</label>
+          <input
+            type="text"
+            name="siteName"
+            value={form.siteName}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
 
-        <button
-          onClick={handlePasswordChange}
-          className="mt-2 bg-teal-600 text-white px-4 py-2"
-        >
-          Update Password
+        <div className="mb-4">
+          <label className="block text-gray-600 mb-1">Admin Email</label>
+          <input
+            type="email"
+            name="adminEmail"
+            value={form.adminEmail}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+
+        <button className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition">
+          Save Changes
         </button>
       </div>
     </div>
   );
 }
-
-export default Settings;
