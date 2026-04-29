@@ -327,3 +327,4 @@ def add_log_comment(request, log_id):
 
 #view log comments
 @login_required
+def log_detail(request, log_id):
