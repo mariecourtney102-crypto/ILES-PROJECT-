@@ -181,6 +181,39 @@ export default function Settings() {
             </div>
           )}
 
+          {activeTab === "notifications" && (
+  <div className="bg-white p-6 rounded-2xl shadow-md">
+    <h2 className="text-lg font-semibold mb-4">Notifications</h2>
+
+    <div className="flex justify-between items-center mb-4">
+      <span>Email Notifications</span>
+      <ToggleSwitch
+        name="email_notifications"
+        checked={settings.email_notifications}
+        onChange={handleChange}
+      />
+    </div>
+
+    <div className="flex justify-between items-center mb-4">
+      <span>Notify on Student Submission</span>
+      <ToggleSwitch
+        name="notify_on_submission"
+        checked={settings.notify_on_submission}
+        onChange={handleChange}
+      />
+    </div>
+
+    <div className="flex justify-between items-center">
+      <span>Notify Supervisor Assignment</span>
+      <ToggleSwitch
+        name="notify_supervisor_assignment"
+        checked={settings.notify_supervisor_assignment}
+        onChange={handleChange}
+      />
+    </div>
+  </div>
+)}
+
           {/* 📅 SUBMISSIONS */}
           {activeTab === "submissions" && (
             <div className="bg-white p-6 rounded-2xl shadow-md">
