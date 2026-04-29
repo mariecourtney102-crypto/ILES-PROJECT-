@@ -12,6 +12,11 @@ import Users from "../pages/admin/Users";
 import SubmitLog from "../pages/student/SubmitLog";
 import WeeklyLogs from "../pages/student/WeeklyLogs";
 import InternshipDetails from "../pages/student/InternshipDetails";
+import Opportunities from "../pages/admin/Opportunities";
+import Users from "../pages/admin/Users";
+import Reports from "../pages/admin/Reports";
+import Settings from "../pages/admin/Settings";
+import Feedback from "../pages/admin/Feedback";
 import ProtectedRoute from "./ProtectedRoute";
 import { getRoleRoute } from "../utils/roleRoutes";
 
@@ -34,6 +39,11 @@ const AppRoutes = () => {
         <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><Users /></ProtectedRoute>} />
         <Route path="/student/feedback" element={<ProtectedRoute requiredRole="student"><UserFeedback /></ProtectedRoute>} />
         <Route path="/student/internship-details" element={<ProtectedRoute requiredRole="student"><InternshipDetails /></ProtectedRoute>} />
+        <Route path="/admin/opportunities" element={<ProtectedRoute requiredRole="admin"><Opportunities /></ProtectedRoute>} />
+        <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><Users /></ProtectedRoute>} />
+        <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><Reports /></ProtectedRoute>} />
+        <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><Settings /></ProtectedRoute>} />
+        <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="admin"><Feedback /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
