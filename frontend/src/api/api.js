@@ -48,6 +48,11 @@ export const fetchSupervisorWeeklyLogs = async (studentId) => {
   return res.data;
 };
 
+export const fetchSupervisorStudents = async () => {
+  const res = await api.get("/supervisor/students/");
+  return res.data;
+};
+
 export const reviewWeeklyLog = async (logId, payload) => {
   const res = await api.patch(`/supervisor/weekly-logs/${logId}/review/`, payload);
   return res.data;

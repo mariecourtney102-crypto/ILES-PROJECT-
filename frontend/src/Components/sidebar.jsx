@@ -1,8 +1,9 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function Sidebar() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const linkClass =
     "p-2 rounded-md transition";
 
@@ -14,12 +15,17 @@ function Sidebar() {
     return "Student Panel";
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
-    <div className="w-64 bg-teal-600 text-white min-h-screen p-4">
+    <div className="flex min-h-screen w-64 flex-col bg-teal-600 p-4 text-white">
 
       <h2 className="text-xl font-bold mb-6">{getTitle()}</h2>
 
-      <nav className="flex flex-col gap-4">
+      <nav className="flex flex-1 flex-col gap-4">
 
         {user.role === "student" && (
           <>
@@ -154,6 +160,14 @@ function Sidebar() {
         )}
 
       </nav>
+
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="mt-6 rounded-md border border-teal-300 px-3 py-2 text-left font-semibold transition hover:bg-teal-500"
+      >
+        Logout
+      </button>
     </div>
   );
 }
