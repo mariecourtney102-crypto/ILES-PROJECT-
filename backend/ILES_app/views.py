@@ -321,4 +321,5 @@ def add_log_comment(request, log_id):
             log=log,
             author=request.user,
             comment=comment_text
-            )        )
+            )  
+        return redirect())
