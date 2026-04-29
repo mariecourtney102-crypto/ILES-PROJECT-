@@ -315,3 +315,8 @@ def add_log_comment(request, log_id):
 
     if request.method == 'POST':
         comment_text = request.POST.get('comment')
+
+
+        LogComment.objects.create(
+            log=
+        )
