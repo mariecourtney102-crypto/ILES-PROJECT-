@@ -330,3 +330,8 @@ def add_log_comment(request, log_id):
 def log_detail(request, log_id):
     log = get_object_or_404(LogEntry, id=log_id)
     comments = log.comments.all()
+
+    return render(request, 'logs/log_detail.html', {
+        'log':log,
+        'comments':comments
+    })
