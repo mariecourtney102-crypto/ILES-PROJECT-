@@ -298,4 +298,7 @@ def student_availability(request):
 
 #Students grouped by company
 from django.db.models import count
+
+@login_required
+
               
