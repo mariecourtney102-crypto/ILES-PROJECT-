@@ -5,11 +5,27 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
 
+  const [assigningUserId, setAssigningUserId] = useState(null);
+  const [selectedSupervisor, setSelectedSupervisor] = useState("");
+
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // 🔄 FETCH USERS
+  const handleAssignSupervisor = (userId) => {
+  if (!selectedSupervisor) return;
+
+  axios.patch(`http://localhost:8000/api/admin/users/${userId}/`, {
+    supervisor_id: selectedSupervisor,
+  })
+    .then(() => {
+      setAssigningUserId(null);
+      setSelectedSupervisor("");
+      fetchUsers();
+    })
+    .catch(err => console.error(err));
+};
+
   const fetchUsers = () => {
     axios.get("http://localhost:8000/api/admin/users/")
       .then(res => {
@@ -23,7 +39,6 @@ export default function Users() {
     fetchUsers();
   }, []);
 
-  // 🔍 FILTER LOGIC
   useEffect(() => {
     let data = [...users];
 
@@ -45,7 +60,6 @@ export default function Users() {
     setFilteredUsers(data);
   }, [search, roleFilter, statusFilter, users]);
 
-  // ❌ DELETE USER
   const handleDelete = (id) => {
     if (!confirm("Delete this user?")) return;
 
@@ -54,7 +68,6 @@ export default function Users() {
       .catch(err => console.error(err));
   };
 
-  // 🔁 TOGGLE STATUS
   const toggleStatus = (user) => {
     const newStatus = user.status === "active" ? "disabled" : "active";
 
@@ -65,13 +78,12 @@ export default function Users() {
       .catch(err => console.error(err));
   };
 
-  // 📊 STATS
   const total = users.length;
   const students = users.filter(u => u.role === "student").length;
   const supervisors = users.filter(u => u.role === "supervisor").length;
   const pending = users.filter(u => u.status === "pending").length;
 
-  // 🎨 BADGE STYLES
+
   const roleStyle = (role) => {
     if (role === "student") return "bg-gray-100 text-gray-600";
     if (role === "supervisor") return "bg-teal-100 text-teal-700";
@@ -87,10 +99,9 @@ export default function Users() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
 
-      {/* 🔥 HEADER */}
+    
       <h1 className="text-2xl font-semibold mb-6">Users</h1>
 
-      {/* 📊 STATS */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-xl shadow">
           <p className="text-gray-500 text-sm">Total Users</p>
@@ -113,7 +124,6 @@ export default function Users() {
         </div>
       </div>
 
-      {/* 🔍 FILTER BAR */}
       <div className="flex flex-wrap gap-4 mb-6">
         <input
           type="text"
@@ -146,7 +156,6 @@ export default function Users() {
         </select>
       </div>
 
-      {/* 👥 TABLE */}
       <div className="bg-white rounded-2xl shadow overflow-x-auto">
         <table className="w-full text-left">
           <thead className="border-b text-gray-500">
