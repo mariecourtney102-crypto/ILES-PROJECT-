@@ -13,7 +13,6 @@ export default function Settings() {
     allow_late_submission: false,
   });
 
-  // 🔄 FETCH FROM BACKEND
   useEffect(() => {
     axios.get("http://localhost:8000/api/admin/settings/")
       .then(res => {
@@ -26,7 +25,6 @@ export default function Settings() {
       });
   }, []);
 
-  // ✏️ HANDLE CHANGE
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setSettings({
@@ -35,7 +33,6 @@ export default function Settings() {
     });
   };
 
-  // 💾 SAVE TO BACKEND
   const handleSave = () => {
     axios.put("http://localhost:8000/api/admin/settings/", settings)
       .then(() => alert("Settings updated"))
@@ -48,7 +45,6 @@ export default function Settings() {
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-6">System Settings</h1>
 
-      {/* 🔥 TABS */}
       <div className="flex gap-4 mb-6 border-b">
         {["academic", "users", "submissions"].map(tab => (
           <button
@@ -65,10 +61,8 @@ export default function Settings() {
         ))}
       </div>
 
-      {/* 🔥 CONTENT CARD */}
       <div className="bg-white shadow-lg rounded-2xl p-6 max-w-2xl">
 
-        {/* 🎓 ACADEMIC */}
         {activeTab === "academic" && (
           <>
             <h2 className="text-lg font-semibold mb-4">Academic Settings</h2>
@@ -100,7 +94,6 @@ export default function Settings() {
           </>
         )}
 
-        {/* 👤 USERS */}
         {activeTab === "users" && (
           <>
             <h2 className="text-lg font-semibold mb-4">User Settings</h2>
@@ -120,7 +113,6 @@ export default function Settings() {
           </>
         )}
 
-        {/* 📅 SUBMISSIONS */}
         {activeTab === "submissions" && (
           <>
             <h2 className="text-lg font-semibold mb-4">Submission Settings</h2>
@@ -150,7 +142,6 @@ export default function Settings() {
           </>
         )}
 
-        {/* 💾 SAVE BUTTON */}
         <button
           onClick={handleSave}
           className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition"
