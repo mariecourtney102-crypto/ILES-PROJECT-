@@ -304,4 +304,7 @@ def students_by_company(request):
     companies = InternshipPlacement.objects.values('company_name').annotate(
         total=count('id')
     )
+    return render(request, 'admin/company_groups.html', {
+        'companies':companies
+        })
           
