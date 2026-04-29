@@ -188,9 +188,50 @@ export default function Users() {
                 </td>
 
                 <td>
-                  {user.supervisor_name || (
-                    <span className="text-gray-400 text-sm">Not assigned</span>
-                  )}
+                   {user.role === "student" ? (
+    <>
+      {assigningUserId === user.id ? (
+        <div className="flex gap-2 items-center">
+          <select
+            className="border rounded-lg p-1"
+            value={selectedSupervisor}
+            onChange={(e) => setSelectedSupervisor(e.target.value)}
+          >
+            <option value="">Select</option>
+            {supervisors.map(sup => (
+              <option key={sup.id} value={sup.id}>
+                {sup.username}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={() => handleAssignSupervisor(user.id)}
+            className="text-sm text-primary"
+          >
+            Save
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          {user.supervisor_name ? (
+            <span>{user.supervisor_name}</span>
+          ) : (
+            <span className="text-gray-400 text-sm">Not assigned</span>
+          )}
+
+          <button
+            onClick={() => setAssigningUserId(user.id)}
+            className="text-xs text-primary hover:underline"
+          >
+            {user.supervisor_name ? "Change" : "Assign"}
+          </button>
+        </div>
+      )}
+    </>
+  ) : (
+    <span className="text-gray-400 text-sm">—</span>
+  )}
                 </td>
 
                 <td className="flex gap-2 py-2">
