@@ -94,9 +94,25 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='users.username', read_only=True)
     name = serializers.CharField(source='users.name', read_only=True)
+    ID_number = serializers.CharField(source='users.ID_number', read_only=True)
+    telephone_number = serializers.CharField(source='users.telephone_number', read_only=True)
     student_user_id = serializers.IntegerField(source='users.id', read_only=True)
     supervisor_id = serializers.IntegerField(source='assigned_supervisor.id', read_only=True)
     supervisor_name = serializers.CharField(source='assigned_supervisor.users.name', read_only=True)
+    placement = serializers.SerializerMethodField()
+
+    def get_placement(self, obj):
+        placement = InternshipPlacement.objects.filter(user=obj.users).order_by('-id').first()
+        if not placement:
+            return None
+
+        return {
+            'place_of_internship': placement.place_of_internship,
+            'department': placement.department,
+            'supervisor_name': placement.supervisor_name,
+            'start_date': placement.start_date,
+            'end_date': placement.end_date,
+        }
 
     class Meta:
         model = Student 
@@ -106,12 +122,15 @@ class StudentSerializer(serializers.ModelSerializer):
             'users',
             'username',
             'name',
+            'ID_number',
+            'telephone_number',
             'course_title',
             'university_name',
             'year_of_study',
             'assigned_supervisor',
             'supervisor_id',
             'supervisor_name',
+            'placement',
         ]
 
 
