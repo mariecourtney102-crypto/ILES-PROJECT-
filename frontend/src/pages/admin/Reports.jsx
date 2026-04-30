@@ -1,38 +1,41 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../api/api";
 
-const Reports = () => {
-  const [reports, setReports] = useState([]);
+function Reports() {
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/reports/")
-      .then(res => setReports(res.data))
-      .catch(err => console.error(err));
+    const fetchReports = async () => {
+      try {
+        const res = await axiosInstance.get("/admin/reports/");
+        setStats(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchReports();
   }, []);
+
+  if (!stats) return <p>Loading...</p>;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-teal-600 mb-4">
-        Reports
-      </h1>
+      <h1 className="text-2xl font-bold text-teal-700">Reports</h1>
 
-      <div className="bg-white p-4 rounded-lg shadow">
-        {reports.length > 0 ? (
-          reports.map(report => (
-            <div key={report.id} className="border-b py-3">
-              <p className="font-semibold">{report.title}</p>
-              <p className="text-gray-600">{report.summary}</p>
-              <p className="text-sm text-gray-400">
-                Date: {report.created_at}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p>No reports available.</p>
-        )}
+      <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="bg-white p-4 rounded shadow">
+          Students: {stats.students}
+        </div>
+        <div className="bg-white p-4 rounded shadow">
+          Supervisors: {stats.supervisors}
+        </div>
+        <div className="bg-white p-4 rounded shadow">
+          Opportunities: {stats.opportunities}
+        </div>
       </div>
     </div>
   );
-};
+}
 
 export default Reports;

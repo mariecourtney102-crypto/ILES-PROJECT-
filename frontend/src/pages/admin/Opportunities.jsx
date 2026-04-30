@@ -1,38 +1,45 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../api/api";
 
-const Reports = () => {
-  const [reports, setReports] = useState([]);
+function Opportunities() {
+  const [opportunities, setOpportunities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/reports/")
-      .then(res => setReports(res.data))
-      .catch(err => console.error(err));
+    const fetchOpportunities = async () => {
+      try {
+        const res = await axiosInstance.get("/admin/opportunities/");
+        setOpportunities(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOpportunities();
   }, []);
+
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-teal-600 mb-4">
-        Reports
-      </h1>
+      <h1 className="text-2xl font-bold text-teal-700">Opportunities</h1>
 
-      <div className="bg-white p-4 rounded-lg shadow">
-        {reports.length > 0 ? (
-          reports.map(report => (
-            <div key={report.id} className="border-b py-3">
-              <p className="font-semibold">{report.title}</p>
-              <p className="text-gray-600">{report.summary}</p>
-              <p className="text-sm text-gray-400">
-                Date: {report.created_at}
-              </p>
+      <div className="mt-4 bg-white p-4 rounded shadow">
+        {opportunities.length === 0 ? (
+          <p>No opportunities found.</p>
+        ) : (
+          opportunities.map((opp) => (
+            <div key={opp.id} className="border-b py-2">
+              <p className="font-semibold">{opp.title}</p>
+              <p className="text-sm text-gray-500">{opp.company}</p>
             </div>
           ))
-        ) : (
-          <p>No reports available.</p>
         )}
       </div>
     </div>
   );
-};
+}
 
-export default Reports;
+export default Opportunities;

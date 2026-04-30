@@ -1,20 +1,25 @@
-from rest_framework.decorators import api_view, permission_classes 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
 from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
 )
+@api_view(['GET'])
+def supervisors_list(request):
+    supervisors = User.objects.filter(role='supervisor')
+    serializer = UserSerializer(supervisors, many=True)
+    return Response(serializer.data)
+
 @api_view(['GET']) 
 def choose_role(request):
     return Response({
@@ -233,6 +238,32 @@ def get_criteria(request):
     ]
     return Response(data, status=status.HTTP_200_OK)
 
+#ADMIN DASHBOARD API
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_dashboard(request):
+    # Check if user is admin
+    if request.user.role != 'admin':
+        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Get stats
+    total_students = CustomUser.objects.filter(role='student').count()
+    total_supervisors = CustomUser.objects.filter(role='supervisor').count()
+    total_placements = InternshipPlacement.objects.count()
+    total_logs = WeeklyLog.objects.count()
+    pending_logs = WeeklyLog.objects.filter(status='pending').count()
+    
+    return Response({
+        "total_students": total_students,
+        "total_supervisors": total_supervisors,
+        "total_placements": total_placements,
+        "pending_placements": 0,
+        "approved_placements": 0,
+        "rejected_placements": 0,
+        "total_logs": total_logs,
+        "pending_logs": pending_logs
+    }, status=status.HTTP_200_OK)
+
 #internship details
 @login_required
 def internship_detail(request,id):
@@ -255,83 +286,5 @@ def admin_dashboard(request):
         return redirect('login')
     
     internships = InternshipPlacement.objects.all()
-    return render(request,'admin_dashboard.html',{'internships':internships})
+    return render(request,'admin_dashboard.html',{'internships':internships})            
 
-    #student without supervisors
-    from django.contrib.auth.models import User
-
-@login_required             
-def students_without_supervisors(request):
-    internships = InternshipPlacement.objects.filter(supervisor__isnull=True)
-
-    return render(request, 'admin/students_no_supervisor.html',{
-        'internships':internships
-    })         
-
-
-#Supervisors without students   
-@login_required
-def supervisors_without_students(request):
-    supervisors = User.objects.filter(is_staff=True).exclude(
-        supervised_internships__isnull=False
-    )
-    return render(request, 'admin/supervisors_no_students.html',{
-        'supervisors':supervisors
-        })
-
-#students without placements
-@login_required
-def student_availability(request):
-    students = User.objects.filter(is_staff=False)
-      
-
-    data =  []
-    for student in students:
-        has_internship = InternshipPlacement.objects.filter(user=student).exists()
-        data.append({
-              'student':student,
-              'has_internship':has_internship
-        })
-        return render(request, 'admin/student_availability.html',{
-              'data':data
-              })
-
-#Students grouped by company
-from django.db.models import count
-
-@login_required
-def students_by_company(request):
-    companies = InternshipPlacement.objects.values('company_name').annotate(
-        total=count('id')
-    )
-    return render(request, 'admin/company_groups.html', {
-        'companies':companies
-        })
-          
-#comments on logs
-@login_required
-def add_log_comment(request, log_id):
-    log = get_object_or_404(LogEntry, id=log_id)
-
-    if request.method == 'POST':
-        comment_text = request.POST.get('comment')
-
-
-        LogComment.objects.create(
-            log=log,
-            author=request.user,
-            comment=comment_text
-            )  
-        return redirect('log_detail', log_id=log.id)
-    
-
-#view log comments
-@login_required
-def log_detail(request, log_id):
-    log = get_object_or_404(LogEntry, id=log_id)
-    comments = log.comments.all()
-
-    return render(request, 'logs/log_detail.html', {
-        'log':log,
-        'comments':comments
-    })

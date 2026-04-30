@@ -28,5 +28,16 @@ urlpatterns = [
 
     #Evaluations
     path('evaluations/create/', views.create_evaluation, name='create-evaluation'),
-    path('evaluations/', views.get_evaluation, name='get-evaluation')
+    path('evaluations/', views.get_evaluation, name='get-evaluation'),
+
+    #Admin
+    path('admin/dashboard/', views.admin_dashboard, name='admin-dashboard'),
+    path('admin/opportunities/', views.get_opportunities),
+    path('admin/students/', views.get_students),
+    path('admin/supervisors/', views.get_supervisors),
+    path('admin/reports/', views.get_reports),
+    path('admin/change-password/', views.change_password),
+    path('feedback/', views.get_feedback, name='get-feedback'),
+    path('admin/supervisors/', views.supervisors_list),
+    path('admin/users/<int:pk>/', views.assign_supervisor),
 ]

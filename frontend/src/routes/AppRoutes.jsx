@@ -18,6 +18,7 @@ import Settings from "../pages/admin/Settings";
 import Feedback from "../pages/admin/Feedback";
 import ProtectedRoute from "./ProtectedRoute";
 import { getRoleRoute } from "../utils/roleRoutes";
+import AdminLayout from "../Components/AdminLayout";
 
 const AppRoutes = () => {
   const { user } = useAuth();
@@ -34,14 +35,16 @@ const AppRoutes = () => {
         <Route path="/supervisor" element={<ProtectedRoute requiredRole="supervisor"><SupervisorDashboard /></ProtectedRoute>} />
         <Route path="/supervisor/assigned-students" element={<ProtectedRoute requiredRole="supervisor"><SupervisorAssignedStudents /></ProtectedRoute>} />
         <Route path="/supervisor/feedback" element={<ProtectedRoute requiredRole="supervisor"><SupervisorFeedback /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/dashboard" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="opportunities" element={<Opportunities />} />
+          <Route path="users" element={<Users />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="feedback" element={<Feedback />} />
+        </Route>
         <Route path="/student/feedback" element={<ProtectedRoute requiredRole="student"><UserFeedback /></ProtectedRoute>} />
         <Route path="/student/internship-details" element={<ProtectedRoute requiredRole="student"><InternshipDetails /></ProtectedRoute>} />
-        <Route path="/admin/opportunities" element={<ProtectedRoute requiredRole="admin"><Opportunities /></ProtectedRoute>} />
-        <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><Users /></ProtectedRoute>} />
-        <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><Reports /></ProtectedRoute>} />
-        <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><Settings /></ProtectedRoute>} />
-        <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="admin"><Feedback /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
