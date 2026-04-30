@@ -1,5 +1,6 @@
 import DashboardLayout from "../../Components/dashboard_layout";
 import { useLogs } from "../../context/LogContext";
+import { Link } from "react-router-dom";
 
 function WeeklyLogs() {
   const { logs, loading, error } = useLogs();
@@ -69,6 +70,15 @@ function WeeklyLogs() {
 
             {log.evaluation_score !== null && log.evaluation_score !== undefined ? (
               <div className="mt-2 text-sm text-gray-600">Score: {log.evaluation_score}</div>
+            ) : null}
+
+            {log.status === "draft" ? (
+              <Link
+                to={`/submitlog/${log.id}`}
+                className="mt-4 inline-flex rounded-lg border border-teal-500 px-4 py-2 text-sm font-semibold text-teal-600 transition hover:bg-teal-50"
+              >
+                Edit Draft
+              </Link>
             ) : null}
           </div>
         ))}
