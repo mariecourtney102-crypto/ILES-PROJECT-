@@ -281,7 +281,7 @@ def update_status(request,id):
             internship.save()
             messages.success(request,"status updated")
             return redirect('dashboard')
-
+@api_view(['GET'])
 def admin_dashboard_view(request):
     if not request.user.is_authenticated or request.user.role != 'admin':
         return redirect('login')
