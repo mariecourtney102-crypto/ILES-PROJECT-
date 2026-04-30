@@ -121,3 +121,23 @@ class Evaluation(models.Model):
 
     def __str__(self):
         return f"{self.placement.user.username} - {self.criteria}: {self.score}"
+
+
+class Feedback(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='feedback')
+    subject = models.CharField(max_length=150)
+    message = models.TextField()
+    rating = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.subject} - {self.user.username}"
+
+
+class SiteSetting(models.Model):
+    site_name = models.CharField(max_length=100, default='ILES')
+    admin_email = models.EmailField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.site_name

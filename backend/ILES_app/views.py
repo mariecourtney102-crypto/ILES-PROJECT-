@@ -9,12 +9,13 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.utils import timezone
-from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, Student, Supervisor
+from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, Student, Supervisor, Feedback, SiteSetting
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
-                          EvaluationSerializer, StudentSerializer, SupervisorSerializer
+                          EvaluationSerializer, StudentSerializer, SupervisorSerializer,
+                          FeedbackSerializer
 )
  
 def choose_role(request):
@@ -370,178 +371,115 @@ def search_internships(request):
         return render(request, 'search.html',{'results': results,
                                               'query':query,
                                               })
-<<<<<<< HEAD
-=======
-    
-#WEEKLY LOG VIEWS
-#STUDENT SUBMITS A LOG
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_log(request):
-    data = request.data.copy()
-    data['user'] = request.user.id
-    serializer = WeeklylogSerializer(data = data)
-    if serializer.is_valid():
-        serializer.save(user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#STUDENT VIEWS THEIR LOG
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_logs(request):
-    logs = WeeklyLog.objects.filter(user=request.user)
-    serializer = WeeklylogSerializer(logs, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+def reports(request):
+    permission_error = require_role(request.user, ['admin'])
+    if permission_error:
+        return permission_error
 
-#SUPERVISOR REVIEWS LOG
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def review_log(request, log_id):
-    try:
-        log = WeeklyLog.objects.get(id=log_id)
-        log.supervisor_comment = request.data.get('supervisor_comment')
-        log.status = 'reviewed'
-        log.save()
-        return Response({"message": "The log has been successfully reviewed"}, status=status.HTTP_200_OK)
-    except WeeklyLog.DoesNotExist:
-        return Response({"message": "Log not found"}, status=status.HTTP_404_NOT_FOUND)
-    
-#EVALUATING VIEWS
-#SUPERVISOR SUBMITTING AN EVALUATION
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_evaluation(request):
-    serializer = EvaluationSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    total_students = Student.objects.count()
+    total_supervisors = Supervisor.objects.count()
+    total_placements = InternshipPlacement.objects.count()
+    total_logs = WeeklyLog.objects.count()
+    reviewed_logs = WeeklyLog.objects.exclude(status='pending').count()
+    pending_logs = WeeklyLog.objects.filter(status='pending').count()
 
-#A USER VIEWING AN EVALUATION
+    reports_data = [
+        {
+            "id": "users",
+            "title": "User Summary",
+            "summary": f"{total_students} students and {total_supervisors} supervisors are registered.",
+            "created_at": timezone.now().date(),
+        },
+        {
+            "id": "placements",
+            "title": "Placement Summary",
+            "summary": f"{total_placements} internship placements have been submitted.",
+            "created_at": timezone.now().date(),
+        },
+        {
+            "id": "weekly-logs",
+            "title": "Weekly Log Summary",
+            "summary": f"{reviewed_logs} logs reviewed, {pending_logs} pending, {total_logs} total.",
+            "created_at": timezone.now().date(),
+        },
+    ]
+
+    return Response(reports_data, status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_evaluation(request):
-    evaluations = Evaluation.objects.filter(user=request.user)
-    serializer = EvaluationSerializer(evaluations, many = True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+def opportunities(request):
+    permission_error = require_role(request.user, ['admin'])
+    if permission_error:
+        return permission_error
 
-#GETTING INFORMATION ON THE EVALUATION CRITERIA
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_criteria(request):
-    criteria = EvaluationCriteria.objects.all()
+    placements = (
+        InternshipPlacement.objects
+        .values('place_of_internship', 'department')
+        .annotate(total=Count('id'))
+        .order_by('place_of_internship', 'department')
+    )
+
     data = [
         {
-            "id": c.id,
-            "criteria_name": c.criteria_name,
-            "criteria": c.criteria,
-            "criteria_weight": c.criteria_weight
+            "id": index + 1,
+            "title": item['place_of_internship'],
+            "summary": f"{item['total']} student placement(s) in {item['department']}.",
+            "created_at": timezone.now().date(),
         }
-        for c in criteria
+        for index, item in enumerate(placements)
     ]
+
     return Response(data, status=status.HTTP_200_OK)
 
-#internship details
-@login_required
-def internship_detail(request,id):
-    internship = get_object_or_404(InternshipPlacement,id=id)
-    return render(request,'internship_detail.html',{'internship': internship})  
 
-#Supervisor/Admin views
-@login_required
-def update_status(request,id):
-    internship = get_object_or_404(InternshipPlacement,id=id)
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def feedback(request):
     if request.method == 'POST':
-        status = request.POST.get('status')
-        if status in ['approved','rejected']:
-            internship.status = status
-            internship.save()
-            messages.success(request,"status updated")
-            return redirect('dashboard')
-def admin_dashboard(request):
-    if not request.user.is_authenticated or request.user.role != 'admin':
-        return redirect('login')
-    
-    internships = InternshipPlacement.objects.all()
-    return render(request,'admin_dashboard.html',{'internships':internships})
+        serializer = FeedbackSerializer(data=request.data)
+        if serializer.is_valid():
+            feedback_item = serializer.save(user=request.user)
+            return Response(FeedbackSerializer(feedback_item).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    #student without supervisors
-    from django.contrib.auth.models import User
+    permission_error = require_role(request.user, ['admin'])
+    if permission_error:
+        return permission_error
 
-@login_required             
-def students_without_supervisors(request):
-    internships = InternshipPlacement.objects.filter(supervisor__isnull=True)
-
-    return render(request, 'admin/students_no_supervisor.html',{
-        'internships':internships
-    })         
+    feedback_items = Feedback.objects.select_related('user').order_by('-created_at')
+    serializer = FeedbackSerializer(feedback_items, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-#Supervisors without students   
-@login_required
-def supervisors_without_students(request):
-    supervisors = User.objects.filter(is_staff=True).exclude(
-        supervised_internships__isnull=False
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def settings(request):
+    permission_error = require_role(request.user, ['admin'])
+    if permission_error:
+        return permission_error
+
+    site_settings = SiteSetting.objects.order_by('id').first()
+    if site_settings is None:
+        site_settings = SiteSetting.objects.create(
+            site_name="ILES",
+            admin_email=request.user.email or "",
+        )
+
+    if request.method == 'PUT':
+        site_settings.site_name = request.data.get("siteName", site_settings.site_name)
+        site_settings.admin_email = request.data.get("adminEmail", site_settings.admin_email)
+        site_settings.save()
+
+    return Response(
+        {
+            "siteName": site_settings.site_name,
+            "adminEmail": site_settings.admin_email,
+        },
+        status=status.HTTP_200_OK,
     )
-    return render(request, 'admin/supervisors_no_students.html',{
-        'supervisors':supervisors
-        })
-
-#students without placements
-@login_required
-def student_availability(request):
-    students = User.objects.filter(is_staff=False)
-      
-
-    data =  []
-    for student in students:
-        has_internship = InternshipPlacement.objects.filter(user=student).exists()
-        data.append({
-              'student':student,
-              'has_internship':has_internship
-        })
-        return render(request, 'admin/student_availability.html',{
-              'data':data
-              })
-
-#Students grouped by company
-from django.db.models import count
-
-@login_required
-def students_by_company(request):
-    companies = InternshipPlacement.objects.values('company_name').annotate(
-        total=count('id')
-    )
-    return render(request, 'admin/company_groups.html', {
-        'companies':companies
-        })
-          
-#comments on logs
-@login_required
-def add_log_comment(request, log_id):
-    log = get_object_or_404(LogEntry, id=log_id)
-
-    if request.method == 'POST':
-        comment_text = request.POST.get('comment')
-
-
-        LogComment.objects.create(
-            log=log,
-            author=request.user,
-            comment=comment_text
-            )  
-        return redirect('log_detail', log_id=log.id)
-    
-
-#view log comments
-@login_required
-def log_detail(request, log_id):
-    log = get_object_or_404(LogEntry, id=log_id)
-    comments = log.comments.all()
-
-    return render(request, 'logs/log_detail.html', {
-        'log':log,
-        'comments':comments
-    })
->>>>>>> 7891632869093d1b927a742215c91babbf049705
