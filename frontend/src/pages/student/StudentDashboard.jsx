@@ -3,13 +3,19 @@ import { useLogs } from "../../context/LogContext";
 
 function StudentDashboard() {
   const { logs, loading, error } = useLogs();
+  const draft = logs.filter((log) => log.status === "draft").length;
   const pending = logs.filter((log) => log.status === "pending").length;
   const approved = logs.filter((log) => log.status === "approved").length;
   const rejected = logs.filter((log) => log.status === "rejected").length;
 
   return (
     <DashboardLayout title="Student Dashboard">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="p-4 bg-white rounded-lg shadow">
+          <h3 className="text-gray-500">Draft Logs</h3>
+          <p className="text-2xl font-bold text-gray-500">{draft}</p>
+        </div>
+
         <div className="p-4 bg-white rounded-lg shadow">
           <h3 className="text-gray-500">Pending Logs</h3>
           <p className="text-2xl font-bold text-yellow-500">{pending}</p>

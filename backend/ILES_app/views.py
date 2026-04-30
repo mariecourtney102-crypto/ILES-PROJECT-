@@ -35,6 +35,22 @@ def require_role(user, allowed_roles):
             status=status.HTTP_403_FORBIDDEN
         )
     return None
+
+
+def notify_weekly_log_submitted(weekly_log):
+    Notification.objects.create(
+        user=weekly_log.user,
+        title="Weekly Log Submitted",
+        message=f"Your Week {weekly_log.week_number} log was submitted successfully.",
+    )
+
+    student_profile = getattr(weekly_log.user, 'student', None)
+    if student_profile and student_profile.assigned_supervisor:
+        Notification.objects.create(
+            user=student_profile.assigned_supervisor.users,
+            title="New Weekly Log",
+            message=f"{weekly_log.user.name or weekly_log.user.username} submitted Week {weekly_log.week_number}.",
+        )
     
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -238,23 +254,64 @@ def create_weekly_log(request):
 
     serializer = WeeklylogSerializer(data=request.data)
     if serializer.is_valid():
-        weekly_log = serializer.save(user=request.user)
-        Notification.objects.create(
-            user=request.user,
-            title="Weekly Log Submitted",
-            message=f"Your Week {weekly_log.week_number} log was submitted successfully.",
-        )
-
-        student_profile = getattr(request.user, 'student', None)
-        if student_profile and student_profile.assigned_supervisor:
-            Notification.objects.create(
-                user=student_profile.assigned_supervisor.users,
-                title="New Weekly Log",
-                message=f"{request.user.name or request.user.username} submitted Week {weekly_log.week_number}.",
-            )
-
+        weekly_log = serializer.save(user=request.user, status='pending')
+        notify_weekly_log_submitted(weekly_log)
         return Response(WeeklylogSerializer(weekly_log).data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_weekly_log_draft(request):
+    permission_error = require_role(request.user, ['student'])
+    if permission_error:
+        return permission_error
+
+    draft_id = request.data.get('id')
+
+    if draft_id:
+        try:
+            draft = WeeklyLog.objects.get(id=draft_id, user=request.user, status='draft')
+        except WeeklyLog.DoesNotExist:
+            return Response({"error": "Draft not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = WeeklylogSerializer(draft, data=request.data, partial=True)
+    else:
+        serializer = WeeklylogSerializer(data=request.data)
+
+    if serializer.is_valid():
+        draft = serializer.save(user=request.user, status='draft')
+        return Response(WeeklylogSerializer(draft).data, status=status.HTTP_200_OK if draft_id else status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def submit_weekly_log(request, log_id):
+    permission_error = require_role(request.user, ['student'])
+    if permission_error:
+        return permission_error
+
+    try:
+        weekly_log = WeeklyLog.objects.get(id=log_id, user=request.user)
+    except WeeklyLog.DoesNotExist:
+        return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if weekly_log.status != 'draft':
+        return Response(
+            {"error": "Only draft logs can be submitted."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer = WeeklylogSerializer(weekly_log, data=request.data, partial=True)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    weekly_log = serializer.save(status='pending')
+    notify_weekly_log_submitted(weekly_log)
+
+    return Response(WeeklylogSerializer(weekly_log).data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -298,7 +355,7 @@ def supervisor_weekly_logs(request):
     except Supervisor.DoesNotExist:
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    logs = WeeklyLog.objects.filter(
+    logs = WeeklyLog.objects.exclude(status='draft').filter(
         user__student__assigned_supervisor=supervisor
     ).select_related('user', 'supervisor__users').order_by('week_number', 'date_submitted')
 
@@ -341,9 +398,16 @@ def review_weekly_log(request, log_id):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    supervisor_comment = request.data.get('supervisor_comment', weekly_log.supervisor_comment)
+    if new_status == 'rejected' and not str(supervisor_comment or '').strip():
+        return Response(
+            {"error": "A rejection reason is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     weekly_log.status = new_status
     weekly_log.supervisor = supervisor
-    weekly_log.supervisor_comment = request.data.get('supervisor_comment', weekly_log.supervisor_comment)
+    weekly_log.supervisor_comment = supervisor_comment
     weekly_log.evaluation_score = request.data.get('evaluation_score', weekly_log.evaluation_score)
     weekly_log.reviewed_at = timezone.now()
     weekly_log.save()

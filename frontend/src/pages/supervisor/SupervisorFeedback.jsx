@@ -6,6 +6,7 @@ import { useLogs } from "../../context/LogContext";
 export default function SupervisorFeedback() {
   const { logs, loading, error, reviewLog, reviewingId } = useLogs();
   const [formState, setFormState] = useState({});
+  const [localError, setLocalError] = useState("");
 
   const pendingLogs = logs.filter((log) => log.status === "pending");
 
@@ -21,6 +22,13 @@ export default function SupervisorFeedback() {
 
   const handleReview = async (logId, status) => {
     const currentForm = formState[logId] || {};
+
+    if (status === "rejected" && !currentForm.supervisor_comment?.trim()) {
+      setLocalError("Please provide a reason before rejecting this log.");
+      return;
+    }
+
+    setLocalError("");
     await reviewLog(logId, {
       status,
       supervisor_comment: currentForm.supervisor_comment || "",
@@ -37,6 +45,7 @@ export default function SupervisorFeedback() {
         </h2>
 
         {error ? <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+        {localError ? <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{localError}</p> : null}
 
         {loading ? (
           <p className="py-6 text-center text-gray-500">Loading logs...</p>
@@ -65,7 +74,7 @@ export default function SupervisorFeedback() {
                     <textarea
                       value={currentForm.supervisor_comment || ""}
                       onChange={(e) => handleChange(log.id, "supervisor_comment", e.target.value)}
-                      placeholder="Add feedback for the student"
+                      placeholder="Add feedback, or provide a rejection reason"
                       className="min-h-28 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
                       disabled={reviewingId === log.id}
                     />

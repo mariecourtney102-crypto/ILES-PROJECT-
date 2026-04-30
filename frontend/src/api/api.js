@@ -41,6 +41,16 @@ export const createWeeklyLog = async (payload) => {
   return res.data;
 };
 
+export const saveWeeklyLogDraft = async (payload) => {
+  const res = await api.post("/weekly-logs/draft/", payload);
+  return res.data;
+};
+
+export const submitWeeklyLogDraft = async (logId, payload) => {
+  const res = await api.patch(`/weekly-logs/${logId}/submit/`, payload);
+  return res.data;
+};
+
 export const fetchSupervisorWeeklyLogs = async (studentId) => {
   const res = await api.get("/supervisor/weekly-logs/", {
     params: studentId ? { student_id: studentId } : {},

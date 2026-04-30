@@ -72,6 +72,7 @@ class InternshipPlacement(models.Model):
     
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
+        ('draft', 'Draft'),
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected')
@@ -91,7 +92,7 @@ class WeeklyLog(models.Model):
     supervisor_comment = models.TextField(blank=True)
     evaluation_score = models.PositiveIntegerField(null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
 
     def __str__(self):
         return f"Week {self.week_number} - {self.user.username} - {self.status}"

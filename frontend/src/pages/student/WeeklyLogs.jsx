@@ -5,6 +5,10 @@ function WeeklyLogs() {
   const { logs, loading, error } = useLogs();
 
   const getStatusClasses = (status) => {
+    if (status === "draft") {
+      return "bg-gray-100 text-gray-700";
+    }
+
     if (status === "approved") {
       return "bg-green-100 text-green-700";
     }

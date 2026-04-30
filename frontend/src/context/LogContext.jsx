@@ -4,6 +4,8 @@ import {
   fetchMyWeeklyLogs,
   fetchSupervisorWeeklyLogs,
   reviewWeeklyLog,
+  saveWeeklyLogDraft,
+  submitWeeklyLogDraft,
 } from "../api/api";
 import { useAuth } from "./AuthContext";
 
@@ -68,6 +70,46 @@ export const LogProvider = ({ children }) => {
     }
   };
 
+  const saveDraft = async (payload) => {
+    setSubmitting(true);
+    setError("");
+
+    try {
+      const savedDraft = await saveWeeklyLogDraft(payload);
+      setLogs((prev) => {
+        const existing = prev.some((log) => log.id === savedDraft.id);
+        const nextLogs = existing
+          ? prev.map((log) => (log.id === savedDraft.id ? savedDraft : log))
+          : [...prev, savedDraft];
+        return nextLogs.sort((a, b) => a.week_number - b.week_number);
+      });
+      return { success: true, data: savedDraft };
+    } catch (err) {
+      const message = err.response?.data?.error || "Failed to save draft.";
+      setError(message);
+      return { success: false, error: message };
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const submitDraft = async (logId, payload) => {
+    setSubmitting(true);
+    setError("");
+
+    try {
+      const submittedLog = await submitWeeklyLogDraft(logId, payload);
+      setLogs((prev) => prev.map((log) => (log.id === submittedLog.id ? submittedLog : log)));
+      return { success: true, data: submittedLog };
+    } catch (err) {
+      const message = err.response?.data?.error || "Failed to submit draft.";
+      setError(message);
+      return { success: false, error: message };
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const reviewLog = async (logId, payload) => {
     setReviewingId(logId);
     setError("");
@@ -94,7 +136,9 @@ export const LogProvider = ({ children }) => {
         submitting,
         reviewingId,
         loadLogs,
+        saveDraft,
         submitLog,
+        submitDraft,
         reviewLog,
       }}
     >
