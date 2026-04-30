@@ -1,6 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
-from .models import CustomUser, Student, Supervisor, Admin, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Feedback
+from .models import CustomUser, Student, Supervisor, Admin, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Feedback, Notification
 
 class CustomUserSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(required=False, write_only=True, allow_blank=True)
@@ -223,3 +223,10 @@ class FeedbackSerializer(serializers.ModelSerializer):
         model = Feedback
         fields = ['id', 'user', 'user_name', 'subject', 'message', 'rating', 'created_at']
         read_only_fields = ['user', 'user_name', 'created_at']
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'title', 'message', 'is_read', 'created_at']
+        read_only_fields = ['id', 'title', 'message', 'created_at']

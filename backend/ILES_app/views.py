@@ -11,11 +11,11 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q, Count
 from django.utils import timezone
-from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, Student, Supervisor, Feedback, SiteSetting
+from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, Student, Supervisor, Feedback, SiteSetting, Notification
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer, StudentSerializer, SupervisorSerializer,
-                          FeedbackSerializer
+                          FeedbackSerializer, NotificationSerializer
 )
  
 def choose_role(request):
@@ -238,8 +238,22 @@ def create_weekly_log(request):
 
     serializer = WeeklylogSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        weekly_log = serializer.save(user=request.user)
+        Notification.objects.create(
+            user=request.user,
+            title="Weekly Log Submitted",
+            message=f"Your Week {weekly_log.week_number} log was submitted successfully.",
+        )
+
+        student_profile = getattr(request.user, 'student', None)
+        if student_profile and student_profile.assigned_supervisor:
+            Notification.objects.create(
+                user=student_profile.assigned_supervisor.users,
+                title="New Weekly Log",
+                message=f"{request.user.name or request.user.username} submitted Week {weekly_log.week_number}.",
+            )
+
+        return Response(WeeklylogSerializer(weekly_log).data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -483,3 +497,31 @@ def settings(request):
         },
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def notifications(request):
+    user_notifications = Notification.objects.filter(user=request.user)
+    serializer = NotificationSerializer(user_notifications, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, user=request.user)
+    except Notification.DoesNotExist:
+        return Response({"error": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    notification.is_read = True
+    notification.save(update_fields=['is_read'])
+    return Response(NotificationSerializer(notification).data, status=status.HTTP_200_OK)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def mark_all_notifications_read(request):
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return Response({"message": "All notifications marked as read."}, status=status.HTTP_200_OK)
