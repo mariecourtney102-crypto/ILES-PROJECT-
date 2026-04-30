@@ -370,3 +370,178 @@ def search_internships(request):
         return render(request, 'search.html',{'results': results,
                                               'query':query,
                                               })
+<<<<<<< HEAD
+=======
+    
+#WEEKLY LOG VIEWS
+#STUDENT SUBMITS A LOG
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_log(request):
+    data = request.data.copy()
+    data['user'] = request.user.id
+    serializer = WeeklylogSerializer(data = data)
+    if serializer.is_valid():
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#STUDENT VIEWS THEIR LOG
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_logs(request):
+    logs = WeeklyLog.objects.filter(user=request.user)
+    serializer = WeeklylogSerializer(logs, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+#SUPERVISOR REVIEWS LOG
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def review_log(request, log_id):
+    try:
+        log = WeeklyLog.objects.get(id=log_id)
+        log.supervisor_comment = request.data.get('supervisor_comment')
+        log.status = 'reviewed'
+        log.save()
+        return Response({"message": "The log has been successfully reviewed"}, status=status.HTTP_200_OK)
+    except WeeklyLog.DoesNotExist:
+        return Response({"message": "Log not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+#EVALUATING VIEWS
+#SUPERVISOR SUBMITTING AN EVALUATION
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_evaluation(request):
+    serializer = EvaluationSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#A USER VIEWING AN EVALUATION
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_evaluation(request):
+    evaluations = Evaluation.objects.filter(user=request.user)
+    serializer = EvaluationSerializer(evaluations, many = True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+#GETTING INFORMATION ON THE EVALUATION CRITERIA
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_criteria(request):
+    criteria = EvaluationCriteria.objects.all()
+    data = [
+        {
+            "id": c.id,
+            "criteria_name": c.criteria_name,
+            "criteria": c.criteria,
+            "criteria_weight": c.criteria_weight
+        }
+        for c in criteria
+    ]
+    return Response(data, status=status.HTTP_200_OK)
+
+#internship details
+@login_required
+def internship_detail(request,id):
+    internship = get_object_or_404(InternshipPlacement,id=id)
+    return render(request,'internship_detail.html',{'internship': internship})  
+
+#Supervisor/Admin views
+@login_required
+def update_status(request,id):
+    internship = get_object_or_404(InternshipPlacement,id=id)
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        if status in ['approved','rejected']:
+            internship.status = status
+            internship.save()
+            messages.success(request,"status updated")
+            return redirect('dashboard')
+def admin_dashboard(request):
+    if not request.user.is_authenticated or request.user.role != 'admin':
+        return redirect('login')
+    
+    internships = InternshipPlacement.objects.all()
+    return render(request,'admin_dashboard.html',{'internships':internships})
+
+    #student without supervisors
+    from django.contrib.auth.models import User
+
+@login_required             
+def students_without_supervisors(request):
+    internships = InternshipPlacement.objects.filter(supervisor__isnull=True)
+
+    return render(request, 'admin/students_no_supervisor.html',{
+        'internships':internships
+    })         
+
+
+#Supervisors without students   
+@login_required
+def supervisors_without_students(request):
+    supervisors = User.objects.filter(is_staff=True).exclude(
+        supervised_internships__isnull=False
+    )
+    return render(request, 'admin/supervisors_no_students.html',{
+        'supervisors':supervisors
+        })
+
+#students without placements
+@login_required
+def student_availability(request):
+    students = User.objects.filter(is_staff=False)
+      
+
+    data =  []
+    for student in students:
+        has_internship = InternshipPlacement.objects.filter(user=student).exists()
+        data.append({
+              'student':student,
+              'has_internship':has_internship
+        })
+        return render(request, 'admin/student_availability.html',{
+              'data':data
+              })
+
+#Students grouped by company
+from django.db.models import count
+
+@login_required
+def students_by_company(request):
+    companies = InternshipPlacement.objects.values('company_name').annotate(
+        total=count('id')
+    )
+    return render(request, 'admin/company_groups.html', {
+        'companies':companies
+        })
+          
+#comments on logs
+@login_required
+def add_log_comment(request, log_id):
+    log = get_object_or_404(LogEntry, id=log_id)
+
+    if request.method == 'POST':
+        comment_text = request.POST.get('comment')
+
+
+        LogComment.objects.create(
+            log=log,
+            author=request.user,
+            comment=comment_text
+            )  
+        return redirect('log_detail', log_id=log.id)
+    
+
+#view log comments
+@login_required
+def log_detail(request, log_id):
+    log = get_object_or_404(LogEntry, id=log_id)
+    comments = log.comments.all()
+
+    return render(request, 'logs/log_detail.html', {
+        'log':log,
+        'comments':comments
+    })
+>>>>>>> 7891632869093d1b927a742215c91babbf049705
