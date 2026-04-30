@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {
   createWeeklyLog,
   fetchMyWeeklyLogs,
@@ -17,7 +17,7 @@ export const LogProvider = ({ children }) => {
   const [reviewingId, setReviewingId] = useState(null);
   const [error, setError] = useState("");
 
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     if (!user?.token || !user?.role) {
       setLogs([]);
       setError("");
@@ -45,11 +45,11 @@ export const LogProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.role, user?.token]);
 
   useEffect(() => {
     loadLogs();
-  }, [user?.token, user?.role]);
+  }, [loadLogs]);
 
   const submitLog = async (payload) => {
     setSubmitting(true);
@@ -103,4 +103,5 @@ export const LogProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useLogs = () => useContext(LogContext);

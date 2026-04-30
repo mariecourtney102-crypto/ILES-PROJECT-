@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/api";
 
 const Settings = () => {
   const [settings, setSettings] = useState({
@@ -8,7 +8,7 @@ const Settings = () => {
   });
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/settings/")
+    api.get("/settings/")
       .then(res => setSettings(res.data))
       .catch(err => console.error(err));
   }, []);
@@ -23,7 +23,7 @@ const Settings = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    axios.put("http://localhost:8000/api/settings/", settings)
+    api.put("/settings/", settings)
       .then(() => alert("Settings updated"))
       .catch(err => console.error(err));
   };

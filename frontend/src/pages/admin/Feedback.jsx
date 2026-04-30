@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/api";
 
 const Feedback = () => {
   const [feedbacks, setFeedbacks] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/feedback/")
+    api.get("/feedback/")
       .then(res => setFeedbacks(res.data))
       .catch(err => console.error(err));
   }, []);

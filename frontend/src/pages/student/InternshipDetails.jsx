@@ -234,22 +234,25 @@ function InternshipDetails() {
             <div className="rounded-2xl bg-white p-6 shadow-sm">
               <h3 className="text-xl font-semibold text-gray-800">Current Details</h3>
               <div className="mt-5 space-y-4">
-                {fieldMeta.map(({ key, label, icon: Icon, description }) => (
-                  <div key={key} className="rounded-xl border border-gray-100 p-4">
+                {fieldMeta.map((field) => {
+                  const IconComponent = field.icon;
+                  return (
+                  <div key={field.key} className="rounded-xl border border-gray-100 p-4">
                     <div className="flex items-start gap-3">
                       <div className="rounded-lg bg-teal-50 p-2 text-teal-600">
-                        <Icon size={18} />
+                        <IconComponent size={18} />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-800">{label}</p>
-                        <p className="text-xs text-gray-400">{description}</p>
+                        <p className="font-semibold text-gray-800">{field.label}</p>
+                        <p className="text-xs text-gray-400">{field.description}</p>
                         <p className="mt-1 text-sm text-gray-600">
-                          {formData[key] || <span className="italic text-gray-400">Not specified</span>}
+                          {formData[field.key] || <span className="italic text-gray-400">Not specified</span>}
                         </p>
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

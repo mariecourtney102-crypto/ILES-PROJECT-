@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/api";
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/reports/")
+    api.get("/opportunities/")
       .then(res => setReports(res.data))
       .catch(err => console.error(err));
   }, []);
