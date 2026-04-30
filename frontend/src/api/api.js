@@ -4,6 +4,10 @@ const api = axios.create({
   baseURL: "http://127.0.0.1:8000/api",
 });
 
+// Export both names for compatibility
+export const axiosInstance = api;
+export default api;
+
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");

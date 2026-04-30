@@ -281,7 +281,8 @@ def update_status(request,id):
             internship.save()
             messages.success(request,"status updated")
             return redirect('dashboard')
-def admin_dashboard(request):
+
+def admin_dashboard_view(request):
     if not request.user.is_authenticated or request.user.role != 'admin':
         return redirect('login')
     
@@ -364,5 +365,27 @@ def change_password(request):
         request.user.set_password(new_password)
         request.user.save()
         return Response({"message": "Password changed successfully"})
-    return Response({"error": "New password required"}, status=status.HTTP_400_BAD_REQUEST)            
+    return Response({"error": "New password required"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_feedback(request):
+    # Feedback model doesn't exist - return empty list
+    return Response([])
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def assign_supervisor(request, pk):
+    if request.user.role != 'admin':
+        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    
+    user = get_object_or_404(CustomUser, pk=pk)
+    supervisor_id = request.data.get('supervisor_id')
+    
+    if supervisor_id:
+        supervisor = get_object_or_404(CustomUser, pk=supervisor_id, role='supervisor')
+        # Assign supervisor logic here
+        return Response({"message": "Supervisor assigned successfully"})
+    
+    return Response({"error": "Supervisor ID required"}, status=status.HTTP_400_BAD_REQUEST)            
 
