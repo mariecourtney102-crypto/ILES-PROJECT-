@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.admin.models import LogEntry
 from django.db import models
 
 
@@ -66,7 +67,10 @@ class InternshipPlacement(models.Model):
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
-        ('reviewed', 'Reviewed')
+        ('reviewed', 'Reviewed'),
+        ('approved','approved'),
+        ('Rejected','Rejected'),
+        ('completed','completed'),
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -111,3 +115,9 @@ class Evaluation(models.Model):
 
     def __str__(self):
         return f"{self.placement.user.username} - {self.criteria}: {self.score}"
+#comments on logs
+class Logcomment(models.Model):
+    log = models.ForeignKey(LogEntry, on_delete=models.CASCADE, related_name='Comment')
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

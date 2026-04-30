@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
+from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
@@ -281,97 +281,10 @@ def update_status(request,id):
             internship.save()
             messages.success(request,"status updated")
             return redirect('dashboard')
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_opportunities(request):
-    opportunities = InternshipPlacement.objects.all().select_related('user')
-    data = [{
-        "id": opp.id,
-        "student_name": opp.user.name,
-        "student_reg_no": opp.user.ID_number,
-        "place_of_internship": opp.place_of_internship,
-        "department": opp.department,
-        "supervisor_name": opp.supervisor_name,
-        "start_date": opp.start_date,
-        "end_date": opp.end_date,
-    } for opp in opportunities]
-    return Response(data)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_students(request):
-    students = CustomUser.objects.filter(role='student')
-    data = [{
-        "id": s.id,
-        "name": s.name,
-        "username": s.username,
-        "reg_no": s.ID_number,
-        "email": s.email,
-        "telephone": s.telephone_number,
-    } for s in students]
-    return Response(data)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_supervisors(request):
-    supervisors = CustomUser.objects.filter(role='supervisor')
-    data = [{
-        "id": s.id,
-        "name": s.name,
-        "username": s.username,
-        "staff_id": s.ID_number,
-        "email": s.email,
-        "telephone": s.telephone_number,
-    } for s in supervisors]
-    return Response(data)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_reports(request):
-    return Response({
-        "students": CustomUser.objects.filter(role='student').count(),
-        "supervisors": CustomUser.objects.filter(role='supervisor').count(),
-        "opportunities": InternshipPlacement.objects.count()
-    })
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def change_password(request):
-    new_password = request.data.get('password')
-    if not new_password:
-        return Response({"error": "Password is required"}, status=status.HTTP_400_BAD_REQUEST)
+def admin_dashboard(request):
+    if not request.user.is_authenticated or request.user.role != 'admin':
+        return redirect('login')
     
-    request.user.set_password(new_password)
-    request.user.save()
-    return Response({"message": "Password changed successfully"})
+    internships = InternshipPlacement.objects.all()
+    return render(request,'admin_dashboard.html',{'internships':internships})            
 
-# Feedback endpoint for admin
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_feedback(request):
-    # Get evaluations as feedback
-    feedbacks = Evaluation.objects.all().select_related('user', 'placement')
-    data = [{
-        "id": fb.id,
-        "student_name": fb.user.name if fb.user else "Unknown",
-        "placement": fb.placement.place_of_internship if fb.placement else "Unknown",
-        "score": fb.score,
-        "comments": fb.comments,
-        "date": fb.date_evaluated,
-    } for fb in feedbacks]
-    return Response(data) 
-@api_view(['PATCH'])
-def assign_supervisor(request, pk):
-    try:
-        user = User.objects.get(id=pk)
-
-        supervisor_id = request.data.get("supervisor_id")
-        supervisor = User.objects.get(id=supervisor_id)
-
-        user.supervisor = supervisor
-        user.save()
-
-        return Response({"message": "Supervisor assigned successfully"})
-    except Exception as e:
-        return Response({"error": str(e)}, status=400)          
