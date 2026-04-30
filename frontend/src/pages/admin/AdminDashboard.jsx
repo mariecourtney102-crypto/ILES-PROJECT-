@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
 import axios from "axios";
-import DashboardLayout from "../../Components/dashboard_layout";
+
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,18 +27,17 @@ const AdminDashboard = () => {
   }, []);
 
   return (
-    <DashboardLayout>
-      <div>
-        <h1 className="text-2xl font-bold text-teal-600 mb-4">
+    <div>
+      <h1 className="text-2xl font-bold text-teal-600 mb-4">
         Dashboard
-        </h1>
+      </h1>
 
-        <div className="bg-white p-4 rounded-lg shadow">
-          {loading ? (
-            <p>Loading...</p>
-          ) : error ? (
-            <p className="text-red-500">Error: {error}</p>
-          ) : stats ? (
+      <div className="bg-white p-4 rounded-lg shadow">
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p className="text-red-500">Error: {error}</p>
+        ) : stats ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-blue-100 rounded-lg">
               <p className="text-sm text-gray-600">Students</p>
@@ -60,11 +59,8 @@ const AdminDashboard = () => {
         ) : (
           <p>No data available</p>
         )}
-        </div>
       </div>
-    </DashboardLayout>
-
-
+    </div>
   );
 };
 

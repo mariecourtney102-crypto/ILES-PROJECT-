@@ -286,5 +286,83 @@ def admin_dashboard(request):
         return redirect('login')
     
     internships = InternshipPlacement.objects.all()
-    return render(request,'admin_dashboard.html',{'internships':internships})            
+    return render(request,'admin_dashboard.html',{'internships':internships})
+
+#Admin API Views
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_opportunities(request):
+    if request.user.role != 'admin':
+        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    
+    opportunities = InternshipPlacement.objects.all()
+    data = [{
+        "id": opp.id,
+        "title": opp.title,
+        "company": opp.company,
+        "status": opp.status,
+        "created_at": opp.created_at
+    } for opp in opportunities]
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_students(request):
+    if request.user.role != 'admin':
+        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    
+    students = CustomUser.objects.filter(role='student')
+    data = [{
+        "id": s.id,
+        "username": s.username,
+        "email": s.email,
+        "first_name": s.first_name,
+        "last_name": s.last_name
+    } for s in students]
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_supervisors(request):
+    if request.user.role != 'admin':
+        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    
+    supervisors = CustomUser.objects.filter(role='supervisor')
+    data = [{
+        "id": s.id,
+        "username": s.username,
+        "email": s.email,
+        "first_name": s.first_name,
+        "last_name": s.last_name
+    } for s in supervisors]
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_reports(request):
+    if request.user.role != 'admin':
+        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    
+    students = CustomUser.objects.filter(role='student').count()
+    supervisors = CustomUser.objects.filter(role='supervisor').count()
+    opportunities = InternshipPlacement.objects.count()
+    
+    return Response({
+        "students": students,
+        "supervisors": supervisors,
+        "opportunities": opportunities
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    if request.user.role != 'admin':
+        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    
+    new_password = request.data.get('new_password')
+    if new_password:
+        request.user.set_password(new_password)
+        request.user.save()
+        return Response({"message": "Password changed successfully"})
+    return Response({"error": "New password required"}, status=status.HTTP_400_BAD_REQUEST)            
 
