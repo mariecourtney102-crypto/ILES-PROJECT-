@@ -6,7 +6,6 @@ const api = axios.create({
 
 // Export both names for compatibility
 export const axiosInstance = api;
-export default api;
 
 
 api.interceptors.request.use((config) => {
