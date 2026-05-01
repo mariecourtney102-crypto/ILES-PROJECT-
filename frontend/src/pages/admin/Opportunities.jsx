@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
 
-const Reports = () => {
+const Opportunities = () => {
   const [reports, setReports] = useState([]);
 
   useEffect(() => {
@@ -35,4 +35,4 @@ const Reports = () => {
   );
 };
 
-export default Reports;
+export default Opportunities;

@@ -31,6 +31,34 @@ export const logoutUser = () => {
   localStorage.removeItem("name");
 };
 
+export const getUserProfile = async () => {
+  const res = await api.get("/profile/");
+  return res.data;
+};
+
+export const updateUserProfile = async (payload) => {
+  const res = await api.put("/profile/", payload);
+  return res.data;
+};
+
+export const logoutAPI = async () => {
+  const res = await api.post("/logout/");
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("name");
+  return res.data;
+};
+
+export const getDashboard = async () => {
+  const res = await api.get("/dashboard/");
+  return res.data;
+};
+
+export const searchInternships = async (query) => {
+  const res = await api.get("/search-internships/", { params: { q: query } });
+  return res.data;
+};
+
 export const fetchMyWeeklyLogs = async () => {
   const res = await api.get("/weekly-logs/my/");
   return res.data;
