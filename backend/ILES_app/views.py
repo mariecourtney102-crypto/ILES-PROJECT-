@@ -4,10 +4,7 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth import authenticate, logout
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib import messages
+from django.contrib.auth import authenticate
 from django.db import transaction
 from django.db.models import Q, Count
 from django.utils import timezone
@@ -82,20 +79,30 @@ def login(request):
 
     return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
 
-@login_required
-def dashboard(request):
-    internship = InternshipPlacement.objects.filter(user=request.user)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logoutUser(request):
+    """Logout user by deleting their token"""
+    try:
+        request.user.auth_token.delete()
+    except:
+        pass
+    return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dashboard(request):
+    permission_error = require_role(request.user, ['student'])
+    if permission_error:
+        return permission_error
+    
+    internship = InternshipPlacement.objects.filter(user=request.user)
     total = internship.count()
 
-    context = {'internships': internship,
-               'total': total,
-               }
-    return render(request,'dashboard.html', context)
-  
-
-
-    #'IntershipPlacement
+    return Response({
+        'internships': InternshipPlacementSerializer(internship, many=True).data,
+        'total': total,
+    }, status=status.HTTP_200_OK)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_placement(request):
@@ -417,38 +424,43 @@ def review_weekly_log(request, log_id):
 
 
 
-#logout view
-def logout_view(request):
-    logout(request)
-    return redirect('login')
-    
-#profile view
-@login_required
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
 def profile(request):
-    if request.method == 'POST':
-        form = UserUpdateForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request,"profile updated successfully")
-            return redirect('profile')
-    else:
-        form = UserUpdateForm(instance=request.user)
-        return render(request,'profile.html',{'form':form})
-        
-#search/filter internship
-@login_required
-def search_internships(request):
-    query = request.GET.get('q')
-    results = []
+    """Get or update user profile"""
+    if request.method == 'GET':
+        user_data = CustomUserSerializer(request.user).data
+        return Response(user_data, status=status.HTTP_200_OK)
     
-    if query:
-        results = InternshipPlacement.objects.filter(Q(place_of_internship__icontains=query)|
-                                                     Q(department__icontains=query)|
-                                                     Q(supervisor_name__icontains=query)
-        )
-        return render(request, 'search.html',{'results': results,
-                                              'query':query,
-                                              })
+    if request.method == 'PUT':
+        serializer = CustomUserSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def search_internships(request):
+    """Search/filter internship placements"""
+    query = request.GET.get('q', '').strip()
+    
+    if not query:
+        return Response({"error": "Query parameter 'q' is required."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    results = InternshipPlacement.objects.filter(
+        Q(place_of_internship__icontains=query) |
+        Q(department__icontains=query) |
+        Q(supervisor_name__icontains=query)
+    )
+    
+    serializer = InternshipPlacementSerializer(results, many=True)
+    return Response({
+        'query': query,
+        'results': serializer.data,
+        'count': results.count()
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
