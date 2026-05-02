@@ -9,15 +9,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria
+from .models import InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, CustomUser
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer
 )
 @api_view(['GET'])
 def supervisors_list(request):
-    supervisors = User.objects.filter(role='supervisor')
-    serializer = UserSerializer(supervisors, many=True)
+    supervisors = CustomUser.objects.filter(role='supervisor')
+    serializer = CustomUserSerializer(supervisors, many=True)
     return Response(serializer.data)
 
 @api_view(['GET']) 
