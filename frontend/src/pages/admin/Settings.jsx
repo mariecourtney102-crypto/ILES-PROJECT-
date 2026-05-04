@@ -5,26 +5,26 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState("academic");
   const [loading, setLoading] = useState(true);
 
-  const ToggleSwitch = ({ name, checked, onChange }) => {
-  return (
-    <div
-      onClick={() =>
-        onChange({
-          target: { name, type: "checkbox", checked: !checked },
-        })
-      }
-      className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition ${
-        checked ? "bg-primary" : "bg-gray-300"
-      }`}
-    >
+  const ToggleSwitch = ({ name, checked = false, onChange }) => {
+    return (
       <div
-        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
-          checked ? "translate-x-6" : "translate-x-0"
+        onClick={() =>
+          onChange({
+            target: { name, type: "checkbox", checked: !checked },
+          })
+        }
+        className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition ${
+          checked ? "bg-primary" : "bg-gray-300"
         }`}
-      />
-    </div>
-  );
-};
+      >
+        <div
+          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
+            checked ? "translate-x-6" : "translate-x-0"
+          }`}
+        />
+      </div>
+    );
+  };
 
   const [settings, setSettings] = useState({
     academic_year: "",
@@ -35,34 +35,42 @@ export default function Settings() {
     allow_registration: false,
     require_approval: false,
     grading_scale: "percentage",
-  pass_mark: 50,
-  enable_supervisor_grading: true,
-
-  email_notifications: true,
-  notify_on_submission: true,
-  notify_supervisor_assignment: true,
+    pass_mark: 50,
+    enable_supervisor_grading: true,
+    email_notifications: true,
+    notify_on_submission: true,
+    notify_supervisor_assignment: true,
   });
 
   useEffect(() => {
-    api.get("/settings/")
-      .then(res => setSettings(res.data))
-      .catch(err => console.error(err));
+    api
+      .get("/settings/")
+      .then((res) => {
+        setSettings(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setSettings({
-      ...settings,
+
+    setSettings((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    api.put("/settings/", settings)
+    api
+      .put("/settings/", settings)
       .then(() => alert("Settings updated"))
-      .catch(err => console.error(err));
+      .catch((err) => console.error(err));
   };
 
   if (loading) return <p className="p-6">Loading settings...</p>;
@@ -77,12 +85,10 @@ export default function Settings() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-
-      {/* 🔥 SIDEBAR */}
       <div className="w-64 bg-white shadow-lg p-4">
         <h2 className="text-xl font-semibold mb-6 text-primary">Settings</h2>
 
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -97,22 +103,22 @@ export default function Settings() {
         ))}
       </div>
 
-      {/* 🔥 CONTENT */}
       <div className="flex-1 p-8">
-
         <h1 className="text-2xl font-semibold mb-6 capitalize">
           {activeTab} Settings
         </h1>
 
         <div className="grid gap-6 max-w-3xl">
-
-          {/*  ACADEMIC */}
           {activeTab === "academic" && (
             <div className="bg-white p-6 rounded-2xl shadow-md">
-              <h2 className="text-lg font-semibold mb-4">Academic Structure</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                Academic Structure
+              </h2>
 
               <div className="mb-4">
-                <label className="block mb-1 text-gray-600">Academic Year</label>
+                <label className="block mb-1 text-gray-600">
+                  Academic Year
+                </label>
                 <input
                   type="text"
                   name="academic_year"
@@ -138,10 +144,11 @@ export default function Settings() {
             </div>
           )}
 
-          {/*  USERS */}
           {activeTab === "users" && (
             <div className="bg-white p-6 rounded-2xl shadow-md">
-              <h2 className="text-lg font-semibold mb-4">User Management</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                User Management
+              </h2>
 
               <div className="mb-4">
                 <label className="block mb-1 text-gray-600">
@@ -156,64 +163,64 @@ export default function Settings() {
                 />
               </div>
 
-              {/* Toggle switches */}
-             <div className="flex justify-between items-center mb-4">
-  <span>Allow Registration</span>
-  <ToggleSwitch
-    name="allow_registration"
-    checked={settings.allow_registration}
-    onChange={handleChange}
-  />
-</div>
+              <div className="flex justify-between items-center mb-4">
+                <span>Allow Registration</span>
+                <ToggleSwitch
+                  name="allow_registration"
+                  checked={settings.allow_registration}
+                  onChange={handleChange}
+                />
+              </div>
 
-<div className="flex justify-between items-center">
-  <span>Require Admin Approval</span>
-  <ToggleSwitch
-    name="require_approval"
-    checked={settings.require_approval}
-    onChange={handleChange}
-  />
-</div>
+              <div className="flex justify-between items-center">
+                <span>Require Admin Approval</span>
+                <ToggleSwitch
+                  name="require_approval"
+                  checked={settings.require_approval}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
           )}
 
           {activeTab === "notifications" && (
-  <div className="bg-white p-6 rounded-2xl shadow-md">
-    <h2 className="text-lg font-semibold mb-4">Notifications</h2>
+            <div className="bg-white p-6 rounded-2xl shadow-md">
+              <h2 className="text-lg font-semibold mb-4">Notifications</h2>
 
-    <div className="flex justify-between items-center mb-4">
-      <span>Email Notifications</span>
-      <ToggleSwitch
-        name="email_notifications"
-        checked={settings.email_notifications}
-        onChange={handleChange}
-      />
-    </div>
+              <div className="flex justify-between items-center mb-4">
+                <span>Email Notifications</span>
+                <ToggleSwitch
+                  name="email_notifications"
+                  checked={settings.email_notifications}
+                  onChange={handleChange}
+                />
+              </div>
 
-    <div className="flex justify-between items-center mb-4">
-      <span>Notify on Student Submission</span>
-      <ToggleSwitch
-        name="notify_on_submission"
-        checked={settings.notify_on_submission}
-        onChange={handleChange}
-      />
-    </div>
+              <div className="flex justify-between items-center mb-4">
+                <span>Notify on Student Submission</span>
+                <ToggleSwitch
+                  name="notify_on_submission"
+                  checked={settings.notify_on_submission}
+                  onChange={handleChange}
+                />
+              </div>
 
-    <div className="flex justify-between items-center">
-      <span>Notify Supervisor Assignment</span>
-      <ToggleSwitch
-        name="notify_supervisor_assignment"
-        checked={settings.notify_supervisor_assignment}
-        onChange={handleChange}
-      />
-    </div>
-  </div>
-)}
+              <div className="flex justify-between items-center">
+                <span>Notify Supervisor Assignment</span>
+                <ToggleSwitch
+                  name="notify_supervisor_assignment"
+                  checked={settings.notify_supervisor_assignment}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+          )}
 
-          {/* 📅 SUBMISSIONS */}
           {activeTab === "submissions" && (
             <div className="bg-white p-6 rounded-2xl shadow-md">
-              <h2 className="text-lg font-semibold mb-4">Submission Rules</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                Submission Rules
+              </h2>
 
               <div className="mb-4">
                 <label className="block mb-1 text-gray-600">
@@ -239,51 +246,58 @@ export default function Settings() {
               </div>
             </div>
           )}
+
           {activeTab === "grading" && (
-  <div className="bg-white p-6 rounded-2xl shadow-md">
-    <h2 className="text-lg font-semibold mb-4">Grading Settings</h2>
+            <div className="bg-white p-6 rounded-2xl shadow-md">
+              <h2 className="text-lg font-semibold mb-4">
+                Grading Settings
+              </h2>
 
-    <div className="mb-4">
-      <label className="block mb-1 text-gray-600">Grading Scale</label>
-      <select
-        name="grading_scale"
-        value={settings.grading_scale}
-        onChange={handleChange}
-        className="w-full border p-2 rounded-lg"
-      >
-        <option value="percentage">Percentage (%)</option>
-        <option value="letter">Letter (A–F)</option>
-      </select>
-    </div>
+              <div className="mb-4">
+                <label className="block mb-1 text-gray-600">
+                  Grading Scale
+                </label>
+                <select
+                  name="grading_scale"
+                  value={settings.grading_scale}
+                  onChange={handleChange}
+                  className="w-full border p-2 rounded-lg"
+                >
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="letter">Letter (A–F)</option>
+                </select>
+              </div>
 
-    <div className="mb-4">
-      <label className="block mb-1 text-gray-600">Pass Mark</label>
-      <input
-        type="number"
-        name="pass_mark"
-        value={settings.pass_mark}
-        onChange={handleChange}
-        className="w-full border p-2 rounded-lg"
-      />
-    </div>
+              <div className="mb-4">
+                <label className="block mb-1 text-gray-600">Pass Mark</label>
+                <input
+                  type="number"
+                  name="pass_mark"
+                  value={settings.pass_mark}
+                  onChange={handleChange}
+                  className="w-full border p-2 rounded-lg"
+                />
+              </div>
 
-    <div className="flex justify-between items-center">
-      <span>Enable Supervisor Grading</span>
-      <ToggleSwitch
-        name="enable_supervisor_grading"
-        checked={settings.enable_supervisor_grading}
-        onChange={handleChange}
-      />
-    </div>
-  </div>
-)}
+              <div className="flex justify-between items-center">
+                <span>Enable Supervisor Grading</span>
+                <ToggleSwitch
+                  name="enable_supervisor_grading"
+                  checked={settings.enable_supervisor_grading}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+          )}
 
-          {/* 💾 SAVE */}
           <button
             onClick={handleSubmit}
             className="bg-primary text-white px-6 py-3 rounded-xl hover:bg-primary-dark transition w-fit"
           >
             Save Changes
           </button>
-
-
+        </div>
+      </div>
+    </div>
+  );
+}
