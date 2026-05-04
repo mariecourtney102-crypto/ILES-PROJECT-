@@ -280,7 +280,7 @@ export default function Settings() {
 
           {/* 💾 SAVE */}
           <button
-            onClick={handleSave}
+            onClick={handleSubmit}
             className="bg-primary text-white px-6 py-3 rounded-xl hover:bg-primary-dark transition w-fit"
           >
             Save Changes
