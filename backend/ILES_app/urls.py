@@ -54,7 +54,7 @@ urlpatterns = [
     #path('evaluations/', views.get_evaluation, name='get-evaluation'),
 
     #Admin
-    path('admin/dashboard/', views.admin_dashboard, name='admin-dashboard'),
+    path('admin/', views.admin_dashboard, name='admin-dashboard'),
     path('admin/dashboard-view/', views.admin_dashboard_view, name='admin-dashboard-view'),
     path('admin/opportunities/', views.get_opportunities),
     path('admin/students/', views.get_students),
