@@ -106,7 +106,7 @@ export default function Settings() {
 
         <div className="grid gap-6 max-w-3xl">
 
-          {/* 🎓 ACADEMIC */}
+          {/*  ACADEMIC */}
           {activeTab === "academic" && (
             <div className="bg-white p-6 rounded-2xl shadow-md">
               <h2 className="text-lg font-semibold mb-4">Academic Structure</h2>
@@ -138,7 +138,7 @@ export default function Settings() {
             </div>
           )}
 
-          {/* 👤 USERS */}
+          {/*  USERS */}
           {activeTab === "users" && (
             <div className="bg-white p-6 rounded-2xl shadow-md">
               <h2 className="text-lg font-semibold mb-4">User Management</h2>
@@ -286,4 +286,4 @@ export default function Settings() {
             Save Changes
           </button>
 
-export default Settings;
+
