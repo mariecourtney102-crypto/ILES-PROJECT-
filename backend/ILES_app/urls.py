@@ -36,7 +36,7 @@ urlpatterns = [
 
 
     #Criteria
-    path('criteria/', views.get_criteria, name='get-criteria'),
+   # path('criteria/', views.get_criteria, name='get-criteria'),
 
     #Internship Placement
     path('placement/create/', views.create_placement, name='create-placement'),
