@@ -642,12 +642,7 @@ def mark_notification_read(request, notification_id):
 def mark_all_notifications_read(request):
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return Response({"message": "All notifications marked as read."}, status=status.HTTP_200_OK)
-        status = request.POST.get('status')
-        if status in ['approved','rejected']:
-            internship.status = status
-            internship.save()
-            messages.success(request,"status updated")
-            return redirect('dashboard')
+    
 @api_view(['GET'])
 def admin_dashboard_view(request):
     if not request.user.is_authenticated or request.user.role != 'admin':
