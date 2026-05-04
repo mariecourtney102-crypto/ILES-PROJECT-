@@ -45,8 +45,8 @@ urlpatterns = [
     path('placement/delete/', views.delete_placement, name='delete-placement'),
 
     #Weekly Logs
-    path('logs/create/', views.create_log, name='create-log'),
-    path('logs/', views.get_logs, name='get-logs'),
+   # path('logs/create/', views.create_log, name='create-log'),
+    #path('logs/', views.get_logs, name='get-logs'),
     path('logs/<int:log_id>/review/', views.review_log, name='review-log'),
 
     #Evaluations
