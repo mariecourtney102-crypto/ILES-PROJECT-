@@ -18,6 +18,7 @@ import Settings from "../pages/admin/Settings";
 import Feedback from "../pages/admin/Feedback";
 import ProtectedRoute from "./ProtectedRoute";
 import { getRoleRoute } from "../utils/roleRoutes";
+import AdminLayout from "../Components/AdminLayout";
 
 const AppRoutes = () => {
   const { user } = useAuth();

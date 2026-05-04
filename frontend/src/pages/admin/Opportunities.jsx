@@ -10,29 +10,26 @@ const Opportunities = () => {
       .catch(err => console.error(err));
   }, []);
 
+  if (loading) return <p>Loading...</p>;
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-teal-600 mb-4">
-        Reports
-      </h1>
+      <h1 className="text-2xl font-bold text-teal-700">Opportunities</h1>
 
-      <div className="bg-white p-4 rounded-lg shadow">
-        {reports.length > 0 ? (
-          reports.map(report => (
-            <div key={report.id} className="border-b py-3">
-              <p className="font-semibold">{report.title}</p>
-              <p className="text-gray-600">{report.summary}</p>
-              <p className="text-sm text-gray-400">
-                Date: {report.created_at}
-              </p>
+      <div className="mt-4 bg-white p-4 rounded shadow">
+        {opportunities.length === 0 ? (
+          <p>No opportunities found.</p>
+        ) : (
+          opportunities.map((opp) => (
+            <div key={opp.id} className="border-b py-2">
+              <p className="font-semibold">{opp.title}</p>
+              <p className="text-sm text-gray-500">{opp.company}</p>
             </div>
           ))
-        ) : (
-          <p>No reports available.</p>
         )}
       </div>
     </div>
   );
-};
+}
 
 export default Opportunities;
