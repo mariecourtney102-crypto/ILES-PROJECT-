@@ -270,16 +270,23 @@ function Signup() {
                 disabled={loading}
               />
 
-              <input
-                type="number"
+              <select
                 name="year_of_study"
-                placeholder="Year of Study"
                 value={formData.year_of_study}
                 onChange={handleChange}
                 className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
                 disabled={loading}
-                min="1"
-              />
+                required
+              >
+                <option value="" disabled>
+                  Select Year of Study
+                </option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+                <option value="5">5th Year</option>
+              </select>
             </>
           )}
 

@@ -1,17 +1,9 @@
-import { NavLink, Navigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function Sidebar() {
-  const { user ,logout } = useAuth();
-
-  const handleLogout = () =>{
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("username");
-
-    logout();
-    Navigate("/login");
-  };
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const linkClass =
     "p-2 rounded-md transition";
 
@@ -23,12 +15,17 @@ function Sidebar() {
     return "Student Panel";
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
-    <div className="w-64 bg-teal-600 text-white min-h-screen p-4 flex flex-col">
+    <div className="flex min-h-screen w-64 flex-col bg-teal-600 p-4 text-white">
 
       <h2 className="text-xl font-bold mb-6">{getTitle()}</h2>
 
-      <nav className="flex flex-col gap-4">
+      <nav className="flex flex-1 flex-col gap-4">
 
         {user.role === "student" && (
           <>
@@ -92,7 +89,7 @@ function Sidebar() {
               Feedback
             </NavLink>
           </>
-        )}   
+        )}
 
         {user.role === "supervisor" && (
           <>
@@ -134,90 +131,40 @@ function Sidebar() {
           </>
         )}
 
-      
-        {user.role === "student" && (
-          <>
-            <NavLink to="/student" className={({ isActive }) =>
-              `${linkClass} ${
-                isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
-                }`
-                }
-              >
-              Dashboard
-            </NavLink>
-          </>
-        )}
-        
         {user.role === "admin" && (
           <>
-            <NavLink to="/admin/dashboard" end className={({ isActive }) =>
-              `${linkClass} ${
-                isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
-              }`
-            }
-          >
+            <NavLink
+              to="/admin"
+              end
+              className={({ isActive }) =>
+                `${linkClass} ${
+                  isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
+                }`
+              }
+            >
               Dashboard
             </NavLink>
-            <NavLink to="/admin/dashboard/users" className={({ isActive }) =>
-              `${linkClass} ${
-                isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
-              }`
-            }
-          >
+
+            <NavLink
+              to="/admin/users"
+              end
+              className={({ isActive }) =>
+                `${linkClass} ${
+                  isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
+                }`
+              }
+            >
               Users
             </NavLink>
-            <NavLink to="/admin/dashboard/opportunities" className={({ isActive }) =>
-               `${linkClass} ${
-                isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
-                }`
-                }
-              >
-              Opportunities
-            </NavLink>
-            <NavLink to="/admin/dashboard/reports" className={({ isActive }) =>
-              `${linkClass} ${
-                isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
-              }`
-            }
-          >
-              Reports
-            </NavLink>
-            <NavLink to="/admin/dashboard/feedback" className={({ isActive }) =>
-              `${linkClass} ${
-                isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
-              }`
-            }
-          >
-              Feedback
-            </NavLink>
-            <NavLink to="/admin/dashboard/settings" className={({ isActive }) =>
-              `${linkClass} ${
-                isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
-              }`
-            }
-          >
-              Settings
-            </NavLink>
           </>
         )}
-        
-        {user.role === "supervisor" && (
-          <>
-            <NavLink to="/supervisor" className={({ isActive }) =>
-               `${linkClass} ${
-                isActive ? "bg-white text-teal-600" : "hover:bg-teal-500"
-                }`
-                }
-              >
-              Dashboard
-            </NavLink>
-          </>
-        )}
+
       </nav>
-      
+
       <button
+        type="button"
         onClick={handleLogout}
-        className="mt-auto p-2 rounded-md bg-white text-teal-600 hover:bg-gray-100 transition duration-300 ease-in-out"
+        className="mt-6 rounded-md border border-teal-300 px-3 py-2 text-left font-semibold transition hover:bg-teal-500"
       >
         Logout
       </button>

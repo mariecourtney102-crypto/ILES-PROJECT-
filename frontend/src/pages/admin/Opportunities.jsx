@@ -1,23 +1,13 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../../api/api";
+import api from "../../api/api";
 
-function Opportunities() {
-  const [opportunities, setOpportunities] = useState([]);
-  const [loading, setLoading] = useState(true);
+const Opportunities = () => {
+  const [reports, setReports] = useState([]);
 
   useEffect(() => {
-    const fetchOpportunities = async () => {
-      try {
-        const res = await axiosInstance.get("/admin/opportunities/");
-        setOpportunities(res.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOpportunities();
+    api.get("/opportunities/")
+      .then(res => setReports(res.data))
+      .catch(err => console.error(err));
   }, []);
 
   if (loading) return <p>Loading...</p>;

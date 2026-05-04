@@ -1,67 +1,32 @@
+import { Link } from "react-router-dom";
+import DashboardLayout from "../../Components/dashboard_layout";
 
-import { useEffect, useState } from "react";
-import api from "../../api/api";
-import axios from "axios";
-
-const AdminDashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("Token from localStorage:", token);
-    console.log("User from localStorage:", localStorage.getItem("user"));
-    
-    api.get('/admin/dashboard/')
-      .then(res => {
-        setStats(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Full error:', err);
-        console.error('Response:', err.response);
-        setError(err.response?.data?.message || err.message);
-        setLoading(false);
-      });
-  }, []);
-
+function AdminDashboard() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-teal-600 mb-4">
-        Dashboard
-      </h1>
+    <DashboardLayout title="Admin Dashboard">
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="rounded-xl bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-800">User Management</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            View all students and supervisors, then assign each student to the right supervisor.
+          </p>
+          <Link
+            to="/admin/users"
+            className="mt-5 inline-flex rounded-lg bg-teal-500 px-4 py-2 font-semibold text-white transition hover:bg-teal-600"
+          >
+            Open Users Page
+          </Link>
+        </div>
 
-      <div className="bg-white p-4 rounded-lg shadow">
-        {loading ? (
-          <p>Loading...</p>
-        ) : error ? (
-          <p className="text-red-500">Error: {error}</p>
-        ) : stats ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-blue-100 rounded-lg">
-              <p className="text-sm text-gray-600">Students</p>
-              <p className="text-2xl font-bold">{stats.total_students}</p>
-            </div>
-            <div className="p-4 bg-green-100 rounded-lg">
-              <p className="text-sm text-gray-600">Supervisors</p>
-              <p className="text-2xl font-bold">{stats.total_supervisors}</p>
-            </div>
-            <div className="p-4 bg-purple-100 rounded-lg">
-              <p className="text-sm text-gray-600">Placements</p>
-              <p className="text-2xl font-bold">{stats.total_placements}</p>
-            </div>
-            <div className="p-4 bg-yellow-100 rounded-lg">
-              <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-2xl font-bold">{stats.pending_placements}</p>
-            </div>
-          </div>
-        ) : (
-          <p>No data available</p>
-        )}
+        <div className="rounded-xl border border-teal-100 bg-teal-50 p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-teal-800">Assignment Workflow</h2>
+          <p className="mt-2 text-sm text-teal-700">
+            The admin dashboard now uses the backend student and supervisor endpoints so assignment can happen from the frontend.
+          </p>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
-};
+}
 
 export default AdminDashboard;

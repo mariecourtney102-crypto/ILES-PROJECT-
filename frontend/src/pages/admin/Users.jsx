@@ -1,263 +1,215 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useMemo, useState } from "react";
+import DashboardLayout from "../../Components/dashboard_layout";
+import api from "../../api/api";
 
-export default function Users() {
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
+function Users() {
+  const [students, setStudents] = useState([]);
+  const [supervisors, setSupervisors] = useState([]);
+  const [selectedSupervisors, setSelectedSupervisors] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [submittingId, setSubmittingId] = useState(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const [assigningUserId, setAssigningUserId] = useState(null);
-  const [selectedSupervisor, setSelectedSupervisor] = useState("");
+  const assignedCount = useMemo(
+    () => students.filter((student) => student.assigned_supervisor).length,
+    [students]
+  );
 
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const loadUsers = async () => {
+    setLoading(true);
+    setError("");
 
-  const handleAssignSupervisor = (userId) => {
-  if (!selectedSupervisor) return;
+    try {
+      const [studentsResponse, supervisorsResponse] = await Promise.all([
+        api.get("/students/"),
+        api.get("/supervisors/"),
+      ]);
 
-  axios.patch(`http://localhost:8000/api/admin/users/${userId}/`, {
-    supervisor_id: selectedSupervisor,
-  })
-    .then(() => {
-      setAssigningUserId(null);
-      setSelectedSupervisor("");
-      fetchUsers();
-    })
-    .catch(err => console.error(err));
-};
-
-  const fetchUsers = () => {
-    axios.get("http://localhost:8000/api/admin/users/")
-      .then(res => {
-        setUsers(res.data);
-        setFilteredUsers(res.data);
-      })
-      .catch(err => console.error(err));
+      setStudents(studentsResponse.data);
+      setSupervisors(supervisorsResponse.data);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to load students and supervisors.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchUsers();
+    loadUsers();
   }, []);
 
-  useEffect(() => {
-    let data = [...users];
-
-    if (search) {
-      data = data.filter(user =>
-        user.username.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
-    if (roleFilter !== "all") {
-      data = data.filter(user => user.role === roleFilter);
-    }
-
-    if (statusFilter !== "all") {
-      data = data.filter(user => user.status === statusFilter);
-    }
-
-    setFilteredUsers(data);
-  }, [search, roleFilter, statusFilter, users]);
-
-  const handleDelete = (id) => {
-    if (!confirm("Delete this user?")) return;
-
-    axios.delete(`http://localhost:8000/api/admin/users/${id}/`)
-      .then(() => fetchUsers())
-      .catch(err => console.error(err));
+  const handleSupervisorSelect = (studentId, supervisorId) => {
+    setSelectedSupervisors((prev) => ({
+      ...prev,
+      [studentId]: supervisorId,
+    }));
   };
 
-  const toggleStatus = (user) => {
-    const newStatus = user.status === "active" ? "disabled" : "active";
+  const handleAssign = async (studentId) => {
+    const supervisorId = selectedSupervisors[studentId];
 
-    axios.patch(`http://localhost:8000/api/admin/users/${user.id}/`, {
-      status: newStatus,
-    })
-      .then(() => fetchUsers())
-      .catch(err => console.error(err));
-  };
+    if (!supervisorId) {
+      setError("Please select a supervisor before assigning.");
+      setSuccess("");
+      return;
+    }
 
-  const total = users.length;
-  const students = users.filter(u => u.role === "student").length;
-  const supervisors = users.filter(u => u.role === "supervisor").length;
-  const pending = users.filter(u => u.status === "pending").length;
+    setSubmittingId(studentId);
+    setError("");
+    setSuccess("");
 
+    try {
+      const response = await api.post("/assign-supervisor/", {
+        student_id: studentId,
+        supervisor_id: supervisorId,
+      });
 
-  const roleStyle = (role) => {
-    if (role === "student") return "bg-gray-100 text-gray-600";
-    if (role === "supervisor") return "bg-teal-100 text-teal-700";
-    if (role === "admin") return "bg-purple-100 text-purple-700";
-  };
-
-  const statusStyle = (status) => {
-    if (status === "active") return "bg-green-100 text-green-600";
-    if (status === "pending") return "bg-yellow-100 text-yellow-600";
-    if (status === "disabled") return "bg-red-100 text-red-600";
+      setSuccess(response.data.message || "Supervisor assigned successfully.");
+      await loadUsers();
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to assign supervisor.");
+    } finally {
+      setSubmittingId(null);
+    }
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <DashboardLayout title="Manage Users">
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-xl border border-teal-100 bg-white p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Total Students</p>
+            <p className="mt-2 text-3xl font-bold text-teal-600">{students.length}</p>
+          </div>
 
-    
-      <h1 className="text-2xl font-semibold mb-6">Users</h1>
+          <div className="rounded-xl border border-teal-100 bg-white p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Total Supervisors</p>
+            <p className="mt-2 text-3xl font-bold text-teal-600">{supervisors.length}</p>
+          </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-xl shadow">
-          <p className="text-gray-500 text-sm">Total Users</p>
-          <h2 className="text-xl font-semibold">{total}</h2>
+          <div className="rounded-xl border border-teal-100 bg-white p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Students Assigned</p>
+            <p className="mt-2 text-3xl font-bold text-teal-600">{assignedCount}</p>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow">
-          <p className="text-gray-500 text-sm">Students</p>
-          <h2 className="text-xl font-semibold">{students}</h2>
-        </div>
+        {error ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
 
-        <div className="bg-white p-4 rounded-xl shadow">
-          <p className="text-gray-500 text-sm">Supervisors</p>
-          <h2 className="text-xl font-semibold">{supervisors}</h2>
-        </div>
+        {success ? (
+          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            {success}
+          </div>
+        ) : null}
 
-        <div className="bg-white p-4 rounded-xl shadow">
-          <p className="text-gray-500 text-sm">Pending</p>
-          <h2 className="text-xl font-semibold">{pending}</h2>
-        </div>
-      </div>
+        <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+          <section className="rounded-xl bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Students</h2>
+                <p className="text-sm text-gray-500">Assign each student to a supervisor from this table.</p>
+              </div>
+            </div>
 
-      <div className="flex flex-wrap gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search users..."
-          className="border p-2 rounded-lg w-64 focus:ring-2 focus:ring-primary"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+            {loading ? (
+              <p className="py-10 text-sm text-gray-500">Loading students...</p>
+            ) : students.length === 0 ? (
+              <p className="py-10 text-sm text-gray-500">No students found.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 text-left text-gray-600">
+                      <th className="px-3 py-3 font-semibold">Student</th>
+                      <th className="px-3 py-3 font-semibold">Course</th>
+                      <th className="px-3 py-3 font-semibold">Year</th>
+                      <th className="px-3 py-3 font-semibold">Current Supervisor</th>
+                      <th className="px-3 py-3 font-semibold">Assign</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {students.map((student) => (
+                      <tr key={student.id} className="border-b border-gray-100 align-top">
+                        <td className="px-3 py-4">
+                          <p className="font-semibold text-gray-800">{student.name || student.username}</p>
+                          <p className="text-xs text-gray-500">@{student.username}</p>
+                        </td>
+                        <td className="px-3 py-4 text-gray-700">{student.course_title}</td>
+                        <td className="px-3 py-4 text-gray-700">{student.year_of_study}</td>
+                        <td className="px-3 py-4 text-gray-700">
+                          {student.supervisor_name || "Not assigned"}
+                        </td>
+                        <td className="px-3 py-4">
+                          <div className="flex min-w-[250px] gap-2">
+                            <select
+                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                              value={selectedSupervisors[student.id] ?? student.assigned_supervisor ?? ""}
+                              onChange={(e) => handleSupervisorSelect(student.id, e.target.value)}
+                            >
+                              <option value="">Select supervisor</option>
+                              {supervisors.map((supervisor) => (
+                                <option key={supervisor.id} value={supervisor.id}>
+                                  {supervisor.name || supervisor.username}
+                                </option>
+                              ))}
+                            </select>
 
-        <select
-          className="border p-2 rounded-lg"
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-        >
-          <option value="all">All Roles</option>
-          <option value="student">Students</option>
-          <option value="supervisor">Supervisors</option>
-          <option value="admin">Admins</option>
-        </select>
+                            <button
+                              type="button"
+                              onClick={() => handleAssign(student.id)}
+                              disabled={submittingId === student.id}
+                              className="rounded-lg bg-teal-500 px-4 py-2 font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {submittingId === student.id ? "Saving..." : "Assign"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
 
-        <select
-          className="border p-2 rounded-lg"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="pending">Pending</option>
-          <option value="disabled">Disabled</option>
-        </select>
-      </div>
+          <section className="rounded-xl bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-semibold text-gray-800">Supervisors</h2>
+            <p className="mt-1 text-sm text-gray-500">Available supervisors and their assignment load.</p>
 
-      <div className="bg-white rounded-2xl shadow overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="border-b text-gray-500">
-            <tr>
-              <th className="p-3">Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Supervisor</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredUsers.map(user => (
-              <tr key={user.id} className="border-b hover:bg-gray-50">
-                <td className="p-3">{user.username}</td>
-                <td>{user.email}</td>
-
-                <td>
-                  <span className={`px-2 py-1 rounded-lg text-sm ${roleStyle(user.role)}`}>
-                    {user.role}
-                  </span>
-                </td>
-
-                <td>
-                  <span className={`px-2 py-1 rounded-lg text-sm ${statusStyle(user.status)}`}>
-                    {user.status}
-                  </span>
-                </td>
-
-                <td>
-                   {user.role === "student" ? (
-    <>
-      {assigningUserId === user.id ? (
-        <div className="flex gap-2 items-center">
-          <select
-            className="border rounded-lg p-1"
-            value={selectedSupervisor}
-            onChange={(e) => setSelectedSupervisor(e.target.value)}
-          >
-            <option value="">Select</option>
-            {supervisors.map(sup => (
-              <option key={sup.id} value={sup.id}>
-                {sup.username}
-              </option>
-            ))}
-          </select>
-
-          <button
-            onClick={() => handleAssignSupervisor(user.id)}
-            className="text-sm text-primary"
-          >
-            Save
-          </button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          {user.supervisor_name ? (
-            <span>{user.supervisor_name}</span>
-          ) : (
-            <span className="text-gray-400 text-sm">Not assigned</span>
-          )}
-
-          <button
-            onClick={() => setAssigningUserId(user.id)}
-            className="text-xs text-primary hover:underline"
-          >
-            {user.supervisor_name ? "Change" : "Assign"}
-          </button>
-        </div>
-      )}
-    </>
-  ) : (
-    <span className="text-gray-400 text-sm">—</span>
-  )}
-                </td>
-
-                <td className="flex gap-2 py-2">
-                  <button
-                    onClick={() => toggleStatus(user)}
-                    className="text-sm text-primary hover:underline"
+            {loading ? (
+              <p className="py-10 text-sm text-gray-500">Loading supervisors...</p>
+            ) : supervisors.length === 0 ? (
+              <p className="py-10 text-sm text-gray-500">No supervisors found.</p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {supervisors.map((supervisor) => (
+                  <div
+                    key={supervisor.id}
+                    className="rounded-lg border border-gray-200 px-4 py-3"
                   >
-                    {user.status === "active" ? "Disable" : "Activate"}
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(user.id)}
-                    className="text-sm text-red-500 hover:underline"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {filteredUsers.length === 0 && (
-          <p className="text-center text-gray-400 py-6">No users found</p>
-        )}
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-semibold text-gray-800">{supervisor.name || supervisor.username}</p>
+                        <p className="text-sm text-gray-500">{supervisor.department}</p>
+                        <p className="text-xs text-gray-500">{supervisor.place_of_work}</p>
+                      </div>
+                      <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
+                        {supervisor.assigned_students_count || 0} students
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
+
+export default Users;

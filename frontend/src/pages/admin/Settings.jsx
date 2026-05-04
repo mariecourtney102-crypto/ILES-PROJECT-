@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/api";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("academic");
@@ -44,15 +44,9 @@ export default function Settings() {
   });
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/admin/settings/")
-      .then(res => {
-        setSettings(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+    api.get("/settings/")
+      .then(res => setSettings(res.data))
+      .catch(err => console.error(err));
   }, []);
 
   const handleChange = (e) => {
@@ -63,8 +57,10 @@ export default function Settings() {
     });
   };
 
-  const handleSave = () => {
-    axios.put("http://localhost:8000/api/admin/settings/", settings)
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    api.put("/settings/", settings)
       .then(() => alert("Settings updated"))
       .catch(err => console.error(err));
   };
@@ -290,8 +286,4 @@ export default function Settings() {
             Save Changes
           </button>
 
-        </div>
-      </div>
-    </div>
-  );
-}
+export default Settings;

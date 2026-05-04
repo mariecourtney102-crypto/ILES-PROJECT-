@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import DashboardLayout from "../../Components/dashboard_layout";
+import api from "../../api/api";
 
 const UserFeedback = () => {
   const [formData, setFormData] = useState({
@@ -7,6 +8,9 @@ const UserFeedback = () => {
     message: "",
     rating: 0,
   });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -19,17 +23,25 @@ const UserFeedback = () => {
     setFormData({ ...formData, rating: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+    setSubmitting(true);
 
-    console.log("Feedback submitted:", formData);
-
-    // Reset form
-    setFormData({
-      subject: "",
-      message: "",
-      rating: 0,
-    });
+    try {
+      await api.post("/feedback/", formData);
+      setSuccess("Feedback submitted successfully.");
+      setFormData({
+        subject: "",
+        message: "",
+        rating: 0,
+      });
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to submit feedback.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -99,11 +111,20 @@ const UserFeedback = () => {
         </div>
 
         {/* Submit */}
+        {error ? (
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+        ) : null}
+
+        {success ? (
+          <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{success}</p>
+        ) : null}
+
         <button
           type="submit"
-          className="w-full bg-teal-600 text-white py-2 rounded-lg hover:opacity-90 transition"
+          disabled={submitting}
+          className="w-full bg-teal-600 text-white py-2 rounded-lg hover:opacity-90 transition disabled:cursor-not-allowed disabled:opacity-70"
         >
-          Submit Feedback
+          {submitting ? "Submitting..." : "Submit Feedback"}
         </button>
       </form>
       </div>

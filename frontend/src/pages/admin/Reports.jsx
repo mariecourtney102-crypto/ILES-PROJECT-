@@ -1,20 +1,13 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../../api/api";
+import api from "../../api/api";
 
 function Reports() {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const res = await axiosInstance.get("/admin/reports/");
-        setStats(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchReports();
+    api.get("/reports/")
+      .then(res => setReports(res.data))
+      .catch(err => console.error(err));
   }, []);
 
   if (!stats) return <p>Loading...</p>;

@@ -1,5 +1,4 @@
 from django.contrib.auth.models import AbstractUser
-from django.contrib.admin.models import LogEntry
 from django.db import models
 
 
@@ -32,6 +31,13 @@ class Student(models.Model):
     course_title = models.CharField(max_length=50)
     university_name = models.CharField(max_length=60)
     year_of_study = models.IntegerField()
+    assigned_supervisor = models.ForeignKey(
+        'Supervisor',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_students'
+    )
     
     def __str__(self):
         return f"{self.users.username} -STUDENT"
@@ -66,19 +72,27 @@ class InternshipPlacement(models.Model):
     
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
+        ('draft', 'Draft'),
         ('pending', 'Pending'),
-        ('reviewed', 'Reviewed'),
-        ('approved','approved'),
-        ('Rejected','Rejected'),
-        ('completed','completed'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected')
     ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='weekly_logs')
     week_number = models.IntegerField()
     description = models.TextField()
     date_submitted = models.DateTimeField(auto_now_add=True)
+    supervisor = models.ForeignKey(
+        Supervisor,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_logs'
+    )
     supervisor_comment = models.TextField(blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    evaluation_score = models.PositiveIntegerField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
 
     def __str__(self):
         return f"Week {self.week_number} - {self.user.username} - {self.status}"
@@ -101,13 +115,6 @@ class EvaluationCriteria(models.Model):
 class Evaluation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
-    criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
-    score = models.FloatField()
-    comments = models.TextField(blank=True)
-    date_evaluated = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Evaluation for {self.user.username} - {self.placement}"
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.SET_NULL, null=True)
     score = models.PositiveIntegerField()
     comment = models.TextField(blank=True)
@@ -115,9 +122,37 @@ class Evaluation(models.Model):
 
     def __str__(self):
         return f"{self.placement.user.username} - {self.criteria}: {self.score}"
-#comments on logs
-class Logcomment(models.Model):
-    log = models.ForeignKey(LogEntry, on_delete=models.CASCADE, related_name='Comment')
-    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    comment = models.TextField()
+
+
+class Feedback(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='feedback')
+    subject = models.CharField(max_length=150)
+    message = models.TextField()
+    rating = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.subject} - {self.user.username}"
+
+
+class SiteSetting(models.Model):
+    site_name = models.CharField(max_length=100, default='ILES')
+    admin_email = models.EmailField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.site_name
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=150)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.user.username}"
