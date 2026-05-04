@@ -156,6 +156,18 @@ function Sidebar() {
             >
               Users
             </NavLink>
+
+            <NavLink
+              to="/admin/settings"
+              end
+              className={({ isActive }) =>
+                `${linkClass} ${
+                  isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
+                }`
+              }
+            >
+              Settings
+            </NavLink>
           </>
         )}
 

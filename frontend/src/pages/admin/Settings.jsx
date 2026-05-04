@@ -1,303 +1,221 @@
 import { useEffect, useState } from "react";
-import api from "../../api/api";
+import api, { changePassword } from "../../api/api";
+import DashboardLayout from "../../Components/dashboard_layout";
+
+const emptyPasswordForm = {
+  current_password: "",
+  new_password: "",
+  confirm_password: "",
+};
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState("academic");
   const [loading, setLoading] = useState(true);
-
-  const ToggleSwitch = ({ name, checked = false, onChange }) => {
-    return (
-      <div
-        onClick={() =>
-          onChange({
-            target: { name, type: "checkbox", checked: !checked },
-          })
-        }
-        className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition ${
-          checked ? "bg-primary" : "bg-gray-300"
-        }`}
-      >
-        <div
-          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
-            checked ? "translate-x-6" : "translate-x-0"
-          }`}
-        />
-      </div>
-    );
-  };
+  const [saving, setSaving] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
 
   const [settings, setSettings] = useState({
-    academic_year: "",
-    semester: "",
-    max_students_per_supervisor: "",
-    submission_deadline: "",
-    allow_late_submission: false,
-    allow_registration: false,
-    require_approval: false,
-    grading_scale: "percentage",
-    pass_mark: 50,
-    enable_supervisor_grading: true,
-    email_notifications: true,
-    notify_on_submission: true,
-    notify_supervisor_assignment: true,
+    siteName: "",
+    adminEmail: "",
   });
+  const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
 
   useEffect(() => {
     api
       .get("/settings/")
       .then((res) => {
-        setSettings(res.data);
-        setLoading(false);
+        setSettings({
+          siteName: res.data.siteName || "",
+          adminEmail: res.data.adminEmail || "",
+        });
       })
       .catch((err) => {
-        console.error(err);
+        setError(err.response?.data?.error || "Failed to load settings.");
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
+  const handleSettingsChange = (e) => {
+    const { name, value } = e.target;
     setSettings((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    api
-      .put("/settings/", settings)
-      .then(() => alert("Settings updated"))
-      .catch((err) => console.error(err));
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  if (loading) return <p className="p-6">Loading settings...</p>;
+  const handleSettingsSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    setSuccess("");
 
-  const tabs = [
-    { id: "academic", label: "Academic" },
-    { id: "users", label: "Users" },
-    { id: "submissions", label: "Submissions" },
-    { id: "grading", label: "Grading" },
-    { id: "notifications", label: "Notifications" },
-  ];
+    try {
+      const response = await api.put("/settings/", settings);
+      setSettings({
+        siteName: response.data.siteName || "",
+        adminEmail: response.data.adminEmail || "",
+      });
+      setSuccess("Settings updated successfully.");
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to update settings.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setChangingPassword(true);
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    try {
+      const response = await changePassword(passwordForm);
+      setPasswordSuccess(response.message || "Password changed successfully.");
+      setPasswordForm(emptyPasswordForm);
+    } catch (err) {
+      const responseError = err.response?.data?.error;
+      setPasswordError(
+        Array.isArray(responseError)
+          ? responseError.join(" ")
+          : responseError || "Failed to change password."
+      );
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <div className="w-64 bg-white shadow-lg p-4">
-        <h2 className="text-xl font-semibold mb-6 text-primary">Settings</h2>
+    <DashboardLayout title="Settings">
+      <div className="grid gap-6 xl:grid-cols-2">
+        <section className="rounded-xl bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-800">Site Settings</h2>
 
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`w-full text-left px-4 py-3 rounded-xl mb-2 transition ${
-              activeTab === tab.id
-                ? "bg-primary text-white"
-                : "hover:bg-teal-50 text-gray-600"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+          {loading ? (
+            <p className="py-10 text-sm text-gray-500">Loading settings...</p>
+          ) : (
+            <form onSubmit={handleSettingsSubmit} className="mt-6 space-y-5">
+              {error ? (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </div>
+              ) : null}
 
-      <div className="flex-1 p-8">
-        <h1 className="text-2xl font-semibold mb-6 capitalize">
-          {activeTab} Settings
-        </h1>
+              {success ? (
+                <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                  {success}
+                </div>
+              ) : null}
 
-        <div className="grid gap-6 max-w-3xl">
-          {activeTab === "academic" && (
-            <div className="bg-white p-6 rounded-2xl shadow-md">
-              <h2 className="text-lg font-semibold mb-4">
-                Academic Structure
-              </h2>
-
-              <div className="mb-4">
-                <label className="block mb-1 text-gray-600">
-                  Academic Year
-                </label>
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">Site Name</span>
                 <input
                   type="text"
-                  name="academic_year"
-                  value={settings.academic_year}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-primary"
+                  name="siteName"
+                  value={settings.siteName}
+                  onChange={handleSettingsChange}
+                  className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                  required
                 />
-              </div>
+              </label>
 
-              <div>
-                <label className="block mb-1 text-gray-600">Semester</label>
-                <select
-                  name="semester"
-                  value={settings.semester}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded-lg"
-                >
-                  <option value="">Select semester</option>
-                  <option value="1">Semester 1</option>
-                  <option value="2">Semester 2</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "users" && (
-            <div className="bg-white p-6 rounded-2xl shadow-md">
-              <h2 className="text-lg font-semibold mb-4">
-                User Management
-              </h2>
-
-              <div className="mb-4">
-                <label className="block mb-1 text-gray-600">
-                  Max Students per Supervisor
-                </label>
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">Admin Email</span>
                 <input
-                  type="number"
-                  name="max_students_per_supervisor"
-                  value={settings.max_students_per_supervisor}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded-lg"
+                  type="email"
+                  name="adminEmail"
+                  value={settings.adminEmail}
+                  onChange={handleSettingsChange}
+                  className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
                 />
-              </div>
+              </label>
 
-              <div className="flex justify-between items-center mb-4">
-                <span>Allow Registration</span>
-                <ToggleSwitch
-                  name="allow_registration"
-                  checked={settings.allow_registration}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Require Admin Approval</span>
-                <ToggleSwitch
-                  name="require_approval"
-                  checked={settings.require_approval}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-lg bg-teal-500 px-5 py-2.5 font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {saving ? "Saving..." : "Save Settings"}
+              </button>
+            </form>
           )}
+        </section>
 
-          {activeTab === "notifications" && (
-            <div className="bg-white p-6 rounded-2xl shadow-md">
-              <h2 className="text-lg font-semibold mb-4">Notifications</h2>
+        <section className="rounded-xl bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-800">Change Password</h2>
 
-              <div className="flex justify-between items-center mb-4">
-                <span>Email Notifications</span>
-                <ToggleSwitch
-                  name="email_notifications"
-                  checked={settings.email_notifications}
-                  onChange={handleChange}
-                />
+          <form onSubmit={handlePasswordSubmit} className="mt-6 space-y-5">
+            {passwordError ? (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {passwordError}
               </div>
+            ) : null}
 
-              <div className="flex justify-between items-center mb-4">
-                <span>Notify on Student Submission</span>
-                <ToggleSwitch
-                  name="notify_on_submission"
-                  checked={settings.notify_on_submission}
-                  onChange={handleChange}
-                />
+            {passwordSuccess ? (
+              <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                {passwordSuccess}
               </div>
+            ) : null}
 
-              <div className="flex justify-between items-center">
-                <span>Notify Supervisor Assignment</span>
-                <ToggleSwitch
-                  name="notify_supervisor_assignment"
-                  checked={settings.notify_supervisor_assignment}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-          )}
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Current Password</span>
+              <input
+                type="password"
+                name="current_password"
+                value={passwordForm.current_password}
+                onChange={handlePasswordChange}
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                required
+              />
+            </label>
 
-          {activeTab === "submissions" && (
-            <div className="bg-white p-6 rounded-2xl shadow-md">
-              <h2 className="text-lg font-semibold mb-4">
-                Submission Rules
-              </h2>
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">New Password</span>
+              <input
+                type="password"
+                name="new_password"
+                value={passwordForm.new_password}
+                onChange={handlePasswordChange}
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                required
+              />
+            </label>
 
-              <div className="mb-4">
-                <label className="block mb-1 text-gray-600">
-                  Submission Deadline
-                </label>
-                <input
-                  type="date"
-                  name="submission_deadline"
-                  value={settings.submission_deadline}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded-lg"
-                />
-              </div>
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Confirm New Password</span>
+              <input
+                type="password"
+                name="confirm_password"
+                value={passwordForm.confirm_password}
+                onChange={handlePasswordChange}
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                required
+              />
+            </label>
 
-              <div className="flex justify-between items-center">
-                <span>Allow Late Submission</span>
-                <input
-                  type="checkbox"
-                  name="allow_late_submission"
-                  checked={settings.allow_late_submission}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-          )}
-
-          {activeTab === "grading" && (
-            <div className="bg-white p-6 rounded-2xl shadow-md">
-              <h2 className="text-lg font-semibold mb-4">
-                Grading Settings
-              </h2>
-
-              <div className="mb-4">
-                <label className="block mb-1 text-gray-600">
-                  Grading Scale
-                </label>
-                <select
-                  name="grading_scale"
-                  value={settings.grading_scale}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded-lg"
-                >
-                  <option value="percentage">Percentage (%)</option>
-                  <option value="letter">Letter (A–F)</option>
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block mb-1 text-gray-600">Pass Mark</label>
-                <input
-                  type="number"
-                  name="pass_mark"
-                  value={settings.pass_mark}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded-lg"
-                />
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Enable Supervisor Grading</span>
-                <ToggleSwitch
-                  name="enable_supervisor_grading"
-                  checked={settings.enable_supervisor_grading}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-          )}
-
-          <button
-            onClick={handleSubmit}
-            className="bg-primary text-white px-6 py-3 rounded-xl hover:bg-primary-dark transition w-fit"
-          >
-            Save Changes
-          </button>
-        </div>
+            <button
+              type="submit"
+              disabled={changingPassword}
+              className="rounded-lg bg-teal-500 px-5 py-2.5 font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {changingPassword ? "Changing..." : "Change Password"}
+            </button>
+          </form>
+        </section>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
