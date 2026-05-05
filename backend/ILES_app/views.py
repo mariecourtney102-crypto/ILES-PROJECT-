@@ -12,6 +12,8 @@ from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, Stud
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.contrib.auth.password_validation import validate_password
 from django.shortcuts import render, redirect, get_object_or_404
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
@@ -537,39 +539,7 @@ def opportunities(request):
 
     return Response(data, status=status.HTTP_200_OK)
 
-#ADMIN DASHBOARD API
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def admin_dashboard(request):
-    # Check if user is admin
-    if request.user.role != 'admin':
-        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
-    
-    # Get stats
-    total_students = CustomUser.objects.filter(role='student').count()
-    total_supervisors = CustomUser.objects.filter(role='supervisor').count()
-    total_placements = InternshipPlacement.objects.count()
-    total_logs = WeeklyLog.objects.count()
-    pending_logs = WeeklyLog.objects.filter(status='pending').count()
-    
-    return Response({
-        "total_students": total_students,
-        "total_supervisors": total_supervisors,
-        "total_placements": total_placements,
-        "pending_placements": 0,
-        "approved_placements": 0,
-        "rejected_placements": 0,
-        "total_logs": total_logs,
-        "pending_logs": pending_logs
-    }, status=status.HTTP_200_OK)
-
 #internship details
-@login_required
-def internship_detail(request,id):
-    internship = get_object_or_404(InternshipPlacement,id=id)
-    return render(request,'internship_detail.html',{'internship': internship})  
-
-@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def feedback(request):
     if request.method == 'POST':
@@ -645,11 +615,23 @@ def mark_all_notifications_read(request):
     
 @api_view(['GET'])
 def admin_dashboard_view(request):
-    if not request.user.is_authenticated or request.user.role != 'admin':
-        return redirect('login')
+    """Admin dashboard stats - returns JSON data"""
+    if request.user.role != 'admin':
+        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
     
-    internships = InternshipPlacement.objects.all()
-    return render(request,'admin_dashboard.html',{'internships':internships})
+    total_students = CustomUser.objects.filter(role='student').count()
+    total_supervisors = CustomUser.objects.filter(role='supervisor').count()
+    total_placements = InternshipPlacement.objects.count()
+    total_logs = WeeklyLog.objects.count()
+    pending_logs = WeeklyLog.objects.filter(status='pending').count()
+    
+    return Response({
+        "total_students": total_students,
+        "total_supervisors": total_supervisors,
+        "total_placements": total_placements,
+        "total_logs": total_logs,
+        "pending_logs": pending_logs
+    }, status=status.HTTP_200_OK)
 
 #Admin API Views
 @api_view(['GET'])
@@ -658,15 +640,9 @@ def get_opportunities(request):
     if request.user.role != 'admin':
         return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
     
-    opportunities = InternshipPlacement.objects.all()
-    data = [{
-        "id": opp.id,
-        "title": opp.title,
-        "company": opp.company,
-        "status": opp.status,
-        "created_at": opp.created_at
-    } for opp in opportunities]
-    return Response(data)
+    placements = InternshipPlacement.objects.select_related('user').all()
+    serializer = InternshipPlacementSerializer(placements, many=True)
+    return Response(serializer.data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -719,35 +695,28 @@ def get_reports(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
-    if request.user.role != 'admin':
-        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
-    
+    current_password = request.data.get('current_password')
     new_password = request.data.get('new_password')
-    if new_password:
-        request.user.set_password(new_password)
-        request.user.save()
-        return Response({"message": "Password changed successfully"})
-    return Response({"error": "New password required"}, status=status.HTTP_400_BAD_REQUEST)
+    confirm_password = request.data.get('confirm_password')
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_feedback(request):
-    # Feedback model doesn't exist - return empty list
-    return Response([])
+    if not current_password:
+        return Response({"error": "Current password is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def assign_supervisor(request, pk):
-    if request.user.role != 'admin':
-        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
-    
-    user = get_object_or_404(CustomUser, pk=pk)
-    supervisor_id = request.data.get('supervisor_id')
-    
-    if supervisor_id:
-        supervisor = get_object_or_404(CustomUser, pk=supervisor_id, role='supervisor')
-        # Assign supervisor logic here
-        return Response({"message": "Supervisor assigned successfully"})
-    
-    return Response({"error": "Supervisor ID required"}, status=status.HTTP_400_BAD_REQUEST)            
+    if not new_password:
+        return Response({"error": "New password is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if new_password != confirm_password:
+        return Response({"error": "New password and confirmation do not match."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not request.user.check_password(current_password):
+        return Response({"error": "Current password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        validate_password(new_password, request.user)
+    except ValidationError as exc:
+        return Response({"error": exc.messages}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.set_password(new_password)
+    request.user.save()
+    return Response({"message": "Password changed successfully."}, status=status.HTTP_200_OK)
 

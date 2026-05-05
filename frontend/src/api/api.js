@@ -44,6 +44,11 @@ export const updateUserProfile = async (payload) => {
   return res.data;
 };
 
+export const changePassword = async (payload) => {
+  const res = await api.post("/change-password/", payload);
+  return res.data;
+};
+
 export const logoutAPI = async () => {
   const res = await api.post("/logout/");
   localStorage.removeItem("token");
