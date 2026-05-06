@@ -27,7 +27,7 @@ urlpatterns = [
     path('supervisor/weekly-logs/', views.supervisor_weekly_logs, name='supervisor_weekly_logs'),
     path('supervisor/weekly-logs/<int:log_id>/review/', views.review_weekly_log, name='review_weekly_log'),
    # path('reports/', views.reports, name='reports'),
-   # path('opportunities/', views.opportunities, name='opportunities'),
+    path('opportunities/', views.opportunities, name='opportunities'),
     path('feedback/', views.feedback, name='feedback'),
     path('settings/', views.settings, name='settings'),
     path('change-password/', views.change_password, name='change_password'),
@@ -38,7 +38,7 @@ urlpatterns = [
 
     #Admin
     path('admin/', views.admin_dashboard_view, name='admin-dashboard'),
-    path('opportunities/', views.get_opportunities),
+    #path('opportunities/', views.get_opportunities),
     path('admin/students/', views.get_students),
     path('admin/supervisors/', views.get_supervisors),
     path('reports/', views.get_reports),
