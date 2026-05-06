@@ -540,7 +540,7 @@ def opportunities(request):
     return Response(data, status=status.HTTP_200_OK)
 
 #internship details
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def feedback(request):
     if request.method == 'POST':

@@ -3,7 +3,7 @@ import api from "../../api/api";
 
 const Opportunities = () => {
   const [reports, setReports] = useState([]);
-
+  const [loading , setloading] =useState(true)
   useEffect(() => {
     api.get("/opportunities/")
       .then(res => setReports(res.data))
