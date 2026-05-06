@@ -1,5 +1,5 @@
 export const ROLE_ROUTES = {
-  admin: "/admin/",
+  admin: "/admin",
   supervisor: "/supervisor",
   student: "/student",
 };
