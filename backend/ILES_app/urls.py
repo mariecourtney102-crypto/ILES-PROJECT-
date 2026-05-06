@@ -26,31 +26,21 @@ urlpatterns = [
     path('supervisor/students/', views.supervisor_students, name='supervisor_students'),
     path('supervisor/weekly-logs/', views.supervisor_weekly_logs, name='supervisor_weekly_logs'),
     path('supervisor/weekly-logs/<int:log_id>/review/', views.review_weekly_log, name='review_weekly_log'),
-    path('reports/', views.reports, name='reports'),
-    path('opportunities/', views.opportunities, name='opportunities'),
+   # path('reports/', views.reports, name='reports'),
+   # path('opportunities/', views.opportunities, name='opportunities'),
     path('feedback/', views.feedback, name='feedback'),
     path('settings/', views.settings, name='settings'),
     path('change-password/', views.change_password, name='change_password'),
     path('notifications/', views.notifications, name='notifications'),
     path('notifications/read-all/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     path('notifications/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
-    #Criteria
-   # path('criteria/', views.get_criteria, name='get-criteria'),
-
-    #Weekly Logs
-   # path('logs/create/', views.create_log, name='create-log'),
-    #path('logs/', views.get_logs, name='get-logs'),
-    #path('logs/<int:log_id>/review/', views.review_log, name='review-log'),
-
-    #Evaluations
-    #path('evaluations/create/', views.create_evaluation, name='create-evaluation'),
-    #path('evaluations/', views.get_evaluation, name='get-evaluation'),
+   
 
     #Admin
     path('admin/', views.admin_dashboard_view, name='admin-dashboard'),
-    path('admin/opportunities/', views.get_opportunities),
+    path('opportunities/', views.get_opportunities),
     path('admin/students/', views.get_students),
     path('admin/supervisors/', views.get_supervisors),
-    path('admin/reports/', views.get_reports),
+    path('reports/', views.get_reports),
     path('admin/change-password/', views.change_password),
 ]

@@ -6,7 +6,7 @@ function Reports() {
 
   useEffect(() => {
     api.get("/reports/")
-      .then(res => setReports(res.data))
+      .then(res => setStats(res.data))
       .catch(err => console.error(err));
   }, []);
 

@@ -158,6 +158,42 @@ function Sidebar() {
             </NavLink>
 
             <NavLink
+              to="/admin/feedback"
+              end
+              className={({ isActive }) =>
+                `${linkClass} ${
+                  isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
+                }`
+              }
+            >
+              Feedback
+            </NavLink>
+
+            <NavLink
+              to="/admin/reports"
+              end
+              className={({ isActive }) =>
+                `${linkClass} ${
+                  isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
+                }`
+              }
+            >
+              Reports 
+            </NavLink>
+
+            <NavLink
+              to="/admin/opportunities"
+              end
+              className={({ isActive }) =>
+                `${linkClass} ${
+                  isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
+                }`
+              }
+            >
+              Opportunities
+            </NavLink>
+
+            <NavLink
               to="/admin/settings"
               end
               className={({ isActive }) =>
