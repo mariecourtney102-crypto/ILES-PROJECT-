@@ -158,6 +158,18 @@ function Sidebar() {
             </NavLink>
 
             <NavLink
+              to="/admin/feedback"
+              end
+              className={({ isActive }) =>
+                `${linkClass} ${
+                  isActive ? "bg-white text-teal-600 font-semibold" : "hover:bg-teal-500"
+                }`
+              }
+            >
+              Feedback
+            </NavLink>
+
+            <NavLink
               to="/admin/settings"
               end
               className={({ isActive }) =>
