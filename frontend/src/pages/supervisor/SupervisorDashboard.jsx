@@ -1,128 +1,171 @@
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
 import DashboardLayout from "../../Components/dashboard_layout";
 import { useAuth } from "../../context/AuthContext";
 import { useLogs } from "../../context/LogContext";
-import { CheckCircle, Clock, Users, FileText, XCircle } from "lucide-react";
+import { fetchSupervisorStudents } from "../../api/api";
 
 function SupervisorDashboard() {
   const { user } = useAuth();
   const { logs, loading, error } = useLogs();
+  const [students, setStudents] = useState([]);
+  const [studentsLoading, setStudentsLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    fetchSupervisorStudents()
+      .then((data) => {
+        if (mounted) setStudents(data);
+      })
+      .catch(() => {
+        if (mounted) setStudents([]);
+      })
+      .finally(() => {
+        if (mounted) setStudentsLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const pendingLogs = logs.filter((log) => log.status === "pending").length;
-  const approvedLogs = logs.filter((log) => log.status === "approved").length;
-  const rejectedLogs = logs.filter((log) => log.status === "rejected").length;
   const logsNeedingReview = logs.filter((log) => log.status === "pending");
+  const approvedToday = logs.filter((log) => {
+    if (log.status !== "approved" || !log.reviewed_at) return false;
+    return new Date(log.reviewed_at).toDateString() === new Date().toDateString();
+  }).length;
+  const recentActivity = useMemo(
+    () =>
+      [...logs]
+        .filter((log) => log.status !== "pending")
+        .sort((a, b) => new Date(b.reviewed_at || b.date_submitted) - new Date(a.reviewed_at || a.date_submitted))
+        .slice(0, 4),
+    [logs]
+  );
 
   return (
     <DashboardLayout title="Supervisor Dashboard">
-      <div className="max-w-6xl">
-        <div className="mb-6 rounded-lg border-l-4 border-teal-600 bg-white p-6 shadow-md">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-800">
-            <Users size={24} className="text-teal-600" />
-            Profile Summary
-          </h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            <div>
-              <p className="text-sm text-gray-500">Name</p>
-              <p className="font-semibold text-gray-800">{user?.name || user?.username || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Role</p>
-              <p className="font-semibold capitalize text-gray-800">{user?.role || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Assigned Logs</p>
-              <p className="font-semibold text-gray-800">{logs.length}</p>
-            </div>
-          </div>
-        </div>
+      <div className="mx-auto max-w-7xl space-y-6">
+        <section>
+          <h1 className="text-2xl font-black text-slate-950">Supervisor Dashboard</h1>
+          <p className="mt-2 text-sm text-slate-500">Review and approve intern weekly logs.</p>
+        </section>
 
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-lg border-l-4 border-yellow-400 bg-yellow-50 p-4">
-            <div className="flex items-start gap-3">
-              <Clock className="mt-0.5 text-yellow-600" size={20} />
-              <div>
-                <h3 className="font-semibold text-yellow-900">Pending Review</h3>
-                <p className="text-2xl font-bold text-yellow-700">{pendingLogs}</p>
-              </div>
-            </div>
+        {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+
+        <section className="grid gap-4 lg:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Total Interns</p>
+            <p className="mt-3 text-4xl font-black text-teal-600">{students.length}</p>
+            <p className="mt-3 text-sm text-slate-400">Assigned to you</p>
           </div>
 
-          <div className="rounded-lg border-l-4 border-green-400 bg-green-50 p-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="mt-0.5 text-green-600" size={20} />
-              <div>
-                <h3 className="font-semibold text-green-900">Approved Logs</h3>
-                <p className="text-2xl font-bold text-green-700">{approvedLogs}</p>
-              </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Approved Today</p>
+            <p className="mt-3 text-4xl font-black text-emerald-600">{approvedToday}</p>
+            <p className="mt-3 text-sm text-slate-400">Reviewed today</p>
+          </div>
+
+          <div className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Pending Reviews</p>
+            <p className="mt-3 text-4xl font-black text-orange-600">{pendingLogs}</p>
+            <p className="mt-3 text-sm text-slate-400">Awaiting action</p>
+          </div>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-base font-black text-slate-900">Assigned Students</h2>
+              <span className="text-xs text-slate-400">{students.length} total</span>
+            </div>
+
+            <div className="mt-6 overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 text-slate-500">
+                    <th className="pb-3 font-medium">Student</th>
+                    <th className="pb-3 font-medium">Company</th>
+                    <th className="pb-3 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {studentsLoading ? (
+                    <tr>
+                      <td colSpan="3" className="py-8 text-slate-400">Loading assigned students...</td>
+                    </tr>
+                  ) : students.length === 0 ? (
+                    <tr>
+                      <td colSpan="3" className="py-8 text-slate-400">No assigned students yet.</td>
+                    </tr>
+                  ) : (
+                    students.slice(0, 5).map((student) => (
+                      <tr key={student.id} className="border-b border-slate-100 last:border-b-0">
+                        <td className="py-4 text-slate-700">{student.name || student.username}</td>
+                        <td className="py-4 text-slate-700">
+                          {student.placement?.place_of_internship || "Not set"}
+                        </td>
+                        <td className="py-4">
+                          <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-bold uppercase text-teal-700">
+                            {student.placement ? "Active" : "Pending"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <div className="rounded-lg border-l-4 border-red-400 bg-red-50 p-4">
-            <div className="flex items-start gap-3">
-              <XCircle className="mt-0.5 text-red-600" size={20} />
-              <div>
-                <h3 className="font-semibold text-red-900">Rejected Logs</h3>
-                <p className="text-2xl font-bold text-red-700">{rejectedLogs}</p>
-              </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-base font-black text-slate-900">Pending Logbook Approvals</h2>
+              <span className="text-xs text-slate-400">{pendingLogs} pending</span>
             </div>
-          </div>
-        </div>
 
-        <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-800">
-            <FileText size={24} className="text-teal-600" />
-            Weekly Logs Review Panel
-          </h2>
-
-          {error ? <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
-
-          {loading ? (
-            <p className="py-6 text-gray-500">Loading assigned student logs...</p>
-          ) : logsNeedingReview.length > 0 ? (
-            <div className="max-h-96 space-y-3 overflow-y-auto">
-              {logsNeedingReview.map((log) => (
-                <div key={log.id} className="rounded-lg border p-4 transition hover:bg-gray-50">
-                  <div className="mb-2 flex items-start justify-between">
-                    <div>
-                      <p className="font-semibold text-gray-800">{log.student_name}</p>
-                      <p className="text-sm text-gray-500">Week {log.week_number}</p>
-                      <p className="text-sm text-gray-600">{log.description}</p>
+            <div className="mt-6">
+              {loading ? (
+                <p className="py-14 text-center text-sm text-slate-400">Loading pending reviews...</p>
+              ) : logsNeedingReview.length === 0 ? (
+                <p className="py-14 text-center text-sm text-slate-400">No pending reviews.</p>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {logsNeedingReview.slice(0, 4).map((log) => (
+                    <div key={log.id} className="py-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="font-semibold text-slate-900">{log.student_name || "Student"}</p>
+                          <p className="mt-1 text-sm text-slate-500">Week {log.week_number}</p>
+                        </div>
+                        <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold uppercase text-orange-700">
+                          Pending
+                        </span>
+                      </div>
                     </div>
-                    <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
-                      {log.status}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400">
-                    Submitted {new Date(log.date_submitted).toLocaleString()}
-                  </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-base font-black text-slate-900">Recent Activity</h2>
+          {recentActivity.length === 0 ? (
+            <p className="mt-6 text-sm text-slate-400">No recent activity yet.</p>
+          ) : (
+            <div className="mt-4 divide-y divide-slate-100">
+              {recentActivity.map((log) => (
+                <div key={log.id} className="py-3 text-sm text-slate-600">
+                  {user?.name || "Supervisor"} marked Week {log.week_number} for {log.student_name || "a student"} as{" "}
+                  <span className="font-semibold text-slate-900">{log.status}</span>.
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="py-6 text-center text-gray-500">No pending logs from assigned students.</p>
           )}
-        </div>
-
-        <div className="rounded-lg bg-gradient-to-r from-teal-600 to-teal-700 p-6 text-white shadow-md">
-          <h3 className="mb-4 text-lg font-bold">Dashboard Summary</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <p className="text-teal-100">Total Logs</p>
-              <p className="text-3xl font-bold">{logs.length}</p>
-            </div>
-            <div>
-              <p className="text-teal-100">Pending Review</p>
-              <p className="text-3xl font-bold">{pendingLogs}</p>
-            </div>
-            <div>
-              <p className="text-teal-100">Completion Rate</p>
-              <p className="text-3xl font-bold">
-                {logs.length > 0 ? Math.round(((approvedLogs + rejectedLogs) / logs.length) * 100) : 0}%
-              </p>
-            </div>
-          </div>
-        </div>
+        </section>
       </div>
     </DashboardLayout>
   );

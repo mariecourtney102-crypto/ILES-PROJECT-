@@ -103,6 +103,7 @@ const UserFeedback = () => {
                     ? "text-teal-600"
                     : "text-gray-300"
                 }`}
+                aria-label={`${star} star rating`}
               >
                 ★
               </button>

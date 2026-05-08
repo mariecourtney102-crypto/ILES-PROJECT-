@@ -19,11 +19,12 @@ api.interceptors.request.use((config) => {
 });
 
 
-export const loginUser = async (username, password) => {
-  const res = await api.post("/login/", { username, password });
+export const loginUser = async (email, password) => {
+  const res = await api.post("/login/", { email, password });
   localStorage.setItem("token", res.data.token);
   localStorage.setItem("role", res.data.role);
   localStorage.setItem("name", res.data.name);
+  localStorage.setItem("email", res.data.email);
   return res.data;
 };
 
@@ -32,6 +33,7 @@ export const logoutUser = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("name");
+  localStorage.removeItem("email");
 };
 
 export const getUserProfile = async () => {
@@ -54,6 +56,7 @@ export const logoutAPI = async () => {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("name");
+  localStorage.removeItem("email");
   return res.data;
 };
 

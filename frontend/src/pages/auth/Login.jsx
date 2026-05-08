@@ -12,7 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,19 +21,19 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
-    if (!username || !password) {
+    if (!email || !password) {
       setError("Please fill all fields");
       return;
     }
 
     setLoading(true);
     try {
-      const data = await loginUser(username, password);
+      const data = await loginUser(email, password);
       
       // Store user info in AuthContext
       login({
         token: data.token,
-        username: username,
+        email: data.email,
         role: data.role,
         name: data.name,
       });
@@ -60,9 +60,9 @@ const Login = () => {
 
           <input
             type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
             disabled={loading}
           />

@@ -68,10 +68,10 @@ function NotificationBell() {
       <button
         type="button"
         onClick={handleToggle}
-        className="relative rounded-full border border-gray-200 bg-white p-2 text-gray-700 shadow-sm transition hover:bg-gray-50"
+        className="relative rounded-full bg-white p-2 text-slate-600 transition hover:bg-slate-50"
         aria-label="Notifications"
       >
-        <Bell size={20} />
+        <Bell size={19} />
         {unreadCount > 0 ? (
           <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">
             {unreadCount}

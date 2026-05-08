@@ -5,6 +5,7 @@ import api from "../../api/api";
 const FRIENDLY_FIELD_NAMES = {
   role: "role",
   username: "username",
+  email: "email",
   name: "full name",
   ID_number: "ID number",
   telephone_number: "phone number",
@@ -22,6 +23,7 @@ function Signup() {
 
   const [formData, setFormData] = useState({
     username: "",
+    email: "",
     name: "",
     password: "",
     confirmPassword: "",
@@ -67,6 +69,7 @@ function Signup() {
   const buildSignupData = () => {
     const signupData = {
       username: formData.username,
+      email: formData.email.trim(),
       name: formData.name,
       password: formData.password,
       role: formData.role,
@@ -136,7 +139,7 @@ function Signup() {
       return;
     }
 
-    if (!formData.username.trim() || !formData.name.trim() || !formData.password || !formData.confirmPassword || !formData.ID_number.trim()) {
+    if (!formData.username.trim() || !formData.email.trim() || !formData.name.trim() || !formData.password || !formData.confirmPassword || !formData.ID_number.trim()) {
       setError("All fields (except phone) are required");
       return;
     }
@@ -152,8 +155,8 @@ function Signup() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
       return;
     }
 
@@ -213,6 +216,16 @@ function Signup() {
             name="username"
             placeholder="Username"
             value={formData.username}
+            onChange={handleChange}
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+            disabled={loading}
+          />
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
             onChange={handleChange}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
             disabled={loading}
