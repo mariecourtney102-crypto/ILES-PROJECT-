@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import CustomUser, Student, Supervisor, Admin, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Feedback, Notification
 
@@ -14,6 +15,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser 
         fields = [
             'name',
+            'email',
             'role',
             'ID_number',
             'telephone_number',
@@ -28,11 +30,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             'password': {'write_only': True},
+            'email': {'required': True, 'allow_blank': False},
             'role': {'required': True, 'allow_blank': False},
         }
 
     def validate(self, attrs):
-        role = attrs.get("role")
+        role = attrs.get("role", getattr(self.instance, "role", None))
 
         if role in (None, ""):
             raise serializers.ValidationError({"role": "Role is required."})
@@ -54,6 +57,18 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
         if errors:
             raise serializers.ValidationError(errors)
+
+        email = attrs.get("email")
+        if email:
+            email_exists = CustomUser.objects.filter(email__iexact=email)
+            if self.instance:
+                email_exists = email_exists.exclude(pk=self.instance.pk)
+            if email_exists.exists():
+                raise serializers.ValidationError({"email": "A user with this email already exists."})
+
+        password = attrs.get("password")
+        if password:
+            validate_password(password, self.instance)
 
         return attrs
 
@@ -89,6 +104,19 @@ class CustomUserSerializer(serializers.ModelSerializer):
             Admin.objects.create(users=user, **profile_data)
 
         return user
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+
+        if password:
+            instance.set_password(password)
+
+        instance.save()
+        return instance
 
 
 class StudentSerializer(serializers.ModelSerializer):

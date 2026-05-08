@@ -75,8 +75,15 @@ def signup(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
+    email = request.data.get('email')
     username = request.data.get('username')
     password = request.data.get('password')
+
+    if email:
+        try:
+            username = CustomUser.objects.get(email__iexact=email).username
+        except CustomUser.DoesNotExist:
+            username = None
 
     user = authenticate(username=username, password=password)
 
@@ -86,10 +93,11 @@ def login(request):
             "message": "Login successful",
             "token": token.key,
             "role": user.role,
-            "name": user.name
+            "name": user.name,
+            "email": user.email,
         }, status=status.HTTP_200_OK)
 
-    return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -619,19 +627,37 @@ def admin_dashboard_view(request):
     """Admin dashboard stats - returns JSON data"""
     if request.user.role != 'admin':
         return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
-    
+
+    today = timezone.now().date()
     total_students = CustomUser.objects.filter(role='student').count()
     total_supervisors = CustomUser.objects.filter(role='supervisor').count()
     total_placements = InternshipPlacement.objects.count()
     total_logs = WeeklyLog.objects.count()
     pending_logs = WeeklyLog.objects.filter(status='pending').count()
-    
+    active_internships = InternshipPlacement.objects.filter(
+        start_date__lte=today,
+        end_date__gte=today,
+    ).count()
+    completed_internships = InternshipPlacement.objects.filter(
+        end_date__lt=today,
+    ).count()
+    logs_per_week = list(
+        WeeklyLog.objects
+        .exclude(status='draft')
+        .values('week_number')
+        .annotate(total=Count('id'))
+        .order_by('week_number')
+    )
+
     return Response({
         "total_students": total_students,
         "total_supervisors": total_supervisors,
         "total_placements": total_placements,
         "total_logs": total_logs,
-        "pending_logs": pending_logs
+        "pending_logs": pending_logs,
+        "active_internships": active_internships,
+        "completed_internships": completed_internships,
+        "logs_per_week": logs_per_week,
     }, status=status.HTTP_200_OK)
 
 #Admin API Views

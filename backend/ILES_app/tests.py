@@ -1,8 +1,130 @@
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
 from .models import Admin, CustomUser, InternshipPlacement, Student, Supervisor, WeeklyLog
+
+
+class EmailAuthenticationTests(APITestCase):
+    def test_signup_requires_email(self):
+        response = self.client.post(
+            reverse('signup'),
+            {
+                'username': 'emailmissing',
+                'password': 'pass12345',
+                'role': 'student',
+                'name': 'Email Missing',
+                'ID_number': 'EMAIL001',
+                'course_title': 'Computer Science',
+                'university_name': 'Makerere',
+                'year_of_study': 3,
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('email', response.data)
+
+    def test_user_can_login_with_email(self):
+        CustomUser.objects.create_user(
+            username='emailstudent',
+            email='emailstudent@example.com',
+            password='pass12345',
+            role='student',
+            name='Email Student',
+            ID_number='EMAIL002'
+        )
+
+        response = self.client.post(
+            reverse('login'),
+            {'email': 'emailstudent@example.com', 'password': 'pass12345'},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('token', response.data)
+        self.assertEqual(response.data['email'], 'emailstudent@example.com')
+
+
+class AdminDashboardTests(APITestCase):
+    def setUp(self):
+        self.admin_user = CustomUser.objects.create_user(
+            username='dashboardadmin',
+            email='dashboardadmin@example.com',
+            password='pass12345',
+            role='admin',
+            name='Dashboard Admin',
+            ID_number='ADM-DASH'
+        )
+        Admin.objects.create(users=self.admin_user, department='Internship')
+        self.admin_token = Token.objects.create(user=self.admin_user)
+
+        self.supervisor_user = CustomUser.objects.create_user(
+            username='dashsupervisor',
+            email='dashsupervisor@example.com',
+            password='pass12345',
+            role='supervisor',
+            name='Dashboard Supervisor',
+            ID_number='SUP-DASH'
+        )
+        self.supervisor = Supervisor.objects.create(
+            users=self.supervisor_user,
+            place_of_work='Main Office',
+            department='Training',
+            staff_ID='STAFF-DASH'
+        )
+
+        self.student_user = CustomUser.objects.create_user(
+            username='dashstudent',
+            email='dashstudent@example.com',
+            password='pass12345',
+            role='student',
+            name='Dashboard Student',
+            ID_number='STD-DASH'
+        )
+        Student.objects.create(
+            users=self.student_user,
+            course_title='Information Systems',
+            university_name='Makerere',
+            year_of_study=2,
+            assigned_supervisor=self.supervisor
+        )
+
+    def test_admin_dashboard_returns_real_system_metrics(self):
+        today = timezone.now().date()
+        InternshipPlacement.objects.create(
+            user=self.student_user,
+            place_of_internship='OTIC',
+            department='ICT',
+            supervisor_name='Supervisor One',
+            start_date=today,
+            end_date=today,
+        )
+        WeeklyLog.objects.create(
+            user=self.student_user,
+            week_number=1,
+            description='Submitted work for week one.',
+            status='pending',
+        )
+        WeeklyLog.objects.create(
+            user=self.student_user,
+            week_number=1,
+            description='Draft work should not count in weekly submissions.',
+            status='draft',
+        )
+
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.admin_token.key}')
+        response = self.client.get(reverse('admin-dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['total_students'], 1)
+        self.assertEqual(response.data['total_supervisors'], 1)
+        self.assertEqual(response.data['total_placements'], 1)
+        self.assertEqual(response.data['active_internships'], 1)
+        self.assertEqual(response.data['completed_internships'], 0)
+        self.assertEqual(response.data['pending_logs'], 1)
+        self.assertEqual(response.data['logs_per_week'], [{'week_number': 1, 'total': 1}])
 
 
 class SupervisorAssignmentFlowTests(APITestCase):

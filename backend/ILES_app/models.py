@@ -1,5 +1,12 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
+
+
+class CustomUserManager(UserManager):
+    def _create_user(self, username, email, password, **extra_fields):
+        if not email:
+            email = f"{username}@iles.local".lower()
+        return super()._create_user(username, email, password, **extra_fields)
 
 
 class CustomUser(AbstractUser):
@@ -8,10 +15,12 @@ class CustomUser(AbstractUser):
         ('supervisor', 'Supervisor'),
         ('admin', 'Admin'),
     ]
+    email = models.EmailField(unique=True)
     name = models.CharField(max_length=50)
     role = models.CharField(max_length=50, choices = ROLE_CHOICES)
     ID_number = models.CharField(max_length=20, unique=True)
     telephone_number = models.CharField(max_length=15, blank=True, null=True)
+    objects = CustomUserManager()
 
     groups = models.ManyToManyField(
         'auth.Group',
