@@ -1,5 +1,6 @@
 import Sidebar from "./Sidebar";
 import NotificationBell from "./NotificationBell";
+import AccountStatus from "./AccountStatus";
 
 function DashboardLayout({ title, children }) {
   return (
@@ -15,7 +16,10 @@ function DashboardLayout({ title, children }) {
               {title}
             </h1>
 
-            <NotificationBell />
+            <div className="flex items-center gap-3">
+              <AccountStatus />
+              <NotificationBell />
+            </div>
           </div>
 
           <div className="flex-1 px-6 pb-6">
