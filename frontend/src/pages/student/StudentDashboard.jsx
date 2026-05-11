@@ -46,7 +46,7 @@ function StudentDashboard() {
         
         {/* Current Placement Card */}
         <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center gap-3">
+          <div className="bg-gradient-to-r from-[#4CAF50] to-[#45a049] px-6 py-4 flex items-center gap-3">
             <Briefcase size={24} className="text-white" />
             <h2 className="text-xl font-semibold text-white">Current Internship Placement</h2>
           </div>
@@ -149,8 +149,8 @@ function StudentDashboard() {
 
         {/* Current Week Info Card */}
         {currentWeek > 0 && (
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-4">
-            <p className="text-sm text-blue-700">
+          <div className="bg-gradient-to-r from-[#4CAF5015] to-[#4CAF5025] rounded-lg border border-[#4CAF50] p-4">
+            <p className="text-sm text-[#4CAF50]">
               <span className="font-semibold">Current Week:</span> Week {currentWeek}
             </p>
           </div>
@@ -158,14 +158,14 @@ function StudentDashboard() {
 
         {/* Recent Logbook Entries */}
         <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-[#4CAF50] to-[#45a049] px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <BookOpen size={24} className="text-white" />
               <h2 className="text-xl font-semibold text-white">Recent Logbook Entries</h2>
             </div>
             <Link
               to="/weeklylogs"
-              className="text-sm text-blue-100 hover:text-white underline transition"
+              className="text-sm text-green-100 hover:text-white underline transition"
             >
               View All
             </Link>

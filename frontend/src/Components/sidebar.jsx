@@ -337,11 +337,11 @@ function Sidebar() {
         </nav>
 
         {/* Logout Button */}
-        <div className={`border-t border-blue-800 pt-4 transition-all duration-300`}>
+        <div className={`border-t border-[#4CAF50] pt-4 transition-all duration-300`}>
           <button
             type="button"
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all duration-200 ${
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold transition-all duration-200 ${
               isCollapsed ? "md:justify-center" : ""
             }`}
             title={isCollapsed ? "Logout" : ""}
