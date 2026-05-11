@@ -3,20 +3,25 @@ import NotificationBell from "./NotificationBell";
 
 function DashboardLayout({ title, children }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
 
       <Sidebar />
 
-      <div className="flex-1 p-6">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold text-teal-500">
-            {title}
-          </h1>
+      {/* Main content area with responsive padding for sidebar */}
+      <div className="flex-1 transition-all duration-300 md:ml-64 md:group-data-[collapsed]/sidebar:ml-20">
+        <div className="min-h-screen flex flex-col">
+          <div className="mb-4 flex items-center justify-between gap-4 p-6 pt-20 md:pt-6">
+            <h1 className="text-3xl font-bold text-blue-600">
+              {title}
+            </h1>
 
-          <NotificationBell />
+            <NotificationBell />
+          </div>
+
+          <div className="flex-1 px-6 pb-6">
+            {children}
+          </div>
         </div>
-
-        {children}
       </div>
 
     </div>
