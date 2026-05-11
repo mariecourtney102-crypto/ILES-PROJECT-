@@ -80,15 +80,8 @@ function Sidebar() {
         } ${isOpen ? "w-64" : "w-0 md:w-auto"} overflow-hidden md:overflow-visible`}
       >
         {/* Header */}
-        <div className={`flex items-center justify-between p-4 border-b border-teal-500 transition-all duration-300 ${isCollapsed ? "md:justify-center" : ""}`}>
+        <div className={`flex items-center justify-center p-4 border-b border-teal-500 transition-all duration-300 ${isCollapsed ? "" : ""}`}>
           {!isCollapsed && <h2 className="text-xl font-bold truncate">{getTitle()}</h2>}
-          <button
-            onClick={toggleCollapse}
-            className="hidden md:block p-1 rounded hover:bg-teal-500 transition"
-            title={isCollapsed ? "Expand" : "Collapse"}
-          >
-            {isCollapsed ? <Menu size={20} /> : <X size={20} />}
-          </button>
         </div>
 
         {/* Navigation */}
