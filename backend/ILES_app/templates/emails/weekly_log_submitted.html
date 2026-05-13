@@ -1,0 +1,91 @@
+{% autoescape off %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Log Submitted</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #14b8a6;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #14b8a6;
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            margin: 30px 0;
+        }
+        .content p {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+        .info-box {
+            background-color: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .footer {
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ILES System</h1>
+            <p>New Weekly Log Submission</p>
+        </div>
+
+        <div class="content">
+            <p>Hello {{ supervisor_name }},</p>
+            
+            <p>A new weekly log has been submitted by {{ student_name }} and is awaiting your review.</p>
+
+            <div class="info-box">
+                <strong>Submission Details:</strong>
+                <ul>
+                    <li><strong>Student:</strong> {{ student_name }}</li>
+                    <li><strong>Week Number:</strong> {{ week_number }}</li>
+                    <li><strong>Status:</strong> Pending Review</li>
+                </ul>
+            </div>
+
+            <p>Please log in to the ILES system to review the submission and provide feedback.</p>
+
+            <p>If you have any questions, please contact the system administrator.</p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 ILES System. All rights reserved.</p>
+            <p>This is an automated email. Please do not reply to this message.</p>
+        </div>
+    </div>
+</body>
+</html>
+{% endautoescape %}
