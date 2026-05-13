@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import CustomUser, Student, Supervisor, Admin, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Feedback, Notification
 
 class CustomUserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
     course_title = serializers.CharField(required=False, write_only=True, allow_blank=True)
     university_name = serializers.CharField(required=False, write_only=True, allow_blank=True)
     year_of_study = serializers.IntegerField(required=False, write_only=True, allow_null=True)
@@ -17,6 +18,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'role',
             'ID_number',
             'telephone_number',
+            'email',
             'username',
             'password',
             'course_title',
@@ -29,6 +31,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True},
             'role': {'required': True, 'allow_blank': False},
+            'email': {'required': True},
         }
 
     def validate(self, attrs):

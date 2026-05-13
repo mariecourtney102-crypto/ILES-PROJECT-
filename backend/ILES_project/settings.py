@@ -167,3 +167,11 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
 
 # Email verification settings
 EMAIL_VERIFICATION_TIMEOUT = 24  # hours
+
+# Cache configuration for token storage
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'iles-cache',
+    }
+}
