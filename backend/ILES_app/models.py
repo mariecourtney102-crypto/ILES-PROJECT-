@@ -9,9 +9,14 @@ class CustomUser(AbstractUser):
         ('admin', 'Admin'),
     ]
     name = models.CharField(max_length=50)
-    role = models.CharField(max_length=50, choices = ROLE_CHOICES)
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
     ID_number = models.CharField(max_length=20, unique=True)
     telephone_number = models.CharField(max_length=15, blank=True, null=True)
+    
+    # Email verification fields
+    email = models.EmailField(unique=True)  # Make email required and unique
+    is_verified = models.BooleanField(default=False)
+    email_verified_at = models.DateTimeField(null=True, blank=True)
 
     groups = models.ManyToManyField(
         'auth.Group',
@@ -20,9 +25,10 @@ class CustomUser(AbstractUser):
     )
     user_permissions = models.ManyToManyField(
         'auth.Permission',
-        related_name= 'customuser_permissions',
+        related_name='customuser_permissions',
         blank=True
     )
+    
     def __str__(self):
         return f"{self.username} ({self.role})"
 
