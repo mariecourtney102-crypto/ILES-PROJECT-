@@ -21,6 +21,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'email',
             'username',
             'password',
+            'is_verified',
+            'email_verified_at',
             'course_title',
             'university_name',
             'year_of_study',
@@ -32,6 +34,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
             'role': {'required': True, 'allow_blank': False},
             'email': {'required': True},
+            'is_verified': {'read_only': True},
+            'email_verified_at': {'read_only': True},
         }
 
     def validate(self, attrs):

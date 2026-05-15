@@ -15,6 +15,9 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from .services import send_email_verification, send_registration_confirmation
+from .tokens import token_service
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer, StudentSerializer, SupervisorSerializer,
@@ -66,8 +69,24 @@ def notify_weekly_log_submitted(weekly_log):
 def signup(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        user = serializer.save()
+
+        verification_path = reverse(
+            'verify_email',
+            kwargs={
+                'uidb64': token_service.generate_email_verification_token(user).split('-', 1)[0],
+                'token': token_service.generate_email_verification_token(user).split('-', 1)[1],
+            }
+        )
+        verification_link = request.build_absolute_uri(verification_path)
+        send_email_verification(user, verification_link)
+
+        response_data = CustomUserSerializer(user).data
+        response_data.update({
+            "message": "Account created successfully. Please check your email to verify your account.",
+            "verification_required": True,
+        })
+        return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -81,6 +100,12 @@ def login(request):
     user = authenticate(username=username, password=password)
 
     if user:
+        if not user.is_verified:
+            return Response({
+                "error": "Please verify your email before logging in.",
+                "verification_required": True,
+            }, status=status.HTTP_403_FORBIDDEN)
+
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
             "message": "Login successful",
@@ -90,6 +115,84 @@ def login(request):
         }, status=status.HTTP_200_OK)
 
     return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_email(request, uidb64, token):
+    try:
+        user_id = int(token_service.email_token_generator._get_user_token_data(uidb64, token))  # type: ignore[attr-defined]
+    except Exception:
+        user_id = None
+
+    if user_id is None:
+        return Response(
+            {"error": "Invalid or expired verification link."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        user = CustomUser.objects.get(pk=user_id)
+    except CustomUser.DoesNotExist:
+        return Response(
+            {"error": "Verification user not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    token_string = f"{uidb64}-{token}"
+    if user.is_verified:
+        return Response(
+            {"message": "Email is already verified."},
+            status=status.HTTP_200_OK,
+        )
+
+    if not token_service.verify_email_verification_token(user, token_string):
+        return Response(
+            {"error": "Invalid or expired verification link."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user.is_verified = True
+    user.email_verified_at = timezone.now()
+    user.save(update_fields=['is_verified', 'email_verified_at'])
+    token_service.invalidate_email_verification_token(user)
+    send_registration_confirmation(user)
+
+    return Response(
+        {"message": "Email verified successfully."},
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_verification_email(request):
+    email = request.data.get('email')
+    if not email:
+        return Response({"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = CustomUser.objects.get(email=email)
+    except CustomUser.DoesNotExist:
+        return Response({"message": "If an account exists, a verification email was sent."}, status=status.HTTP_200_OK)
+
+    if user.is_verified:
+        return Response({"message": "Email is already verified."}, status=status.HTTP_200_OK)
+
+    verification_path = reverse(
+        'verify_email',
+        kwargs={
+            'uidb64': token_service.generate_email_verification_token(user).split('-', 1)[0],
+            'token': token_service.generate_email_verification_token(user).split('-', 1)[1],
+        }
+    )
+    verification_link = request.build_absolute_uri(verification_path)
+    send_email_verification(user, verification_link)
+
+    return Response(
+        {"message": "Verification email sent."},
+        status=status.HTTP_200_OK,
+    )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
