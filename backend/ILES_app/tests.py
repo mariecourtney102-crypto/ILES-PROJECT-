@@ -1,3 +1,6 @@
+from unittest.mock import patch
+from urllib.parse import urlparse
+
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
@@ -251,3 +254,59 @@ class InternshipPlacementTests(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertIn('end_date', response.data)
+
+
+class EmailVerificationFlowTests(APITestCase):
+    def test_signup_login_and_email_verification_flow(self):
+        signup_payload = {
+            "username": "newstudent",
+            "name": "New Student",
+            "password": "pass12345",
+            "role": "student",
+            "ID_number": "STD900",
+            "telephone_number": "0770000000",
+            "course_title": "Computer Science",
+            "university_name": "Makerere",
+            "year_of_study": 3,
+        }
+
+        with patch('ILES_app.views.send_email_verification') as mock_send_verification, patch(
+            'ILES_app.views.send_registration_confirmation'
+        ) as mock_confirmation:
+            response = self.client.post(reverse('signup'), signup_payload, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(response.data['verification_required'])
+        self.assertEqual(CustomUser.objects.filter(username='newstudent').count(), 1)
+
+        user = CustomUser.objects.get(username='newstudent')
+        self.assertFalse(user.is_verified)
+        mock_send_verification.assert_called_once()
+        mock_confirmation.assert_not_called()
+
+        login_response = self.client.post(
+            reverse('login'),
+            {"username": "newstudent", "password": "pass12345"},
+            format='json'
+        )
+        self.assertEqual(login_response.status_code, 403)
+        self.assertTrue(login_response.data['verification_required'])
+
+        verification_link = mock_send_verification.call_args.args[1]
+        parsed = urlparse(verification_link)
+
+        verify_response = self.client.get(parsed.path)
+        self.assertEqual(verify_response.status_code, 200)
+
+        user.refresh_from_db()
+        self.assertTrue(user.is_verified)
+        self.assertIsNotNone(user.email_verified_at)
+        mock_confirmation.assert_called_once()
+
+        verified_login = self.client.post(
+            reverse('login'),
+            {"username": "newstudent", "password": "pass12345"},
+            format='json'
+        )
+        self.assertEqual(verified_login.status_code, 200)
+        self.assertIn('token', verified_login.data)

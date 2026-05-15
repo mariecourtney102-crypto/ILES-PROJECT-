@@ -75,7 +75,7 @@ def signup(request):
 
         verification_token = token_service.generate_email_verification_token(user)
         if verification_token:
-            uidb64, token = verification_token.split('-', 1)
+            uidb64, token = verification_token
             verification_path = reverse(
                 'verify_email',
                 kwargs={
@@ -144,14 +144,13 @@ def verify_email(request, uidb64, token):
             status=status.HTTP_404_NOT_FOUND,
         )
 
-    token_string = f"{uidb64}-{token}"
     if user.is_verified:
         return Response(
             {"message": "Email is already verified."},
             status=status.HTTP_200_OK,
         )
 
-    if not token_service.verify_email_verification_token(user, token_string):
+    if not token_service.verify_email_verification_token(user, uidb64, token):
         return Response(
             {"error": "Invalid or expired verification link."},
             status=status.HTTP_400_BAD_REQUEST,
@@ -188,7 +187,7 @@ def resend_verification_email(request):
     if not verification_token:
         return Response({"error": "Unable to generate verification link."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    uidb64, token = verification_token.split('-', 1)
+    uidb64, token = verification_token
     verification_path = reverse(
         'verify_email',
         kwargs={

@@ -73,7 +73,7 @@ class TokenService:
             user (CustomUser): The user object
         
         Returns:
-            str: Token string (format: uid-token)
+            tuple[str, str]: Base64 user id and token
         """
         try:
             uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -82,35 +82,29 @@ class TokenService:
             # Store token in cache with expiration
             cache_key = f"{self.EMAIL_VERIFICATION_PREFIX}{user.id}"
             cache.set(cache_key, token, timeout=self.verification_timeout * 3600)
-            
+
             logger.info(f"Email verification token generated for user {user.id}")
-            return f"{uid}-{token}"
+            return uid, token
         except Exception as e:
             logger.error(f"Error generating email verification token: {str(e)}")
             return None
     
-    def verify_email_verification_token(self, user, token_string):
+    def verify_email_verification_token(self, user, uidb64, token=None):
         """
         Verify an email verification token.
         
         Args:
             user (CustomUser): The user object
-            token_string (str): Token string (format: uid-token)
+            uidb64 (str): Base64-encoded user id
+            token (str): Token string
         
         Returns:
             bool: True if token is valid, False otherwise
         """
         try:
-            # Parse the token string
-            try:
-                uid, token = token_string.rsplit('-', 1)
-            except ValueError:
-                logger.warning(f"Invalid token format for user {user.id}")
-                return False
-            
             # Decode the user ID
             try:
-                decoded_uid = force_str(urlsafe_base64_decode(uid))
+                decoded_uid = force_str(urlsafe_base64_decode(uidb64))
                 user_id = int(decoded_uid)
             except (ValueError, TypeError):
                 logger.warning(f"Invalid user ID in token for user {user.id}")
@@ -168,7 +162,7 @@ class TokenService:
             user (CustomUser): The user object
         
         Returns:
-            str: Token string (format: uid-token)
+            tuple[str, str]: Base64 user id and token
         """
         try:
             uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -177,35 +171,29 @@ class TokenService:
             # Store token in cache with 1 hour expiration for password reset
             cache_key = f"{self.PASSWORD_RESET_PREFIX}{user.id}"
             cache.set(cache_key, token, timeout=3600)  # 1 hour
-            
+
             logger.info(f"Password reset token generated for user {user.id}")
-            return f"{uid}-{token}"
+            return uid, token
         except Exception as e:
             logger.error(f"Error generating password reset token: {str(e)}")
             return None
-    
-    def verify_password_reset_token(self, user, token_string):
+   
+    def verify_password_reset_token(self, user, uidb64, token=None):
         """
         Verify a password reset token.
         
         Args:
             user (CustomUser): The user object
-            token_string (str): Token string (format: uid-token)
+            uidb64 (str): Base64-encoded user id
+            token (str): Token string
         
         Returns:
             bool: True if token is valid, False otherwise
         """
         try:
-            # Parse the token string
-            try:
-                uid, token = token_string.rsplit('-', 1)
-            except ValueError:
-                logger.warning(f"Invalid token format for password reset")
-                return False
-            
             # Decode the user ID
             try:
-                decoded_uid = force_str(urlsafe_base64_decode(uid))
+                decoded_uid = force_str(urlsafe_base64_decode(uidb64))
                 user_id = int(decoded_uid)
             except (ValueError, TypeError):
                 logger.warning(f"Invalid user ID in password reset token")
