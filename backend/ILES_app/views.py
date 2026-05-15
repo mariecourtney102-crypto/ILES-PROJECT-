@@ -16,6 +16,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from .services import send_email_verification, send_registration_confirmation
 from .tokens import token_service
 from .serializers import ( CustomUserSerializer, 
@@ -71,15 +73,18 @@ def signup(request):
     if serializer.is_valid():
         user = serializer.save()
 
-        verification_path = reverse(
-            'verify_email',
-            kwargs={
-                'uidb64': token_service.generate_email_verification_token(user).split('-', 1)[0],
-                'token': token_service.generate_email_verification_token(user).split('-', 1)[1],
-            }
-        )
-        verification_link = request.build_absolute_uri(verification_path)
-        send_email_verification(user, verification_link)
+        verification_token = token_service.generate_email_verification_token(user)
+        if verification_token:
+            uidb64, token = verification_token.split('-', 1)
+            verification_path = reverse(
+                'verify_email',
+                kwargs={
+                    'uidb64': uidb64,
+                    'token': token,
+                }
+            )
+            verification_link = request.build_absolute_uri(verification_path)
+            send_email_verification(user, verification_link)
 
         response_data = CustomUserSerializer(user).data
         response_data.update({
@@ -121,8 +126,8 @@ def login(request):
 @permission_classes([AllowAny])
 def verify_email(request, uidb64, token):
     try:
-        user_id = int(token_service.email_token_generator._get_user_token_data(uidb64, token))  # type: ignore[attr-defined]
-    except Exception:
+        user_id = int(force_str(urlsafe_base64_decode(uidb64)))
+    except (TypeError, ValueError, OverflowError):
         user_id = None
 
     if user_id is None:
@@ -179,11 +184,16 @@ def resend_verification_email(request):
     if user.is_verified:
         return Response({"message": "Email is already verified."}, status=status.HTTP_200_OK)
 
+    verification_token = token_service.generate_email_verification_token(user)
+    if not verification_token:
+        return Response({"error": "Unable to generate verification link."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    uidb64, token = verification_token.split('-', 1)
     verification_path = reverse(
         'verify_email',
         kwargs={
-            'uidb64': token_service.generate_email_verification_token(user).split('-', 1)[0],
-            'token': token_service.generate_email_verification_token(user).split('-', 1)[1],
+            'uidb64': uidb64,
+            'token': token,
         }
     )
     verification_link = request.build_absolute_uri(verification_path)
