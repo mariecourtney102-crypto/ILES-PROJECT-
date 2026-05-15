@@ -6,6 +6,7 @@ const FRIENDLY_FIELD_NAMES = {
   role: "role",
   username: "username",
   name: "full name",
+  email: "email address",
   ID_number: "ID number",
   telephone_number: "phone number",
   course_title: "course title",
@@ -23,6 +24,7 @@ function Signup() {
   const [formData, setFormData] = useState({
     username: "",
     name: "",
+    email: "",
     password: "",
     confirmPassword: "",
     role: "",
@@ -68,6 +70,7 @@ function Signup() {
     const signupData = {
       username: formData.username,
       name: formData.name,
+      email: formData.email,
       password: formData.password,
       role: formData.role,
       ID_number: formData.ID_number,
@@ -136,8 +139,8 @@ function Signup() {
       return;
     }
 
-    if (!formData.username.trim() || !formData.name.trim() || !formData.password || !formData.confirmPassword || !formData.ID_number.trim()) {
-      setError("All fields (except phone) are required");
+    if (!formData.username.trim() || !formData.name.trim() || !formData.email.trim() || !formData.password || !formData.confirmPassword || !formData.ID_number.trim()) {
+      setError("All fields except phone number are required");
       return;
     }
 
@@ -223,6 +226,16 @@ function Signup() {
             name="name"
             placeholder="Full Name"
             value={formData.name}
+            onChange={handleChange}
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+            disabled={loading}
+          />
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            value={formData.email}
             onChange={handleChange}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
             disabled={loading}
