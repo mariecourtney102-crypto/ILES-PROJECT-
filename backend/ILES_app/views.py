@@ -203,6 +203,26 @@ def resend_verification_email(request):
         status=status.HTTP_200_OK,
     )
 
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_user_role(request):
+    role = request.data.get('role')
+
+    if not role:
+        return Response({"error": "role is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.role = role
+    request.user.save(update_fields=['role'])
+
+    return Response(
+        {
+            "message": "Role updated successfully.",
+            "role": request.user.role,
+        },
+        status=status.HTTP_200_OK,
+    )
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logoutUser(request):
