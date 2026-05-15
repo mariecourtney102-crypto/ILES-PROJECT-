@@ -615,6 +615,7 @@ def mark_all_notifications_read(request):
     return Response({"message": "All notifications marked as read."}, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def admin_dashboard_view(request):
     """Admin dashboard stats - returns JSON data"""
     if request.user.role != 'admin':
