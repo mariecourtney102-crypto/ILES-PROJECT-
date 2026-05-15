@@ -170,7 +170,7 @@ function Signup() {
       
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        navigate("/choose-role");
+        navigate("/login");
       }, 2000);
     } catch (err) {
       const errorData = err.response?.data;
