@@ -203,6 +203,26 @@ def resend_verification_email(request):
         status=status.HTTP_200_OK,
     )
 
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_user_role(request):
+    role = request.data.get('role')
+
+    if not role:
+        return Response({"error": "role is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.role = role
+    request.user.save(update_fields=['role'])
+
+    return Response(
+        {
+            "message": "Role updated successfully.",
+            "role": request.user.role,
+        },
+        status=status.HTTP_200_OK,
+    )
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logoutUser(request):
@@ -730,8 +750,9 @@ def mark_all_notifications_read(request):
 @permission_classes([IsAuthenticated])
 def admin_dashboard_view(request):
     """Admin dashboard stats - returns JSON data"""
-    if request.user.role != 'admin':
-        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    permission_error = require_role(request.user, ['admin'])
+    if permission_error:
+        return permission_error
     
     total_students = CustomUser.objects.filter(role='student').count()
     total_supervisors = CustomUser.objects.filter(role='supervisor').count()
@@ -751,8 +772,9 @@ def admin_dashboard_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_opportunities(request):
-    if request.user.role != 'admin':
-        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    permission_error = require_role(request.user, ['admin'])
+    if permission_error:
+        return permission_error
     
     placements = InternshipPlacement.objects.select_related('user').all()
     serializer = InternshipPlacementSerializer(placements, many=True)
@@ -761,8 +783,9 @@ def get_opportunities(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_students(request):
-    if request.user.role != 'admin':
-        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    permission_error = require_role(request.user, ['admin'])
+    if permission_error:
+        return permission_error
     
     students = CustomUser.objects.filter(role='student')
     data = [{
@@ -777,8 +800,9 @@ def get_students(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_supervisors(request):
-    if request.user.role != 'admin':
-        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    permission_error = require_role(request.user, ['admin'])
+    if permission_error:
+        return permission_error
     
     supervisors = CustomUser.objects.filter(role='supervisor')
     data = [{
@@ -793,8 +817,9 @@ def get_supervisors(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_reports(request):
-    if request.user.role != 'admin':
-        return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+    permission_error = require_role(request.user, ['admin'])
+    if permission_error:
+        return permission_error
     
     students = CustomUser.objects.filter(role='student').count()
     supervisors = CustomUser.objects.filter(role='supervisor').count()
