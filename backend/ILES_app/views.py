@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
@@ -87,7 +88,10 @@ def notify_weekly_log_submitted(weekly_log):
 def signup(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.save()
+        try:
+            user = serializer.save()
+        except DRFValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
 
         verification_token = token_service.generate_email_verification_token(user)
         if verification_token:

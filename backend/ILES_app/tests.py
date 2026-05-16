@@ -311,6 +311,38 @@ class EmailVerificationFlowTests(APITestCase):
         self.assertEqual(verified_login.status_code, 200)
         self.assertIn('token', verified_login.data)
 
+    def test_signup_rejects_duplicate_email(self):
+        CustomUser.objects.create_user(
+            username='existinguser',
+            password='pass12345',
+            role='student',
+            name='Existing User',
+            ID_number='STD9010',
+            email='paul@gmail.com',
+        )
+
+        signup_payload = {
+            "username": "anotherstudent",
+            "name": "Another Student",
+            "password": "pass12345",
+            "role": "student",
+            "ID_number": "STD9011",
+            "telephone_number": "0770000001",
+            "email": "paul@gmail.com",
+            "course_title": "Computer Science",
+            "university_name": "Makerere",
+            "year_of_study": 3,
+        }
+
+        response = self.client.post(reverse('signup'), signup_payload, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('email', response.data)
+        self.assertEqual(
+            response.data['email'][0],
+            'A user with this email already exists.'
+        )
+
 
 class AdminAccessControlTests(APITestCase):
     def setUp(self):

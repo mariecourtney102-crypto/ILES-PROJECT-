@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from rest_framework import serializers
 from .models import CustomUser, Student, Supervisor, Admin, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Feedback, Notification
 
@@ -64,6 +64,31 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def _unique_conflict(self, field_name, value, message):
+        if value in (None, ""):
+            return
+
+        lookup = {f"{field_name}__iexact": value} if field_name in {"email", "username"} else {field_name: value}
+        queryset = CustomUser.objects.filter(**lookup)
+
+        if self.instance and self.instance.pk:
+            queryset = queryset.exclude(pk=self.instance.pk)
+
+        if queryset.exists():
+            raise serializers.ValidationError(message)
+
+    def validate_email(self, value):
+        self._unique_conflict("email", value, "A user with this email already exists.")
+        return value
+
+    def validate_username(self, value):
+        self._unique_conflict("username", value, "A user with this username already exists.")
+        return value
+
+    def validate_ID_number(self, value):
+        self._unique_conflict("ID_number", value, "A user with this ID number already exists.")
+        return value
+
     @transaction.atomic
     def create(self, validated_data):
         role = validated_data["role"]
@@ -86,7 +111,17 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 "department": validated_data.pop("department", None),
             }
 
-        user = CustomUser.objects.create_user(**validated_data)
+        try:
+            user = CustomUser.objects.create_user(**validated_data)
+        except IntegrityError as exc:
+            message = str(exc).lower()
+            if "email" in message:
+                raise serializers.ValidationError("A user with this email already exists.")
+            if "username" in message:
+                raise serializers.ValidationError("A user with this username already exists.")
+            if "id_number" in message:
+                raise serializers.ValidationError("A user with this ID number already exists.")
+            raise
 
         if role == "student":
             Student.objects.create(users=user, **profile_data)
