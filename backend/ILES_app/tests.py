@@ -310,3 +310,33 @@ class EmailVerificationFlowTests(APITestCase):
         )
         self.assertEqual(verified_login.status_code, 200)
         self.assertIn('token', verified_login.data)
+
+
+class AdminAccessControlTests(APITestCase):
+    def setUp(self):
+        self.student_user = CustomUser.objects.create_user(
+            username='student-admin-check',
+            password='pass12345',
+            role='student',
+            name='Student User',
+            ID_number='STD901',
+            email='student-admin-check@example.com',
+        )
+        Student.objects.create(
+            users=self.student_user,
+            course_title='Computer Science',
+            university_name='Makerere',
+            year_of_study=3
+        )
+        self.student_token = Token.objects.create(user=self.student_user)
+
+    def test_non_admin_cannot_access_admin_endpoints(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
+
+        response = self.client.get(reverse('list_students'))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data['error'],
+            'You do not have permission to perform this action.'
+        )

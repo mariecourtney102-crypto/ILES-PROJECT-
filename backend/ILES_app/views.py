@@ -1,3 +1,5 @@
+from functools import wraps
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -49,6 +51,20 @@ def require_role(user, allowed_roles):
             status=status.HTTP_403_FORBIDDEN
         )
     return None
+
+
+def role_required(*allowed_roles):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapped(request, *args, **kwargs):
+            permission_error = require_role(request.user, allowed_roles)
+            if permission_error:
+                return permission_error
+            return view_func(request, *args, **kwargs)
+
+        return wrapped
+
+    return decorator
 
 
 def notify_weekly_log_submitted(weekly_log):
@@ -748,12 +764,9 @@ def mark_all_notifications_read(request):
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def admin_dashboard_view(request):
     """Admin dashboard stats - returns JSON data"""
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     total_students = CustomUser.objects.filter(role='student').count()
     total_supervisors = CustomUser.objects.filter(role='supervisor').count()
     total_placements = InternshipPlacement.objects.count()
@@ -771,22 +784,16 @@ def admin_dashboard_view(request):
 #Admin API Views
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def get_opportunities(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     placements = InternshipPlacement.objects.select_related('user').all()
     serializer = InternshipPlacementSerializer(placements, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def get_students(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     students = CustomUser.objects.filter(role='student')
     data = [{
         "id": s.id,
@@ -799,11 +806,8 @@ def get_students(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def get_supervisors(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     supervisors = CustomUser.objects.filter(role='supervisor')
     data = [{
         "id": s.id,
@@ -816,11 +820,8 @@ def get_supervisors(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def get_reports(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     students = CustomUser.objects.filter(role='student').count()
     supervisors = CustomUser.objects.filter(role='supervisor').count()
     opportunities = InternshipPlacement.objects.count()
