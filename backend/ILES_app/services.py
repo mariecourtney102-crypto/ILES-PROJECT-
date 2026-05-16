@@ -26,7 +26,7 @@ def send_plain_email(subject, message, recipient_list, from_email=None):
         int: Number of successfully sent emails
     """
     if from_email is None:
-        from_email = settings.DEFAULT_FROM_EMAIL
+        from_email = settings.DEFAULT_FROM_EMAIL or 'no-reply@iles.local'
     
     try:
         result = send_mail(
@@ -58,7 +58,7 @@ def send_html_email(subject, template_name, context, recipient_list, from_email=
         int: Number of successfully sent emails
     """
     if from_email is None:
-        from_email = settings.DEFAULT_FROM_EMAIL
+        from_email = settings.DEFAULT_FROM_EMAIL or 'no-reply@iles.local'
     
     try:
         # Render HTML template

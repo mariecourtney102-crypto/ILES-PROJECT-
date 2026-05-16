@@ -1,7 +1,11 @@
+from functools import wraps
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.http import JsonResponse
+from django.conf import settings
 from rest_framework import status
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
@@ -51,6 +55,20 @@ def require_role(user, allowed_roles):
     return None
 
 
+def role_required(*allowed_roles):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapped(request, *args, **kwargs):
+            permission_error = require_role(request.user, allowed_roles)
+            if permission_error:
+                return permission_error
+            return view_func(request, *args, **kwargs)
+
+        return wrapped
+
+    return decorator
+
+
 def notify_weekly_log_submitted(weekly_log):
     Notification.objects.create(
         user=weekly_log.user,
@@ -65,33 +83,56 @@ def notify_weekly_log_submitted(weekly_log):
             title="New Weekly Log",
             message=f"{weekly_log.user.name or weekly_log.user.username} submitted Week {weekly_log.week_number}.",
         )
+
+
+def should_expose_verification_link():
+    return settings.DEBUG or settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend'
     
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.save()
+        try:
+            with transaction.atomic():
+                user = serializer.save()
 
-        verification_token = token_service.generate_email_verification_token(user)
-        if verification_token:
-            uidb64, token = verification_token
-            verification_path = reverse(
-                'verify_email',
-                kwargs={
-                    'uidb64': uidb64,
-                    'token': token,
-                }
-            )
-            verification_link = request.build_absolute_uri(verification_path)
-            send_email_verification(user, verification_link)
+                verification_token = token_service.generate_email_verification_token(user)
+                verification_link = None
+                if not verification_token:
+                    user.delete()
+                    return Response(
+                        {"error": "Verification link could not be generated. Please try again."},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
 
-        response_data = CustomUserSerializer(user).data
-        response_data.update({
-            "message": "Account created successfully. Please check your email to verify your account.",
-            "verification_required": True,
-        })
-        return Response(response_data, status=status.HTTP_201_CREATED)
+                uidb64, token = verification_token
+                verification_path = reverse(
+                    'verify_email',
+                    kwargs={
+                        'uidb64': uidb64,
+                        'token': token,
+                    }
+                )
+                verification_link = request.build_absolute_uri(verification_path)
+                sent_count = send_email_verification(user, verification_link)
+                if not sent_count:
+                    user.delete()
+                    return Response(
+                        {"error": "Verification email could not be sent. Please try again."},
+                        status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    )
+
+                response_data = CustomUserSerializer(user).data
+                response_data.update({
+                    "message": "Account created successfully. Please check your email to verify your account.",
+                    "verification_required": True,
+                })
+                if verification_link and should_expose_verification_link():
+                    response_data["verification_link"] = verification_link
+                return Response(response_data, status=status.HTTP_201_CREATED)
+        except DRFValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -196,12 +237,18 @@ def resend_verification_email(request):
         }
     )
     verification_link = request.build_absolute_uri(verification_path)
-    send_email_verification(user, verification_link)
+    sent_count = send_email_verification(user, verification_link)
+    if not sent_count:
+        return Response(
+            {"error": "Verification email could not be sent."},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
 
-    return Response(
-        {"message": "Verification email sent."},
-        status=status.HTTP_200_OK,
-    )
+    response_data = {"message": "Verification email sent."}
+    if should_expose_verification_link():
+        response_data["verification_link"] = verification_link
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['PATCH'])
@@ -278,11 +325,8 @@ def create_placement(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def list_students(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     students = Student.objects.select_related('users', 'assigned_supervisor__users').all()
     serializer = StudentSerializer(students, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -290,11 +334,8 @@ def list_students(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def list_supervisors(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     supervisors = Supervisor.objects.select_related('users').all()
     supervisor_data = []
     for supervisor in supervisors:
@@ -306,11 +347,8 @@ def list_supervisors(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def assign_supervisor(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     student_id = request.data.get('student_id')
     supervisor_id = request.data.get('supervisor_id')
 
@@ -609,11 +647,8 @@ def search_internships(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def reports(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     total_students = Student.objects.count()
     total_supervisors = Supervisor.objects.count()
     total_placements = InternshipPlacement.objects.count()
@@ -647,11 +682,8 @@ def reports(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def opportunities(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     placements = (
         InternshipPlacement.objects
         .values('place_of_internship', 'department')
@@ -693,11 +725,8 @@ def feedback(request):
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def settings(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     site_settings = SiteSetting.objects.order_by('id').first()
     if site_settings is None:
         site_settings = SiteSetting.objects.create(
@@ -748,12 +777,9 @@ def mark_all_notifications_read(request):
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def admin_dashboard_view(request):
     """Admin dashboard stats - returns JSON data"""
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     total_students = CustomUser.objects.filter(role='student').count()
     total_supervisors = CustomUser.objects.filter(role='supervisor').count()
     total_placements = InternshipPlacement.objects.count()
@@ -771,22 +797,16 @@ def admin_dashboard_view(request):
 #Admin API Views
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def get_opportunities(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     placements = InternshipPlacement.objects.select_related('user').all()
     serializer = InternshipPlacementSerializer(placements, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def get_students(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     students = CustomUser.objects.filter(role='student')
     data = [{
         "id": s.id,
@@ -799,11 +819,8 @@ def get_students(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def get_supervisors(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     supervisors = CustomUser.objects.filter(role='supervisor')
     data = [{
         "id": s.id,
@@ -816,11 +833,8 @@ def get_supervisors(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def get_reports(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-    
     students = CustomUser.objects.filter(role='student').count()
     supervisors = CustomUser.objects.filter(role='supervisor').count()
     opportunities = InternshipPlacement.objects.count()

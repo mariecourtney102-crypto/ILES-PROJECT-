@@ -115,16 +115,11 @@ class TokenService:
                 logger.warning(f"User ID mismatch: {user_id} != {user.id}")
                 return False
             
-            # Check if token is in cache (not expired)
+            # Check the cache if present, but do not make it the only source of truth.
             cache_key = f"{self.EMAIL_VERIFICATION_PREFIX}{user.id}"
             cached_token = cache.get(cache_key)
-            
-            if not cached_token:
-                logger.warning(f"Token expired or not found in cache for user {user.id}")
-                return False
-            
-            # Verify token matches
-            if token != cached_token:
+
+            if cached_token and token != cached_token:
                 logger.warning(f"Token mismatch for user {user.id}")
                 return False
             

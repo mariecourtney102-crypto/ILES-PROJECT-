@@ -1,6 +1,7 @@
 from unittest.mock import patch
 from urllib.parse import urlparse
 
+from django.core.cache import cache
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
@@ -277,6 +278,7 @@ class EmailVerificationFlowTests(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['verification_required'])
+        self.assertIn('verification_link', response.data)
         self.assertEqual(CustomUser.objects.filter(username='newstudent').count(), 1)
 
         user = CustomUser.objects.get(username='newstudent')
@@ -310,3 +312,94 @@ class EmailVerificationFlowTests(APITestCase):
         )
         self.assertEqual(verified_login.status_code, 200)
         self.assertIn('token', verified_login.data)
+
+    def test_signup_rejects_duplicate_email(self):
+        CustomUser.objects.create_user(
+            username='existinguser',
+            password='pass12345',
+            role='student',
+            name='Existing User',
+            ID_number='STD9010',
+            email='paul@gmail.com',
+        )
+
+        signup_payload = {
+            "username": "anotherstudent",
+            "name": "Another Student",
+            "password": "pass12345",
+            "role": "student",
+            "ID_number": "STD9011",
+            "telephone_number": "0770000001",
+            "email": "paul@gmail.com",
+            "course_title": "Computer Science",
+            "university_name": "Makerere",
+            "year_of_study": 3,
+        }
+
+        response = self.client.post(reverse('signup'), signup_payload, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('email', response.data)
+        self.assertEqual(
+            response.data['email'][0],
+            'A user with this email already exists.'
+        )
+
+    def test_email_verification_still_works_if_cache_is_cleared(self):
+        signup_payload = {
+            "username": "cachelessstudent",
+            "name": "Cacheless Student",
+            "password": "pass12345",
+            "role": "student",
+            "ID_number": "STD902",
+            "telephone_number": "0770000002",
+            "email": "cacheless@example.com",
+            "course_title": "Computer Science",
+            "university_name": "Makerere",
+            "year_of_study": 3,
+        }
+
+        with patch('ILES_app.views.send_email_verification') as mock_send_verification:
+            response = self.client.post(reverse('signup'), signup_payload, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        verification_link = mock_send_verification.call_args.args[1]
+        parsed = urlparse(verification_link)
+
+        cache.clear()
+        verify_response = self.client.get(parsed.path)
+
+        self.assertEqual(verify_response.status_code, 200)
+        user = CustomUser.objects.get(username='cachelessstudent')
+        self.assertTrue(user.is_verified)
+        self.assertIsNotNone(user.email_verified_at)
+
+
+class AdminAccessControlTests(APITestCase):
+    def setUp(self):
+        self.student_user = CustomUser.objects.create_user(
+            username='student-admin-check',
+            password='pass12345',
+            role='student',
+            name='Student User',
+            ID_number='STD901',
+            email='student-admin-check@example.com',
+        )
+        Student.objects.create(
+            users=self.student_user,
+            course_title='Computer Science',
+            university_name='Makerere',
+            year_of_study=3
+        )
+        self.student_token = Token.objects.create(user=self.student_user)
+
+    def test_non_admin_cannot_access_admin_endpoints(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
+
+        response = self.client.get(reverse('list_students'))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data['error'],
+            'You do not have permission to perform this action.'
+        )
