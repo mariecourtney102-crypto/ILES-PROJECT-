@@ -83,6 +83,10 @@ def notify_weekly_log_submitted(weekly_log):
             title="New Weekly Log",
             message=f"{weekly_log.user.name or weekly_log.user.username} submitted Week {weekly_log.week_number}.",
         )
+
+
+def should_expose_verification_link():
+    return settings.DEBUG or settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend'
     
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -124,7 +128,7 @@ def signup(request):
                     "message": "Account created successfully. Please check your email to verify your account.",
                     "verification_required": True,
                 })
-                if settings.DEBUG and verification_link:
+                if verification_link and should_expose_verification_link():
                     response_data["verification_link"] = verification_link
                 return Response(response_data, status=status.HTTP_201_CREATED)
         except DRFValidationError as exc:
@@ -240,10 +244,11 @@ def resend_verification_email(request):
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
-    return Response(
-        {"message": "Verification email sent."},
-        status=status.HTTP_200_OK,
-    )
+    response_data = {"message": "Verification email sent."}
+    if should_expose_verification_link():
+        response_data["verification_link"] = verification_link
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['PATCH'])

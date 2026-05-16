@@ -278,6 +278,7 @@ class EmailVerificationFlowTests(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['verification_required'])
+        self.assertIn('verification_link', response.data)
         self.assertEqual(CustomUser.objects.filter(username='newstudent').count(), 1)
 
         user = CustomUser.objects.get(username='newstudent')
