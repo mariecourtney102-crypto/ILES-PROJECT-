@@ -3,6 +3,7 @@ from functools import wraps
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.http import JsonResponse
+from django.conf import settings
 from rest_framework import status
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.authtoken.models import Token
@@ -94,6 +95,7 @@ def signup(request):
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
 
         verification_token = token_service.generate_email_verification_token(user)
+        verification_link = None
         if verification_token:
             uidb64, token = verification_token
             verification_path = reverse(
@@ -111,6 +113,8 @@ def signup(request):
             "message": "Account created successfully. Please check your email to verify your account.",
             "verification_required": True,
         })
+        if settings.DEBUG and verification_link:
+            response_data["verification_link"] = verification_link
         return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
