@@ -294,11 +294,8 @@ def create_placement(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def list_students(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     students = Student.objects.select_related('users', 'assigned_supervisor__users').all()
     serializer = StudentSerializer(students, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -306,11 +303,8 @@ def list_students(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def list_supervisors(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     supervisors = Supervisor.objects.select_related('users').all()
     supervisor_data = []
     for supervisor in supervisors:
@@ -322,11 +316,8 @@ def list_supervisors(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def assign_supervisor(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     student_id = request.data.get('student_id')
     supervisor_id = request.data.get('supervisor_id')
 
@@ -625,11 +616,8 @@ def search_internships(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def reports(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     total_students = Student.objects.count()
     total_supervisors = Supervisor.objects.count()
     total_placements = InternshipPlacement.objects.count()
@@ -663,11 +651,8 @@ def reports(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def opportunities(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     placements = (
         InternshipPlacement.objects
         .values('place_of_internship', 'department')
@@ -709,11 +694,8 @@ def feedback(request):
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def settings(request):
-    permission_error = require_role(request.user, ['admin'])
-    if permission_error:
-        return permission_error
-
     site_settings = SiteSetting.objects.order_by('id').first()
     if site_settings is None:
         site_settings = SiteSetting.objects.create(
