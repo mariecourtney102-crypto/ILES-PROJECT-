@@ -66,7 +66,7 @@ class Admin(models.Model):
         return f"{self.users.username} -ADMIN"
     
 class InternshipPlacement(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     place_of_internship = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
     supervisor_name = models.CharField(max_length=50)
