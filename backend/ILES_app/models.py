@@ -85,7 +85,7 @@ class WeeklyLog(models.Model):
         ('rejected', 'Rejected')
     ]
 
-    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='weekly_logs')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='weekly_logs')
     week_number = models.IntegerField()
     description = models.TextField()
     date_submitted = models.DateTimeField(auto_now_add=True)
