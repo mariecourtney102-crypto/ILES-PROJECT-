@@ -51,7 +51,7 @@ class Student(models.Model):
     
 class Supervisor(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-    place_of_work = models.CharField(max_length=100)
+    place_of_work = models.ForeignKey('Company', on_delete=models.CASCADE)
     department = models.CharField(max_length=100)
     staff_ID = models.CharField(max_length=20, unique=True)
 
