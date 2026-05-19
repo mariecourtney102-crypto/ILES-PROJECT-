@@ -68,7 +68,7 @@ class Admin(models.Model):
     
 class InternshipPlacement(models.Model):
     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    place_of_internship = models.CharField(max_length=100)
+    place_of_internship = models.ForeignKey('Company', on_delete=models.CASCADE)
     department = models.CharField(max_length=100)
     supervisor_name = models.CharField(max_length=50)
     start_date = models.DateField()
