@@ -37,6 +37,7 @@ class Student(models.Model):
     course_title = models.CharField(max_length=50)
     university_name = models.CharField(max_length=60)
     year_of_study = models.IntegerField()
+    placement = models.ForeignKey('InternshipPlacement', on_delete=models.SET_NULL, null =True, blank=True, related_name="student_placement")
     assigned_supervisor = models.ForeignKey(
         'Supervisor',
         on_delete=models.SET_NULL,
@@ -50,7 +51,7 @@ class Student(models.Model):
     
 class Supervisor(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-    place_of_work = models.CharField(max_length=100)
+    place_of_work = models.ForeignKey('Company', on_delete=models.CASCADE)
     department = models.CharField(max_length=100)
     staff_ID = models.CharField(max_length=20, unique=True)
 
@@ -67,7 +68,7 @@ class Admin(models.Model):
     
 class InternshipPlacement(models.Model):
     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    place_of_internship = models.CharField(max_length=100)
+    place_of_internship = models.ForeignKey('Company', on_delete=models.CASCADE)
     department = models.CharField(max_length=100)
     supervisor_name = models.CharField(max_length=50)
     start_date = models.DateField()
@@ -84,7 +85,7 @@ class WeeklyLog(models.Model):
         ('rejected', 'Rejected')
     ]
 
-    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='weekly_logs')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='weekly_logs')
     week_number = models.IntegerField()
     description = models.TextField()
     date_submitted = models.DateTimeField(auto_now_add=True)
@@ -162,3 +163,7 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.user.username}"
+
+class Company(models.Model):
+    name = models.CharField(max_length=300)
+
