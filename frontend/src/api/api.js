@@ -13,6 +13,7 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   const publicPaths = ["/login/", "/signup/"];
 
+  
   if (token && !publicPaths.includes(config.url)) {
     config.headers.Authorization = `Token ${token}`;
   }
