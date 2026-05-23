@@ -11,7 +11,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 def send_plain_email(subject, message, recipient_list, from_email=None):
     """
     Send a simple plain text email.
