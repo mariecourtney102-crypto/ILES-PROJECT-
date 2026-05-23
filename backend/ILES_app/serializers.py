@@ -38,6 +38,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'email_verified_at': {'read_only': True},
         }
 
+
     def validate(self, attrs):
         role = attrs.get("role")
 
