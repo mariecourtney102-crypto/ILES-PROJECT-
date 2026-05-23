@@ -11,6 +11,7 @@ from .models import (
     Feedback,
     SiteSetting,
     Notification,
+    Company
 )
 
 admin.site.register(CustomUser)
