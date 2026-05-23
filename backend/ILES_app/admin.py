@@ -11,6 +11,7 @@ from .models import (
     Feedback,
     SiteSetting,
     Notification,
+    Company
 )
 
 admin.site.register(CustomUser)
@@ -24,3 +25,5 @@ admin.site.register(Evaluation)
 admin.site.register(Feedback)
 admin.site.register(SiteSetting)
 admin.site.register(Notification)
+admin.site.register(Company)
+
