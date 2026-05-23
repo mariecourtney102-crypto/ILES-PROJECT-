@@ -54,6 +54,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError({"role": "Select a valid role."})
 
+        
         errors = {}
         for field in required_fields:
             value = attrs.get(field)
