@@ -280,7 +280,7 @@ def update_user_role(request):
     return Response(
         {
             "message": "Role updated successfully.",
-            "role": request.user.role,
+            "role": target_user.role,
         },
         status=status.HTTP_200_OK,
     )
