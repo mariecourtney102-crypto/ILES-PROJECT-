@@ -268,6 +268,12 @@ def update_user_role(request):
     if not user_id:
         return Response({"error": "user_id is required."}, status=status.HTTP_400_BAD_REQUEST)
     
+    try:
+        target_user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    
     request.user.role = role
     request.user.save(update_fields=['role'])
 
