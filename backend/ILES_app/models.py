@@ -76,7 +76,7 @@ class InternshipPlacement(models.Model):
     
 
     def __str__(self):
-        return f"{self.user.username} - {self.place_of_internship}"
+        return f"{self.student.username} - {self.place_of_internship}"
     
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
