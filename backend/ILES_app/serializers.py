@@ -207,7 +207,7 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
     class Meta:
         model = InternshipPlacement
         fields = '__all__'
-        read_only_fields = ['user']
+        read_only_fields = ['student']
 
     def validate(self, attrs):
         start_date = attrs.get('start_date', getattr(self.instance, 'start_date', None))
