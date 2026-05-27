@@ -31,6 +31,13 @@ class CustomUser(AbstractUser):
     
     def __str__(self):
         return f"{self.username} ({self.role})"
+    
+class Company(models.Model):
+    name = models.CharField(max_length=300)
+
+    def __str__(self):
+        return self.name
+
 
 class Student(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
