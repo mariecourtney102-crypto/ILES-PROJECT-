@@ -460,7 +460,7 @@ def save_weekly_log_draft(request):
 
     if draft_id:
         try:
-            draft = WeeklyLog.objects.get(id=draft_id, user=request.user, status='draft')
+            draft = WeeklyLog.objects.get(id=draft_id, student=request.user, status='draft')
         except WeeklyLog.DoesNotExist:
             return Response({"error": "Draft not found."}, status=status.HTTP_404_NOT_FOUND)
 
