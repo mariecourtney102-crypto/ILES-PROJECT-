@@ -65,6 +65,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         return attrs
+    
+    def update(self, instance, validated_data):
+      profile_fields = ['course_title', 'university_name', 'year_of_study', 'place_of_work', 'department', 'staff_ID']
 
     def _unique_conflict(self, field_name, value, message):
         if value in (None, ""):
