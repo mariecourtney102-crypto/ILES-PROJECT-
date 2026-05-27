@@ -264,6 +264,10 @@ def update_user_role(request):
     if role not in VALID_ROLES:
         return Response({"error": "Invalid role. Valid roles are: student, supervisor, admin"}, status=status.HTTP_400_BAD_REQUEST)
 
+    user_id = request.data.get('user_id')
+    if not user_id:
+        return Response({"error": "user_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+    
     request.user.role = role
     request.user.save(update_fields=['role'])
 
