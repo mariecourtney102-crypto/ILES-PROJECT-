@@ -255,6 +255,7 @@ def resend_verification_email(request):
 @permission_classes([IsAuthenticated])
 @role_required('admin')
 def update_user_role(request):
+    VALID_ROLES = ['student', 'supervisor', 'admin']
     role = request.data.get('role')
 
     if not role:
