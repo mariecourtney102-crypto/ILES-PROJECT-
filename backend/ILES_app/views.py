@@ -386,7 +386,7 @@ def get_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
         serializer = InternshipPlacementSerializer(placement)
         return Response(serializer.data,  status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
