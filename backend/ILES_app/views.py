@@ -310,7 +310,7 @@ def create_placement(request):
         if placement is not None:
             serializer = InternshipPlacementSerializer(placement, data=request.data)
             serializer.is_valid(raise_exception=True)
-            placement = serializer.save(user=request.user)
+            placement = serializer.save(student=request.user)
         else:
             placement = serializer.save(user=request.user)
 
