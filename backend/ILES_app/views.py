@@ -253,19 +253,34 @@ def resend_verification_email(request):
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def update_user_role(request):
+    VALID_ROLES = ['student', 'supervisor', 'admin']
     role = request.data.get('role')
 
     if not role:
         return Response({"error": "role is required."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if role not in VALID_ROLES:
+        return Response({"error": "Invalid role. Valid roles are: student, supervisor, admin"}, status=status.HTTP_400_BAD_REQUEST)
 
-    request.user.role = role
-    request.user.save(update_fields=['role'])
+    user_id = request.data.get('user_id')
+    if not user_id:
+        return Response({"error": "user_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        target_user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    target_user.role = role
+    target_user.save(update_fields=['role'])
+    
 
     return Response(
         {
             "message": "Role updated successfully.",
-            "role": request.user.role,
+            "role": target_user.role,
         },
         status=status.HTTP_200_OK,
     )
@@ -287,7 +302,7 @@ def dashboard(request):
     if permission_error:
         return permission_error
     
-    internship = InternshipPlacement.objects.filter(user=request.user)
+    internship = InternshipPlacement.objects.filter(student=request.user)
     total = internship.count()
 
     return Response({
@@ -306,13 +321,13 @@ def create_placement(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     with transaction.atomic():
-        placement = InternshipPlacement.objects.filter(user=request.user).order_by('-id').first()
+        placement = InternshipPlacement.objects.filter(student=request.user).order_by('-id').first()
         if placement is not None:
             serializer = InternshipPlacementSerializer(placement, data=request.data)
             serializer.is_valid(raise_exception=True)
-            placement = serializer.save(user=request.user)
+            placement = serializer.save(student=request.user)
         else:
-            placement = serializer.save(user=request.user)
+            placement = serializer.save(student=request.user)
 
     return Response(
         {
@@ -386,7 +401,7 @@ def get_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
         serializer = InternshipPlacementSerializer(placement)
         return Response(serializer.data,  status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
@@ -401,7 +416,7 @@ def update_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -409,7 +424,7 @@ def update_placement(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    placement = serializer.save(user=request.user)
+    placement = serializer.save(student=request.user)
     return Response(
         {
             "message":"Placement updated successfully",
@@ -427,7 +442,7 @@ def delete_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
         placement.delete()
         return Response({"message":"Placement deleted"}, status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
@@ -443,7 +458,7 @@ def create_weekly_log(request):
 
     serializer = WeeklylogSerializer(data=request.data)
     if serializer.is_valid():
-        weekly_log = serializer.save(user=request.user, status='pending')
+        weekly_log = serializer.save(student=request.user, status='pending')
         notify_weekly_log_submitted(weekly_log)
         return Response(WeeklylogSerializer(weekly_log).data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -460,7 +475,7 @@ def save_weekly_log_draft(request):
 
     if draft_id:
         try:
-            draft = WeeklyLog.objects.get(id=draft_id, user=request.user, status='draft')
+            draft = WeeklyLog.objects.get(id=draft_id, student=request.user, status='draft')
         except WeeklyLog.DoesNotExist:
             return Response({"error": "Draft not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -469,7 +484,7 @@ def save_weekly_log_draft(request):
         serializer = WeeklylogSerializer(data=request.data)
 
     if serializer.is_valid():
-        draft = serializer.save(user=request.user, status='draft')
+        draft = serializer.save(student=request.user, status='draft')
         return Response(WeeklylogSerializer(draft).data, status=status.HTTP_200_OK if draft_id else status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -483,7 +498,7 @@ def submit_weekly_log(request, log_id):
         return permission_error
 
     try:
-        weekly_log = WeeklyLog.objects.get(id=log_id, user=request.user)
+        weekly_log = WeeklyLog.objects.get(id=log_id, student=request.user)
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -510,7 +525,7 @@ def my_weekly_logs(request):
     if permission_error:
         return permission_error
 
-    logs = WeeklyLog.objects.filter(user=request.user).select_related('supervisor__users').order_by('week_number')
+    logs = WeeklyLog.objects.filter(student=request.user).select_related('supervisor__users').order_by('week_number')
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 

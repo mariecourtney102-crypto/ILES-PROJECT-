@@ -65,7 +65,31 @@ class CustomUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         return attrs
+    
+def update(self, instance, validated_data):
+    profile_fields = ['course_title', 'university_name', 'year_of_study', 'place_of_work', 'department', 'staff_ID']
+    profile_data = {f: validated_data.pop(f) for f in profile_fields if f in validated_data}
 
+
+#update password if provided
+    password = validated_data.pop('password', None)
+    for attr, value in validated_data.items():
+        setattr(instance, attr, value)
+    if password:
+        instance.set_password(password)
+    instance.save()
+
+    if profile_data:
+        role = instance.role
+        if role == "student":
+            Student.objects.filter(users=instance).update(**profile_data)
+        elif role == "supervisor":
+            Supervisor.objects.filter(users=instance).update(**profile_data)
+        elif role == "admin":
+            Admin.objects.filter(users=instance).update(**profile_data)
+
+    return instance
+    
     def _unique_conflict(self, field_name, value, message):
         if value in (None, ""):
             return
@@ -146,7 +170,7 @@ class StudentSerializer(serializers.ModelSerializer):
     placement = serializers.SerializerMethodField()
 
     def get_placement(self, obj):
-        placement = InternshipPlacement.objects.filter(user=obj.users).order_by('-id').first()
+        placement = InternshipPlacement.objects.filter(student=obj.users).order_by('-id').first()
         if not placement:
             return None
 
@@ -207,7 +231,7 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
     class Meta:
         model = InternshipPlacement
         fields = '__all__'
-        read_only_fields = ['user']
+        read_only_fields = ['student']
 
     def validate(self, attrs):
         start_date = attrs.get('start_date', getattr(self.instance, 'start_date', None))
@@ -221,8 +245,8 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
         return attrs
 
 class WeeklylogSerializer(serializers.ModelSerializer):
-    student_name = serializers.CharField(source='user.name', read_only=True)
-    student_user_id = serializers.IntegerField(source='user.id', read_only=True)
+    student_name = serializers.CharField(source='student.users.name', read_only=True)
+    student_user_id = serializers.IntegerField(source='student.users.id', read_only=True)
     supervisor_name = serializers.CharField(source='supervisor.users.name', read_only=True)
 
     class Meta:

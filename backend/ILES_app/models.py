@@ -31,6 +31,13 @@ class CustomUser(AbstractUser):
     
     def __str__(self):
         return f"{self.username} ({self.role})"
+    
+class Company(models.Model):
+    name = models.CharField(max_length=300)
+
+    def __str__(self):
+        return self.name
+
 
 class Student(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
@@ -103,7 +110,7 @@ class WeeklyLog(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
 
     def __str__(self):
-        return f"Week {self.week_number} - {self.user.username} - {self.status}"
+        return f"Week {self.week_number} - {self.student.username} - {self.status}"
     
 class EvaluationCriteria(models.Model):
     CRITERIA_CHOICES =[
@@ -121,7 +128,7 @@ class EvaluationCriteria(models.Model):
         return f"{self.criteria_name} - {self.criteria}"
     
 class Evaluation(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.SET_NULL, null=True)
     score = models.PositiveIntegerField()
@@ -129,7 +136,7 @@ class Evaluation(models.Model):
     evaluation_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.placement.user.username} - {self.criteria}: {self.score}"
+        return f"{self.placement.student.username} - {self.criteria}: {self.score}"
 
 
 class Feedback(models.Model):
@@ -164,7 +171,4 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.user.username}"
-
-class Company(models.Model):
-    name = models.CharField(max_length=300)
 
