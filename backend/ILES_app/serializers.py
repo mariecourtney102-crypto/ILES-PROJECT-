@@ -66,19 +66,19 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
         return attrs
     
-    def update(self, instance, validated_data):
-        profile_fields = ['course_title', 'university_name', 'year_of_study', 'place_of_work', 'department', 'staff_ID']
-        profile_data = {f: validated_data.pop(f) for f in profile_fields if f in validated_data}
+def update(self, instance, validated_data):
+    profile_fields = ['course_title', 'university_name', 'year_of_study', 'place_of_work', 'department', 'staff_ID']
+    profile_data = {f: validated_data.pop(f) for f in profile_fields if f in validated_data}
 
 
-    #update password if provided
-        password = validated_data.pop('password', None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        if password:
-            instance.set_password(password)
-        instance.save()
-    
+#update password if provided
+    password = validated_data.pop('password', None)
+    for attr, value in validated_data.items():
+        setattr(instance, attr, value)
+    if password:
+        instance.set_password(password)
+    instance.save()
+
     if profile_data:
         role = instance.role
         if role == "student":
@@ -87,7 +87,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             Supervisor.objects.filter(users=instance).update(**profile_data)
         elif role == "admin":
             Admin.objects.filter(users=instance).update(**profile_data)
-    
+
     return instance
     
     def _unique_conflict(self, field_name, value, message):
