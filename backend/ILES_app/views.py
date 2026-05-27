@@ -483,7 +483,7 @@ def submit_weekly_log(request, log_id):
         return permission_error
 
     try:
-        weekly_log = WeeklyLog.objects.get(id=log_id, user=request.user)
+        weekly_log = WeeklyLog.objects.get(id=log_id, student=request.user)
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
