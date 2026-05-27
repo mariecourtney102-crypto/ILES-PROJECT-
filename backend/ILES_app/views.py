@@ -312,7 +312,7 @@ def create_placement(request):
             serializer.is_valid(raise_exception=True)
             placement = serializer.save(student=request.user)
         else:
-            placement = serializer.save(user=request.user)
+            placement = serializer.save(student=request.user)
 
     return Response(
         {
