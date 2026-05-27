@@ -306,7 +306,7 @@ def create_placement(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     with transaction.atomic():
-        placement = InternshipPlacement.objects.filter(user=request.user).order_by('-id').first()
+        placement = InternshipPlacement.objects.filter(student=request.user).order_by('-id').first()
         if placement is not None:
             serializer = InternshipPlacementSerializer(placement, data=request.data)
             serializer.is_valid(raise_exception=True)
