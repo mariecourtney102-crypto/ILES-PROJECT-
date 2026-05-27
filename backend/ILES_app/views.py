@@ -469,7 +469,7 @@ def save_weekly_log_draft(request):
         serializer = WeeklylogSerializer(data=request.data)
 
     if serializer.is_valid():
-        draft = serializer.save(user=request.user, status='draft')
+        draft = serializer.save(student=request.user, status='draft')
         return Response(WeeklylogSerializer(draft).data, status=status.HTTP_200_OK if draft_id else status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
