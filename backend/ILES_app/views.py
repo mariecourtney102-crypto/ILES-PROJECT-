@@ -273,7 +273,7 @@ def update_user_role(request):
     except CustomUser.DoesNotExist:
         return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
     
-    
+    target_user.role = role
     request.user.role = role
     request.user.save(update_fields=['role'])
 
