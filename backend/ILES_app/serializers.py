@@ -79,6 +79,16 @@ class CustomUserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
     
+    if profile_data:
+        role = instance.role
+        if role == "student":
+            Student.objects.filter(users=instance).update(**profile_data)
+        elif role == "supervisor":
+            Supervisor.objects.filter(users=instance).update(**profile_data)
+        elif role == "admin":
+            Admin.objects.filter(users=instance).update(**profile_data)
+    
+    return instance
     
     def _unique_conflict(self, field_name, value, message):
         if value in (None, ""):
