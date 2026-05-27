@@ -443,7 +443,7 @@ def create_weekly_log(request):
 
     serializer = WeeklylogSerializer(data=request.data)
     if serializer.is_valid():
-        weekly_log = serializer.save(user=request.user, status='pending')
+        weekly_log = serializer.save(student=request.user, status='pending')
         notify_weekly_log_submitted(weekly_log)
         return Response(WeeklylogSerializer(weekly_log).data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
