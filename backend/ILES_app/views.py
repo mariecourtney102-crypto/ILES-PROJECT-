@@ -253,6 +253,7 @@ def resend_verification_email(request):
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@role_required('admin')
 def update_user_role(request):
     role = request.data.get('role')
 
