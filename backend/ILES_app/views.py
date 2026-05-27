@@ -287,7 +287,7 @@ def dashboard(request):
     if permission_error:
         return permission_error
     
-    internship = InternshipPlacement.objects.filter(user=request.user)
+    internship = InternshipPlacement.objects.filter(student=request.user)
     total = internship.count()
 
     return Response({
