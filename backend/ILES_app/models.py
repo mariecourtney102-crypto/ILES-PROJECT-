@@ -121,7 +121,7 @@ class EvaluationCriteria(models.Model):
         return f"{self.criteria_name} - {self.criteria}"
     
 class Evaluation(models.Model):
-    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.SET_NULL, null=True)
     score = models.PositiveIntegerField()
