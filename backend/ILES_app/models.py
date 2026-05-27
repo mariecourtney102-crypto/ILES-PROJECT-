@@ -129,7 +129,7 @@ class Evaluation(models.Model):
     evaluation_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.placement.user.username} - {self.criteria}: {self.score}"
+        return f"{self.placement.student.username} - {self.criteria}: {self.score}"
 
 
 class Feedback(models.Model):
