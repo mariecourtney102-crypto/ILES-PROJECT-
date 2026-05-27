@@ -67,7 +67,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return attrs
     
     def update(self, instance, validated_data):
-      profile_fields = ['course_title', 'university_name', 'year_of_study', 'place_of_work', 'department', 'staff_ID']
+        profile_fields = ['course_title', 'university_name', 'year_of_study', 'place_of_work', 'department', 'staff_ID']
+        profile_data = {f: validated_data.pop(f) for f in profile_fields if f in validated_data}
 
     def _unique_conflict(self, field_name, value, message):
         if value in (None, ""):
