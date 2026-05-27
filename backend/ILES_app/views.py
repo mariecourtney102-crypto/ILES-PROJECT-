@@ -409,7 +409,7 @@ def update_placement(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    placement = serializer.save(user=request.user)
+    placement = serializer.save(student=request.user)
     return Response(
         {
             "message":"Placement updated successfully",
