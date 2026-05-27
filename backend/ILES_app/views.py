@@ -401,7 +401,7 @@ def update_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"}, status=status.HTTP_404_NOT_FOUND)
 
