@@ -510,7 +510,7 @@ def my_weekly_logs(request):
     if permission_error:
         return permission_error
 
-    logs = WeeklyLog.objects.filter(user=request.user).select_related('supervisor__users').order_by('week_number')
+    logs = WeeklyLog.objects.filter(student=request.user).select_related('supervisor__users').order_by('week_number')
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
