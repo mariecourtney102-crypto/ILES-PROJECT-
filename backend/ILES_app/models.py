@@ -165,8 +165,3 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.title} - {self.user.username}"
 
-class Company(models.Model):
-    name = models.CharField(max_length=300)
-
-    def __str__(self):
-        return self.name
