@@ -1,12 +1,10 @@
 from unittest.mock import patch
-from urllib.parse import urlparse
 
-from django.core.cache import cache
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
-from .models import Admin, CustomUser, InternshipPlacement, Student, Supervisor, WeeklyLog
+from .models import Admin, Company, CustomUser, InternshipPlacement, Student, Supervisor, WeeklyLog
 
 
 class SupervisorAssignmentFlowTests(APITestCase):
@@ -258,7 +256,7 @@ class InternshipPlacementTests(APITestCase):
 
 
 class EmailVerificationFlowTests(APITestCase):
-    def test_signup_login_and_email_verification_flow(self):
+    def test_signup_creates_active_account_and_allows_login(self):
         signup_payload = {
             "username": "newstudent",
             "name": "New Student",
@@ -266,52 +264,70 @@ class EmailVerificationFlowTests(APITestCase):
             "role": "student",
             "ID_number": "STD900",
             "telephone_number": "0770000000",
+            "email": "newstudent@example.com",
             "course_title": "Computer Science",
             "university_name": "Makerere",
             "year_of_study": 3,
         }
 
-        with patch('ILES_app.views.send_email_verification') as mock_send_verification, patch(
-            'ILES_app.views.send_registration_confirmation'
-        ) as mock_confirmation:
+        with patch('ILES_app.views.send_registration_confirmation') as mock_confirmation:
             response = self.client.post(reverse('signup'), signup_payload, format='json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(response.data['verification_required'])
-        self.assertIn('verification_link', response.data)
+        self.assertFalse(response.data['verification_required'])
+        self.assertEqual(
+            response.data['message'],
+            'Account created successfully. You can log in right away.'
+        )
         self.assertEqual(CustomUser.objects.filter(username='newstudent').count(), 1)
 
         user = CustomUser.objects.get(username='newstudent')
-        self.assertFalse(user.is_verified)
-        mock_send_verification.assert_called_once()
-        mock_confirmation.assert_not_called()
+        self.assertTrue(user.is_verified)
+        self.assertIsNotNone(user.email_verified_at)
+        mock_confirmation.assert_called_once()
 
         login_response = self.client.post(
             reverse('login'),
             {"username": "newstudent", "password": "pass12345"},
             format='json'
         )
-        self.assertEqual(login_response.status_code, 403)
-        self.assertTrue(login_response.data['verification_required'])
+        self.assertEqual(login_response.status_code, 200)
+        self.assertIn('token', login_response.data)
+        self.assertEqual(login_response.data['role'], 'student')
 
-        verification_link = mock_send_verification.call_args.args[1]
-        parsed = urlparse(verification_link)
+    def test_supervisor_signup_creates_company_and_allows_login(self):
+        signup_payload = {
+            "username": "newsupervisor",
+            "name": "New Supervisor",
+            "password": "pass12345",
+            "role": "supervisor",
+            "ID_number": "SUP900",
+            "telephone_number": "0770000003",
+            "email": "newsupervisor@example.com",
+            "place_of_work": "Open Labs",
+            "department": "Engineering",
+            "staff_ID": "STAFF900",
+        }
 
-        verify_response = self.client.get(parsed.path)
-        self.assertEqual(verify_response.status_code, 200)
+        with patch('ILES_app.views.send_registration_confirmation') as mock_confirmation:
+            response = self.client.post(reverse('signup'), signup_payload, format='json')
 
-        user.refresh_from_db()
+        self.assertEqual(response.status_code, 201)
+        self.assertFalse(response.data['verification_required'])
+        self.assertEqual(CustomUser.objects.filter(username='newsupervisor').count(), 1)
+        self.assertTrue(Company.objects.filter(name='Open Labs').exists())
+
+        user = CustomUser.objects.get(username='newsupervisor')
         self.assertTrue(user.is_verified)
-        self.assertIsNotNone(user.email_verified_at)
         mock_confirmation.assert_called_once()
 
-        verified_login = self.client.post(
+        login_response = self.client.post(
             reverse('login'),
-            {"username": "newstudent", "password": "pass12345"},
+            {"username": "newsupervisor", "password": "pass12345"},
             format='json'
         )
-        self.assertEqual(verified_login.status_code, 200)
-        self.assertIn('token', verified_login.data)
+        self.assertEqual(login_response.status_code, 200)
+        self.assertEqual(login_response.data['role'], 'supervisor')
 
     def test_signup_rejects_duplicate_email(self):
         CustomUser.objects.create_user(
@@ -344,35 +360,6 @@ class EmailVerificationFlowTests(APITestCase):
             response.data['email'][0],
             'A user with this email already exists.'
         )
-
-    def test_email_verification_still_works_if_cache_is_cleared(self):
-        signup_payload = {
-            "username": "cachelessstudent",
-            "name": "Cacheless Student",
-            "password": "pass12345",
-            "role": "student",
-            "ID_number": "STD902",
-            "telephone_number": "0770000002",
-            "email": "cacheless@example.com",
-            "course_title": "Computer Science",
-            "university_name": "Makerere",
-            "year_of_study": 3,
-        }
-
-        with patch('ILES_app.views.send_email_verification') as mock_send_verification:
-            response = self.client.post(reverse('signup'), signup_payload, format='json')
-
-        self.assertEqual(response.status_code, 201)
-        verification_link = mock_send_verification.call_args.args[1]
-        parsed = urlparse(verification_link)
-
-        cache.clear()
-        verify_response = self.client.get(parsed.path)
-
-        self.assertEqual(verify_response.status_code, 200)
-        user = CustomUser.objects.get(username='cachelessstudent')
-        self.assertTrue(user.is_verified)
-        self.assertIsNotNone(user.email_verified_at)
 
 
 class AdminAccessControlTests(APITestCase):

@@ -1,6 +1,6 @@
 from django.db import IntegrityError, transaction
 from rest_framework import serializers
-from .models import CustomUser, Student, Supervisor, Admin, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Feedback, Notification
+from .models import Company, CustomUser, Student, Supervisor, Admin, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Feedback, Notification
 
 class CustomUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
@@ -41,6 +41,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         role = attrs.get("role")
+        if isinstance(role, str):
+            role = role.strip()
+            attrs["role"] = role
 
         if role in (None, ""):
             raise serializers.ValidationError({"role": "Role is required."})
@@ -58,6 +61,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
         errors = {}
         for field in required_fields:
             value = attrs.get(field)
+            if isinstance(value, str):
+                value = value.strip()
+                attrs[field] = value
             if value in (None, ""):
                 errors[field] = "This field is required."
 
@@ -65,31 +71,41 @@ class CustomUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         return attrs
-    
-def update(self, instance, validated_data):
-    profile_fields = ['course_title', 'university_name', 'year_of_study', 'place_of_work', 'department', 'staff_ID']
-    profile_data = {f: validated_data.pop(f) for f in profile_fields if f in validated_data}
 
+    def update(self, instance, validated_data):
+        profile_fields = [
+            'course_title',
+            'university_name',
+            'year_of_study',
+            'place_of_work',
+            'department',
+            'staff_ID',
+        ]
+        profile_data = {f: validated_data.pop(f) for f in profile_fields if f in validated_data}
 
-#update password if provided
-    password = validated_data.pop('password', None)
-    for attr, value in validated_data.items():
-        setattr(instance, attr, value)
-    if password:
-        instance.set_password(password)
-    instance.save()
+        # Update password if provided.
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
 
-    if profile_data:
-        role = instance.role
-        if role == "student":
-            Student.objects.filter(users=instance).update(**profile_data)
-        elif role == "supervisor":
-            Supervisor.objects.filter(users=instance).update(**profile_data)
-        elif role == "admin":
-            Admin.objects.filter(users=instance).update(**profile_data)
+        if profile_data:
+            role = instance.role
+            if role == "student":
+                Student.objects.filter(users=instance).update(**profile_data)
+            elif role == "supervisor":
+                place_of_work = profile_data.pop("place_of_work", None)
+                if place_of_work:
+                    company, _ = Company.objects.get_or_create(name=place_of_work)
+                    profile_data["place_of_work"] = company
+                Supervisor.objects.filter(users=instance).update(**profile_data)
+            elif role == "admin":
+                Admin.objects.filter(users=instance).update(**profile_data)
 
-    return instance
-    
+        return instance
+
     def _unique_conflict(self, field_name, value, message):
         if value in (None, ""):
             return
@@ -127,8 +143,15 @@ def update(self, instance, validated_data):
                 "year_of_study": validated_data.pop("year_of_study", None),
             }
         elif role == "supervisor":
+            place_of_work_name = validated_data.pop("place_of_work", None)
+            if isinstance(place_of_work_name, str):
+                place_of_work_name = place_of_work_name.strip()
+            if not place_of_work_name:
+                raise serializers.ValidationError({"place_of_work": "This field is required."})
+            place_of_work = None
+            place_of_work, _ = Company.objects.get_or_create(name=place_of_work_name)
             profile_data = {
-                "place_of_work": validated_data.pop("place_of_work", None),
+                "place_of_work": place_of_work,
                 "department": validated_data.pop("department", None),
                 "staff_ID": validated_data.pop("staff_ID", None),
             }
@@ -139,24 +162,26 @@ def update(self, instance, validated_data):
 
         try:
             user = CustomUser.objects.create_user(**validated_data)
-        except IntegrityError as exc:
+
+            if role == "student":
+                Student.objects.create(users=user, **profile_data)
+            elif role == "supervisor":
+                Supervisor.objects.create(users=user, **profile_data)
+            elif role == "admin":
+                Admin.objects.create(users=user, **profile_data)
+
+            return user
+        except (IntegrityError, TypeError, ValueError) as exc:
             message = str(exc).lower()
             if "email" in message:
-                raise serializers.ValidationError("A user with this email already exists.")
+                raise serializers.ValidationError({"email": "A user with this email already exists."})
             if "username" in message:
-                raise serializers.ValidationError("A user with this username already exists.")
+                raise serializers.ValidationError({"username": "A user with this username already exists."})
             if "id_number" in message:
-                raise serializers.ValidationError("A user with this ID number already exists.")
-            raise
-
-        if role == "student":
-            Student.objects.create(users=user, **profile_data)
-        elif role == "supervisor":
-            Supervisor.objects.create(users=user, **profile_data)
-        elif role == "admin":
-            Admin.objects.create(users=user, **profile_data)
-
-        return user
+                raise serializers.ValidationError({"ID_number": "A user with this ID number already exists."})
+            if "place_of_work" in message or "supervisor" in message:
+                raise serializers.ValidationError({"place_of_work": "Please provide a valid place of work."})
+            raise serializers.ValidationError("Unable to create account. Please check your details and try again.")
 
 
 class StudentSerializer(serializers.ModelSerializer):

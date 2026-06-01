@@ -29,6 +29,9 @@ from .serializers import ( CustomUserSerializer,
                           EvaluationSerializer, StudentSerializer, SupervisorSerializer,
                           FeedbackSerializer, NotificationSerializer
 )
+import logging
+
+logger = logging.getLogger(__name__)
 @api_view(['GET'])
 def supervisors_list(request):
     supervisors = CustomUser.objects.filter(role='supervisor')
@@ -96,43 +99,26 @@ def signup(request):
         try:
             with transaction.atomic():
                 user = serializer.save()
+                user.is_verified = True
+                user.email_verified_at = timezone.now()
+                user.save(update_fields=['is_verified', 'email_verified_at'])
 
-                verification_token = token_service.generate_email_verification_token(user)
-                verification_link = None
-                if not verification_token:
-                    user.delete()
-                    return Response(
-                        {"error": "Verification link could not be generated. Please try again."},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    )
-
-                uidb64, token = verification_token
-                verification_path = reverse(
-                    'verify_email',
-                    kwargs={
-                        'uidb64': uidb64,
-                        'token': token,
-                    }
-                )
-                verification_link = request.build_absolute_uri(verification_path)
-                sent_count = send_email_verification(user, verification_link)
-                if not sent_count:
-                    user.delete()
-                    return Response(
-                        {"error": "Verification email could not be sent. Please try again."},
-                        status=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    )
+                transaction.on_commit(lambda: send_registration_confirmation(user))
 
                 response_data = CustomUserSerializer(user).data
                 response_data.update({
-                    "message": "Account created successfully. Please check your email to verify your account.",
-                    "verification_required": True,
+                    "message": "Account created successfully. You can log in right away.",
+                    "verification_required": False,
                 })
-                if verification_link and should_expose_verification_link():
-                    response_data["verification_link"] = verification_link
                 return Response(response_data, status=status.HTTP_201_CREATED)
         except DRFValidationError as exc:
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            logger.exception("Signup failed unexpectedly")
+            return Response(
+                {"error": "Signup failed. Please check your details and try again."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -146,12 +132,6 @@ def login(request):
     user = authenticate(username=username, password=password)
 
     if user:
-        if not user.is_verified:
-            return Response({
-                "error": "Please verify your email before logging in.",
-                "verification_required": True,
-            }, status=status.HTTP_403_FORBIDDEN)
-
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
             "message": "Login successful",
