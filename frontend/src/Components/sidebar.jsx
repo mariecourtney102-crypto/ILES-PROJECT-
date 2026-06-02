@@ -6,13 +6,13 @@ import { Menu, X, LayoutDashboard, FileText, LogOut, Send, Briefcase, MessageSqu
 const COLORS = {
   sidebar: "bg-[#0a7c6e]",
   sidebarDark: "bg-[#065f52]",
-  sidebarBorder: "border-[#0d9e8c]",
+  sidebarBorder: "border-white/10",
   itemActive: "bg-[#0d9e8c]",
   itemHover: "hover:bg-[#0d9e8c]",
   itemText: "text-white",
-  logout: "bg-gradient-to-r from-[#0a7c6e] to-[#3db88a]",
-  logoutHover: "hover:from-[#065f52] hover:to-[#0d9e8c]",
-  toggle: "bg-[#0d9e8c]",
+  logout: "bg-[#0a7c6e]",
+  logoutHover: "hover:bg-[#0d9e8c]",
+  toggle: "bg-[#0a7c6e]",
 };
 
 function Sidebar() {
@@ -341,7 +341,7 @@ function Sidebar() {
           <button
             type="button"
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/15 bg-white/10 text-white font-semibold shadow-sm backdrop-blur-sm transition-all duration-200 ${COLORS.logoutHover} ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/15 bg-white/10 text-white font-semibold shadow-sm transition-all duration-200 ${COLORS.logoutHover} ${
               isCollapsed ? "md:justify-center" : ""
             }`}
             title={isCollapsed ? "Logout" : ""}
