@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 
@@ -20,6 +20,23 @@ const FRIENDLY_FIELD_NAMES = {
 
 function Signup() {
   const navigate = useNavigate();
+  const submitButtonRef = useRef(null);
+  const fieldRefs = {
+    role: useRef(null),
+    username: useRef(null),
+    name: useRef(null),
+    email: useRef(null),
+    ID_number: useRef(null),
+    telephone_number: useRef(null),
+    course_title: useRef(null),
+    university_name: useRef(null),
+    year_of_study: useRef(null),
+    place_of_work: useRef(null),
+    department: useRef(null),
+    staff_ID: useRef(null),
+    password: useRef(null),
+    confirmPassword: useRef(null),
+  };
 
   const [formData, setFormData] = useState({
     username: "",
@@ -48,6 +65,21 @@ function Signup() {
       ...formData,
       [name]: value,
     });
+  };
+
+  const focusNextField = (event, nextFieldRef) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (nextFieldRef?.current) {
+      nextFieldRef.current.focus();
+      return;
+    }
+
+    submitButtonRef.current?.focus();
   };
 
   const getRoleFields = () => {
@@ -199,6 +231,8 @@ function Signup() {
             name="role"
             value={formData.role}
             onChange={handleChange}
+            ref={fieldRefs.role}
+            onKeyDown={(e) => focusNextField(e, fieldRefs.username)}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
             required
@@ -217,6 +251,8 @@ function Signup() {
             placeholder="Username"
             value={formData.username}
             onChange={handleChange}
+            ref={fieldRefs.username}
+            onKeyDown={(e) => focusNextField(e, fieldRefs.name)}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
@@ -227,6 +263,8 @@ function Signup() {
             placeholder="Full Name"
             value={formData.name}
             onChange={handleChange}
+            ref={fieldRefs.name}
+            onKeyDown={(e) => focusNextField(e, fieldRefs.email)}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
@@ -237,6 +275,8 @@ function Signup() {
             placeholder="Email Address"
             value={formData.email}
             onChange={handleChange}
+            ref={fieldRefs.email}
+            onKeyDown={(e) => focusNextField(e, fieldRefs.ID_number)}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
@@ -247,6 +287,8 @@ function Signup() {
             placeholder="ID Number"
             value={formData.ID_number}
             onChange={handleChange}
+            ref={fieldRefs.ID_number}
+            onKeyDown={(e) => focusNextField(e, fieldRefs.telephone_number)}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
@@ -257,6 +299,17 @@ function Signup() {
             placeholder="Phone Number (Optional)"
             value={formData.telephone_number}
             onChange={handleChange}
+            ref={fieldRefs.telephone_number}
+            onKeyDown={(e) => focusNextField(
+              e,
+              formData.role === "student"
+                ? fieldRefs.course_title
+                : formData.role === "supervisor"
+                  ? fieldRefs.place_of_work
+                  : formData.role === "admin"
+                    ? fieldRefs.department
+                    : fieldRefs.password
+            )}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
@@ -269,6 +322,8 @@ function Signup() {
                 placeholder="Course Title"
                 value={formData.course_title}
                 onChange={handleChange}
+                ref={fieldRefs.course_title}
+                onKeyDown={(e) => focusNextField(e, fieldRefs.university_name)}
                 className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
@@ -279,6 +334,8 @@ function Signup() {
                 placeholder="University Name"
                 value={formData.university_name}
                 onChange={handleChange}
+                ref={fieldRefs.university_name}
+                onKeyDown={(e) => focusNextField(e, fieldRefs.year_of_study)}
                 className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
@@ -287,6 +344,8 @@ function Signup() {
                 name="year_of_study"
                 value={formData.year_of_study}
                 onChange={handleChange}
+                ref={fieldRefs.year_of_study}
+                onKeyDown={(e) => focusNextField(e, fieldRefs.password)}
                 className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
                 required
@@ -311,6 +370,8 @@ function Signup() {
                 placeholder="Place of Work"
                 value={formData.place_of_work}
                 onChange={handleChange}
+                ref={fieldRefs.place_of_work}
+                onKeyDown={(e) => focusNextField(e, fieldRefs.department)}
                 className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
@@ -321,6 +382,8 @@ function Signup() {
                 placeholder="Department"
                 value={formData.department}
                 onChange={handleChange}
+                ref={fieldRefs.department}
+                onKeyDown={(e) => focusNextField(e, fieldRefs.staff_ID)}
                 className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
@@ -331,6 +394,8 @@ function Signup() {
                 placeholder="Staff ID"
                 value={formData.staff_ID}
                 onChange={handleChange}
+                ref={fieldRefs.staff_ID}
+                onKeyDown={(e) => focusNextField(e, fieldRefs.password)}
                 className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
@@ -344,6 +409,8 @@ function Signup() {
               placeholder="Department"
               value={formData.department}
               onChange={handleChange}
+              ref={fieldRefs.department}
+              onKeyDown={(e) => focusNextField(e, fieldRefs.password)}
               className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
               disabled={loading}
             />
@@ -355,6 +422,8 @@ function Signup() {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
+            ref={fieldRefs.password}
+            onKeyDown={(e) => focusNextField(e, fieldRefs.confirmPassword)}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
@@ -365,6 +434,8 @@ function Signup() {
             placeholder="Confirm Password"
             value={formData.confirmPassword}
             onChange={handleChange}
+            ref={fieldRefs.confirmPassword}
+            onKeyDown={(e) => focusNextField(e, submitButtonRef)}
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
@@ -383,6 +454,7 @@ function Signup() {
 
           <button
             type="submit"
+            ref={submitButtonRef}
             disabled={loading}
             className="bg-[#0a7c6e] hover:bg-[#065f52] text-white py-3 rounded-lg font-semibold transition duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
