@@ -44,7 +44,6 @@ class Student(models.Model):
     course_title = models.CharField(max_length=50)
     university_name = models.CharField(max_length=60)
     year_of_study = models.IntegerField()
-    placement = models.ForeignKey('InternshipPlacement', on_delete=models.SET_NULL, null =True, blank=True, related_name="student_placement")
     assigned_supervisor = models.ForeignKey(
         'Supervisor',
         on_delete=models.SET_NULL,

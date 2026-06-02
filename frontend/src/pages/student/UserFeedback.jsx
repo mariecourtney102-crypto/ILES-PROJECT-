@@ -47,7 +47,7 @@ const UserFeedback = () => {
   return (
     <DashboardLayout title="Feedback">
       <div className="w-full max-w-2xl">
-      <h2 className="text-2xl font-bold text-teal-600 mb-6">
+      <h2 className="mb-6 text-2xl font-bold text-[#0a7c6e]">
         Feedback Form
       </h2>
 
@@ -57,7 +57,7 @@ const UserFeedback = () => {
       >
         {/* Subject */}
         <div>
-          <label className="block text-sm text-gray-600 mb-1">
+          <label className="mb-1 block text-sm text-gray-600">
             Subject
           </label>
           <input
@@ -66,14 +66,14 @@ const UserFeedback = () => {
             value={formData.subject}
             onChange={handleChange}
             placeholder="Enter subject"
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-600 outline-none"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-[#0d9e8c] focus:ring-2 focus:ring-[#0d9e8c]"
             required
           />
         </div>
 
         {/* Message */}
         <div>
-          <label className="block text-sm text-gray-600 mb-1">
+          <label className="mb-1 block text-sm text-gray-600">
             Message
           </label>
           <textarea
@@ -82,14 +82,14 @@ const UserFeedback = () => {
             onChange={handleChange}
             placeholder="Write your feedback..."
             rows="4"
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-600 outline-none"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-[#0d9e8c] focus:ring-2 focus:ring-[#0d9e8c]"
             required
           />
         </div>
 
         {/* Rating */}
         <div>
-          <label className="block text-sm text-gray-600 mb-2">
+          <label className="mb-2 block text-sm text-gray-600">
             Rating
           </label>
           <div className="flex gap-2">
@@ -100,7 +100,7 @@ const UserFeedback = () => {
                 onClick={() => handleRating(star)}
                 className={`text-2xl transition ${
                   formData.rating >= star
-                    ? "text-teal-600"
+                    ? "text-[#0a7c6e]"
                     : "text-gray-300"
                 }`}
               >
@@ -116,13 +116,13 @@ const UserFeedback = () => {
         ) : null}
 
         {success ? (
-          <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{success}</p>
+          <p className="rounded-lg border border-[#c7f2e8] bg-[#f1fbf8] px-3 py-2 text-sm text-[#065f52]">{success}</p>
         ) : null}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full bg-teal-600 text-white py-2 rounded-lg hover:opacity-90 transition disabled:cursor-not-allowed disabled:opacity-70"
+          className="w-full rounded-lg bg-[#0a7c6e] py-2 text-white transition hover:bg-[#065f52] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {submitting ? "Submitting..." : "Submit Feedback"}
         </button>

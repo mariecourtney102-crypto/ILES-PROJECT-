@@ -106,7 +106,7 @@ function SubmitLog() {
   return (
     <DashboardLayout title="Submit Log">
       <form onSubmit={handleSubmit} className="flex max-w-md flex-col gap-4">
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
+        <div className="rounded-lg border border-[#c7f2e8] bg-[#f1fbf8] px-3 py-2 text-sm text-[#065f52]">
           Status: {draftId ? "Draft saved" : "Draft"}
         </div>
 
@@ -117,7 +117,7 @@ function SubmitLog() {
           placeholder="Week Number"
           value={week}
           onChange={(e) => setWeek(e.target.value)}
-          className="rounded-lg border p-3"
+          className="rounded-lg border border-gray-300 p-3 outline-none focus:border-[#0d9e8c]"
           min="1"
           disabled={submitting || Boolean(draftError)}
         />
@@ -126,20 +126,20 @@ function SubmitLog() {
           placeholder="Describe tasks accomplished"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="rounded-lg border p-3"
+          className="rounded-lg border border-gray-300 p-3 outline-none focus:border-[#0d9e8c]"
           rows={6}
           disabled={submitting || Boolean(draftError)}
         />
 
         {error ? <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
-        {success ? <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{success}</p> : null}
+        {success ? <p className="rounded-lg border border-[#c7f2e8] bg-[#f1fbf8] px-3 py-2 text-sm text-[#065f52]">{success}</p> : null}
 
         <div className="flex gap-3">
           <button
             type="button"
             onClick={handleSaveDraft}
             disabled={submitting || Boolean(draftError)}
-            className="flex-1 rounded-lg border border-teal-500 p-3 font-semibold text-teal-600 disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex-1 rounded-lg border border-[#0d9e8c] p-3 font-semibold text-[#0a7c6e] transition hover:bg-[#f1fbf8] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {submitting ? "Saving..." : "Save Draft"}
           </button>
@@ -147,7 +147,7 @@ function SubmitLog() {
           <button
             type="submit"
             disabled={submitting || Boolean(draftError)}
-            className="flex-1 rounded-lg bg-teal-500 p-3 text-white disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex-1 rounded-lg bg-[#0a7c6e] p-3 text-white transition hover:bg-[#065f52] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {submitting ? "Submitting..." : "Submit Log"}
           </button>
