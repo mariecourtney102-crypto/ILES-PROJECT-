@@ -6,7 +6,7 @@ import { axiosInstance } from "../../api/api";
 import { Briefcase, BookOpen, CheckCircle, AlertCircle, Clock, XCircle } from "lucide-react";
 
 const THEME = {
-  panel: "bg-white rounded-xl shadow-md border border-teal-100 overflow-hidden",
+  panel: "bg-white rounded-xl shadow-md border border-[#c7f2e8] overflow-hidden",
 };
 
 function StudentDashboard() {
@@ -123,7 +123,7 @@ function StudentDashboard() {
             </div>
 
             {/* Pending Logs */}
-            <div className="bg-white rounded-2xl border border-amber-200 p-4 shadow-sm hover:shadow-md transition">
+            <div className="rounded-2xl border border-[#c7f2e8] bg-white p-4 shadow-sm transition hover:shadow-md">
               <div className="flex items-center gap-3 mb-2">
                 <AlertCircle size={20} className="text-[#0d9e8c]" />
                 <span className="text-sm font-semibold text-[#0a7c6e]">Pending Review</span>
@@ -132,7 +132,7 @@ function StudentDashboard() {
             </div>
 
             {/* Approved Logs */}
-            <div className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-sm hover:shadow-md transition">
+            <div className="rounded-2xl border border-[#c7f2e8] bg-white p-4 shadow-sm transition hover:shadow-md">
               <div className="flex items-center gap-3 mb-2">
                 <CheckCircle size={20} className="text-[#3db88a]" />
                 <span className="text-sm font-semibold text-[#0a7c6e]">Approved</span>
@@ -153,7 +153,7 @@ function StudentDashboard() {
 
         {/* Current Week Info Card */}
       {currentWeek > 0 && (
-          <div className="rounded-lg border border-teal-100 bg-gradient-to-r from-teal-50 to-emerald-50 p-4">
+          <div className="rounded-lg border border-[#c7f2e8] bg-gradient-to-r from-[#f1fbf8] to-[#ecfdf5] p-4">
             <p className="text-sm text-[#0a7c6e]">
               <span className="font-semibold">Current Week:</span> Week {currentWeek}
             </p>
@@ -169,7 +169,7 @@ function StudentDashboard() {
             </div>
             <Link
               to="/weeklylogs"
-              className="text-sm text-teal-50 hover:text-white underline transition"
+              className="text-sm text-white/90 underline transition hover:text-white"
             >
               View All
             </Link>
@@ -186,7 +186,7 @@ function StudentDashboard() {
                 {recentLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="border border-teal-100 rounded-lg p-4 hover:bg-teal-50 transition"
+                    className="rounded-lg border border-[#c7f2e8] p-4 transition hover:bg-[#f1fbf8]"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div>

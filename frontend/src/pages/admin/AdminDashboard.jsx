@@ -48,13 +48,13 @@ function AdminDashboard() {
   }, []);
 
   // Stat card component
-  const StatCard = ({ icon: Icon, title, value, color }) => (
-    <div className={`rounded-xl p-6 shadow-md border transition hover:shadow-lg ${color}`}>
+  const StatCard = ({ icon: Icon, title, value, className, iconClassName, valueClassName }) => (
+    <div className={`rounded-xl border p-6 shadow-md transition hover:shadow-lg ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{title}</h3>
-        <Icon size={24} className={`${color.includes("emerald") || color.includes("green") ? "text-[#3db88a]" : color.includes("amber") ? "text-[#0d9e8c]" : "text-[#0a7c6e]"}`} />
+        <Icon size={24} className={iconClassName} />
       </div>
-      <p className={`text-4xl font-bold ${color.includes("emerald") || color.includes("green") ? "text-[#3db88a]" : color.includes("amber") ? "text-[#0d9e8c]" : "text-[#0a7c6e]"}`}>
+      <p className={`text-4xl font-bold ${valueClassName}`}>
         {value}
       </p>
     </div>
@@ -89,25 +89,33 @@ function AdminDashboard() {
                   icon={Users}
                   title="Total Students"
                   value={stats.total_students}
-                  color="bg-teal-50 border-teal-200"
+                  className="border-[#c7f2e8] bg-[#f1fbf8]"
+                  iconClassName="text-[#0a7c6e]"
+                  valueClassName="text-[#0a7c6e]"
                 />
                 <StatCard
                   icon={Award}
                   title="Workplace Supervisors"
                   value={stats.total_supervisors}
-                  color="bg-emerald-50 border-emerald-200"
+                  className="border-[#c7f2e8] bg-[#ecfdf5]"
+                  iconClassName="text-[#3db88a]"
+                  valueClassName="text-[#3db88a]"
                 />
                 <StatCard
                   icon={Briefcase}
                   title="Active Internships"
                   value={stats.active_internships}
-                  color="bg-amber-50 border-amber-200"
+                  className="border-[#c7f2e8] bg-white"
+                  iconClassName="text-[#0d9e8c]"
+                  valueClassName="text-[#0d9e8c]"
                 />
                 <StatCard
                   icon={CheckCircle}
                   title="Completed Internships"
                   value={stats.completed_internships}
-                  color="bg-green-50 border-green-200"
+                  className="border-[#c7f2e8] bg-[#f1fbf8]"
+                  iconClassName="text-[#0a7c6e]"
+                  valueClassName="text-[#0a7c6e]"
                 />
               </div>
             </div>
@@ -130,7 +138,7 @@ function AdminDashboard() {
                   </Link>
                 </div>
 
-                <div className="rounded-xl bg-gradient-to-br from-teal-50 to-emerald-50 p-6 shadow-md border border-teal-200 hover:shadow-lg transition">
+                <div className="rounded-xl border border-[#c7f2e8] bg-gradient-to-br from-[#f1fbf8] to-[#ecfdf5] p-6 shadow-md transition hover:shadow-lg">
                   <h3 className="text-lg font-semibold text-[#0a7c6e] mb-2">System Stats</h3>
                   <p className="text-sm text-slate-700 mb-4">
                     Dashboard shows real-time statistics from your backend. All students, supervisors, and internship placements are tracked automatically.

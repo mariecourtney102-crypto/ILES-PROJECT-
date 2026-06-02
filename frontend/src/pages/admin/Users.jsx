@@ -197,7 +197,7 @@ function Users() {
                         <p className="text-sm text-gray-500">{supervisor.department}</p>
                         <p className="text-xs text-gray-500">{supervisor.place_of_work}</p>
                       </div>
-                      <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-[#0a7c6e]">
+                      <span className="rounded-full bg-[#f1fbf8] px-3 py-1 text-xs font-semibold text-[#0a7c6e]">
                         {supervisor.assigned_students_count || 0} students
                       </span>
                     </div>

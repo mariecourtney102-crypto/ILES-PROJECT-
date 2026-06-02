@@ -10,9 +10,9 @@ const COLORS = {
   itemActive: "bg-[#0d9e8c]",
   itemHover: "hover:bg-[#0d9e8c]",
   itemText: "text-white",
-  logout: "bg-[#065f52]",
-  logoutHover: "hover:bg-[#065f52]",
-  toggle: "bg-[#065f52]",
+  logout: "bg-gradient-to-r from-[#0a7c6e] to-[#3db88a]",
+  logoutHover: "hover:from-[#065f52] hover:to-[#0d9e8c]",
+  toggle: "bg-[#0d9e8c]",
 };
 
 function Sidebar() {
@@ -110,7 +110,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Dashboard" : ""}
@@ -127,7 +127,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Weekly Logs" : ""}
@@ -144,7 +144,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Submit Log" : ""}
@@ -161,7 +161,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Internship Details" : ""}
@@ -178,7 +178,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Feedback" : ""}
@@ -200,7 +200,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Dashboard" : ""}
@@ -217,7 +217,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Assigned Students" : ""}
@@ -234,7 +234,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Feedback" : ""}
@@ -256,7 +256,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Dashboard" : ""}
@@ -273,7 +273,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Users" : ""}
@@ -290,7 +290,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Feedback" : ""}
@@ -307,7 +307,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Reports" : ""}
@@ -324,7 +324,7 @@ function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
-                      : `text-teal-50 ${COLORS.itemHover}`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Settings" : ""}
@@ -337,11 +337,11 @@ function Sidebar() {
         </nav>
 
         {/* Logout Button */}
-        <div className={`border-t ${COLORS.sidebarBorder} p-3 transition-all duration-300`}>
+        <div className={`border-t ${COLORS.sidebarBorder} p-3 transition-all duration-300 ${COLORS.logout}`}>
           <button
             type="button"
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl ${COLORS.logout} ${COLORS.logoutHover} text-white font-semibold shadow-sm transition-all duration-200 ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/15 bg-white/10 text-white font-semibold shadow-sm backdrop-blur-sm transition-all duration-200 ${COLORS.logoutHover} ${
               isCollapsed ? "md:justify-center" : ""
             }`}
             title={isCollapsed ? "Logout" : ""}

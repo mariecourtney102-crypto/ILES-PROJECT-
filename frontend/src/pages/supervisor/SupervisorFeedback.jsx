@@ -63,7 +63,7 @@ export default function SupervisorFeedback() {
                       <p className="font-semibold text-gray-800">{log.student_name}</p>
                       <p className="text-sm text-gray-500">Week {log.week_number}</p>
                     </div>
-                    <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
+                    <span className="rounded-full bg-[#ecfdf5] px-3 py-1 text-xs font-semibold text-[#0a7c6e]">
                       {log.status}
                     </span>
                   </div>

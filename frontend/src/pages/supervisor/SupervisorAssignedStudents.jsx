@@ -49,7 +49,7 @@ export default function SupervisorAssignedStudents() {
 
           <div className="rounded-xl bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Without Placement</p>
-            <p className="mt-2 text-3xl font-bold text-amber-500">
+            <p className="mt-2 text-3xl font-bold text-[#0d9e8c]">
               {students.filter((student) => !student.placement).length}
             </p>
           </div>
@@ -78,7 +78,7 @@ export default function SupervisorAssignedStudents() {
                     </div>
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        student.placement ? "bg-[#ecfdf5] text-[#0a7c6e]" : "bg-[#d1fae5] text-[#0a7c6e]"
+                        student.placement ? "bg-[#ecfdf5] text-[#0a7c6e]" : "bg-[#f1fbf8] text-[#065f52]"
                       }`}
                     >
                       {student.placement ? "Placement added" : "Placement missing"}

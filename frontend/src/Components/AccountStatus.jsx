@@ -10,7 +10,7 @@ function AccountStatus() {
   const displayRole = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "User";
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-teal-100 bg-white px-4 py-2 shadow-sm">
+    <div className="flex items-center gap-3 rounded-lg border border-[#c7f2e8] bg-white px-4 py-2 shadow-sm">
       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0a7c6e] text-white">
         <User size={18} />
       </div>

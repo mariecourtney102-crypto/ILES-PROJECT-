@@ -257,7 +257,7 @@ function Signup() {
             placeholder="Phone Number (Optional)"
             value={formData.telephone_number}
             onChange={handleChange}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
 
@@ -311,7 +311,7 @@ function Signup() {
                 placeholder="Place of Work"
                 value={formData.place_of_work}
                 onChange={handleChange}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
 
@@ -321,7 +321,7 @@ function Signup() {
                 placeholder="Department"
                 value={formData.department}
                 onChange={handleChange}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
 
@@ -331,7 +331,7 @@ function Signup() {
                 placeholder="Staff ID"
                 value={formData.staff_ID}
                 onChange={handleChange}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
             </>

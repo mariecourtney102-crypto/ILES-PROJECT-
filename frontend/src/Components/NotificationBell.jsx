@@ -68,7 +68,7 @@ function NotificationBell() {
       <button
         type="button"
         onClick={handleToggle}
-        className="relative rounded-full border border-teal-100 bg-white p-2 text-[#0a7c6e] shadow-sm transition hover:bg-teal-50"
+        className="relative rounded-full border border-[#c7f2e8] bg-white p-2 text-[#0a7c6e] shadow-sm transition hover:bg-[#f1fbf8]"
         aria-label="Notifications"
       >
         <Bell size={20} />
@@ -80,8 +80,8 @@ function NotificationBell() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-20 mt-3 w-80 rounded-lg border border-teal-100 bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b border-teal-100 px-4 py-3">
+        <div className="absolute right-0 z-20 mt-3 w-80 rounded-lg border border-[#c7f2e8] bg-white shadow-xl">
+          <div className="flex items-center justify-between border-b border-[#c7f2e8] px-4 py-3">
             <div>
               <h2 className="font-semibold text-gray-800">Notifications</h2>
               <p className="text-xs text-gray-500">{unreadCount} unread</p>
@@ -109,7 +109,7 @@ function NotificationBell() {
                   type="button"
                   onClick={() => handleMarkRead(notification.id)}
                   className={`block w-full border-b border-gray-100 px-4 py-3 text-left transition last:border-b-0 ${
-                    notification.is_read ? "bg-white hover:bg-teal-50" : "bg-teal-50 hover:bg-teal-100"
+                    notification.is_read ? "bg-white hover:bg-[#f1fbf8]" : "bg-[#f1fbf8] hover:bg-[#ecfdf5]"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
