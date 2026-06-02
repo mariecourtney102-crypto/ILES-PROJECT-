@@ -37,12 +37,12 @@ export default function SupervisorAssignedStudents() {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-xl bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Assigned Students</p>
-            <p className="mt-2 text-3xl font-bold text-teal-600">{students.length}</p>
+            <p className="mt-2 text-3xl font-bold text-[#0a7c6e]">{students.length}</p>
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">With Placement Saved</p>
-            <p className="mt-2 text-3xl font-bold text-teal-600">
+            <p className="mt-2 text-3xl font-bold text-[#0a7c6e]">
               {students.filter((student) => student.placement).length}
             </p>
           </div>
@@ -76,9 +76,9 @@ export default function SupervisorAssignedStudents() {
                       <h3 className="text-lg font-semibold text-gray-800">{student.name || student.username}</h3>
                       <p className="text-sm text-gray-500">@{student.username}</p>
                     </div>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        student.placement ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        student.placement ? "bg-[#ecfdf5] text-[#0a7c6e]" : "bg-[#d1fae5] text-[#0a7c6e]"
                       }`}
                     >
                       {student.placement ? "Placement added" : "Placement missing"}

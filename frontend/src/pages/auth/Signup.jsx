@@ -182,7 +182,7 @@ function Signup() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-[#129a95] via-[#14b8a6] to-[#4CAF50]">
+    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-[#0a7c6e] via-[#0d9e8c] to-[#3db88a]">
 
       <div className="bg-white p-10 rounded-2xl shadow-xl w-96">
 
@@ -199,7 +199,7 @@ function Signup() {
             name="role"
             value={formData.role}
             onChange={handleChange}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
             required
           >
@@ -217,7 +217,7 @@ function Signup() {
             placeholder="Username"
             value={formData.username}
             onChange={handleChange}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
 
@@ -227,7 +227,7 @@ function Signup() {
             placeholder="Full Name"
             value={formData.name}
             onChange={handleChange}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
 
@@ -237,7 +237,7 @@ function Signup() {
             placeholder="Email Address"
             value={formData.email}
             onChange={handleChange}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
 
@@ -247,7 +247,7 @@ function Signup() {
             placeholder="ID Number"
             value={formData.ID_number}
             onChange={handleChange}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
 
@@ -269,7 +269,7 @@ function Signup() {
                 placeholder="Course Title"
                 value={formData.course_title}
                 onChange={handleChange}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
 
@@ -279,7 +279,7 @@ function Signup() {
                 placeholder="University Name"
                 value={formData.university_name}
                 onChange={handleChange}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
               />
 
@@ -287,7 +287,7 @@ function Signup() {
                 name="year_of_study"
                 value={formData.year_of_study}
                 onChange={handleChange}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
                 disabled={loading}
                 required
               >
@@ -344,7 +344,7 @@ function Signup() {
               placeholder="Department"
               value={formData.department}
               onChange={handleChange}
-              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
               disabled={loading}
             />
           )}
@@ -355,7 +355,7 @@ function Signup() {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
 
@@ -365,7 +365,7 @@ function Signup() {
             placeholder="Confirm Password"
             value={formData.confirmPassword}
             onChange={handleChange}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
           />
 
@@ -384,7 +384,7 @@ function Signup() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-[#129a95] hover:bg-[#0f8d89] text-white py-3 rounded-lg font-semibold transition duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#0a7c6e] hover:bg-[#065f52] text-white py-3 rounded-lg font-semibold transition duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
@@ -395,7 +395,7 @@ function Signup() {
           Already have an account?{" "}
           <span
             onClick={() => navigate("/login")}
-            className="text-[#129a95] cursor-pointer hover:underline font-semibold"
+            className="text-[#0a7c6e] cursor-pointer hover:underline font-semibold"
           >
             Login
           </span>

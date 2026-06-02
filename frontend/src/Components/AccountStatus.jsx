@@ -11,7 +11,7 @@ function AccountStatus() {
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-teal-100 bg-white px-4 py-2 shadow-sm">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#129a95] text-white">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0a7c6e] text-white">
         <User size={18} />
       </div>
       <div className="flex flex-col">

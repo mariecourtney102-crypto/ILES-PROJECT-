@@ -4,15 +4,15 @@ import { useState, useEffect } from "react";
 import { Menu, X, LayoutDashboard, FileText, LogOut, Send, Briefcase, MessageSquare, Users, BarChart3, Settings } from "lucide-react";
 
 const COLORS = {
-  sidebar: "bg-[#129a95]",
-  sidebarDark: "bg-[#0f8d89]",
-  sidebarBorder: "border-[#1aa39c]",
-  itemActive: "bg-[#1cb8ae]",
-  itemHover: "hover:bg-[#1aa79d]",
+  sidebar: "bg-[#0a7c6e]",
+  sidebarDark: "bg-[#065f52]",
+  sidebarBorder: "border-[#0d9e8c]",
+  itemActive: "bg-[#0d9e8c]",
+  itemHover: "hover:bg-[#0d9e8c]",
   itemText: "text-white",
-  logout: "bg-[#4CAF50]",
-  logoutHover: "hover:bg-[#43a047]",
-  toggle: "bg-[#0f8d89]",
+  logout: "bg-[#065f52]",
+  logoutHover: "hover:bg-[#065f52]",
+  toggle: "bg-[#065f52]",
 };
 
 function Sidebar() {

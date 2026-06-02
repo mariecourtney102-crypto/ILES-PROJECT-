@@ -16,9 +16,9 @@ function SupervisorDashboard() {
   return (
     <DashboardLayout title="Supervisor Dashboard">
       <div className="max-w-6xl">
-        <div className="mb-6 rounded-lg border-l-4 border-teal-600 bg-white p-6 shadow-md">
+        <div className="mb-6 rounded-lg border-l-4 border-[#0a7c6e] bg-white p-6 shadow-md">
           <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-800">
-            <Users size={24} className="text-teal-600" />
+            <Users size={24} className="text-[#0a7c6e]" />
             Profile Summary
           </h2>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
@@ -38,22 +38,22 @@ function SupervisorDashboard() {
         </div>
 
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-lg border-l-4 border-yellow-400 bg-yellow-50 p-4">
+          <div className="rounded-lg border-l-4 border-[#0d9e8c] bg-[#f1fbf8] p-4">
             <div className="flex items-start gap-3">
-              <Clock className="mt-0.5 text-yellow-600" size={20} />
+              <Clock className="mt-0.5 text-[#0d9e8c]" size={20} />
               <div>
-                <h3 className="font-semibold text-yellow-900">Pending Review</h3>
-                <p className="text-2xl font-bold text-yellow-700">{pendingLogs}</p>
+                <h3 className="font-semibold text-[#0a7c6e]">Pending Review</h3>
+                <p className="text-2xl font-bold text-[#0a7c6e]">{pendingLogs}</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border-l-4 border-green-400 bg-green-50 p-4">
+          <div className="rounded-lg border-l-4 border-[#3db88a] bg-[#ecfdf5] p-4">
             <div className="flex items-start gap-3">
-              <CheckCircle className="mt-0.5 text-green-600" size={20} />
+              <CheckCircle className="mt-0.5 text-[#3db88a]" size={20} />
               <div>
-                <h3 className="font-semibold text-green-900">Approved Logs</h3>
-                <p className="text-2xl font-bold text-green-700">{approvedLogs}</p>
+                <h3 className="font-semibold text-[#0a7c6e]">Approved Logs</h3>
+                <p className="text-2xl font-bold text-[#0a7c6e]">{approvedLogs}</p>
               </div>
             </div>
           </div>
@@ -71,7 +71,7 @@ function SupervisorDashboard() {
 
         <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
           <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-800">
-            <FileText size={24} className="text-teal-600" />
+            <FileText size={24} className="text-[#0a7c6e]" />
             Weekly Logs Review Panel
           </h2>
 
@@ -104,25 +104,25 @@ function SupervisorDashboard() {
           )}
         </div>
 
-        <div className="rounded-lg bg-gradient-to-r from-teal-600 to-teal-700 p-6 text-white shadow-md">
-          <h3 className="mb-4 text-lg font-bold">Dashboard Summary</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <p className="text-teal-100">Total Logs</p>
-              <p className="text-3xl font-bold">{logs.length}</p>
-            </div>
-            <div>
-              <p className="text-teal-100">Pending Review</p>
-              <p className="text-3xl font-bold">{pendingLogs}</p>
-            </div>
-            <div>
-              <p className="text-teal-100">Completion Rate</p>
-              <p className="text-3xl font-bold">
-                {logs.length > 0 ? Math.round(((approvedLogs + rejectedLogs) / logs.length) * 100) : 0}%
-              </p>
+        <div className="rounded-lg bg-gradient-to-r from-[#0a7c6e] to-[#3db88a] p-6 text-white shadow-md">
+            <h3 className="mb-4 text-lg font-bold">Dashboard Summary</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-white/80">Total Logs</p>
+                <p className="text-3xl font-bold">{logs.length}</p>
+              </div>
+              <div>
+                <p className="text-white/80">Pending Review</p>
+                <p className="text-3xl font-bold">{pendingLogs}</p>
+              </div>
+              <div>
+                <p className="text-white/80">Completion Rate</p>
+                <p className="text-3xl font-bold">
+                  {logs.length > 0 ? Math.round(((approvedLogs + rejectedLogs) / logs.length) * 100) : 0}%
+                </p>
+              </div>
             </div>
           </div>
-        </div>
       </div>
     </DashboardLayout>
   );

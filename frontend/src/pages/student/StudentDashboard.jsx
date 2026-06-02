@@ -50,7 +50,7 @@ function StudentDashboard() {
         
         {/* Current Placement Card */}
         <div className={`${THEME.panel} shadow-[0_10px_30px_rgba(13,148,136,0.08)]`}>
-          <div className="bg-gradient-to-r from-[#129a95] via-[#14b8a6] to-[#4CAF50] px-6 py-4 flex items-center gap-3">
+          <div className="bg-gradient-to-r from-[#0a7c6e] via-[#0d9e8c] to-[#3db88a] px-6 py-4 flex items-center gap-3">
             <Briefcase size={24} className="text-white" />
             <h2 className="text-xl font-semibold text-white">Current Internship Placement</h2>
           </div>
@@ -61,7 +61,7 @@ function StudentDashboard() {
             ) : errorPlacement ? (
               <p className="text-rose-600">
                 {errorPlacement}
-                <Link to="/student/internship-details" className="ml-2 text-[#129a95] hover:text-[#14b8a6] hover:underline">
+                <Link to="/student/internship-details" className="ml-2 text-[#0a7c6e] hover:text-[#0d9e8c] hover:underline">
                   Add placement details
                 </Link>
               </p>
@@ -82,8 +82,8 @@ function StudentDashboard() {
                 <div>
                   <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Status</p>
                   <div className="flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 rounded-full bg-[#4CAF50]"></span>
-                    <p className="text-lg font-semibold text-[#2f855a] capitalize">{placement.status || "Active"}</p>
+                    <span className="inline-block w-3 h-3 rounded-full bg-[#3db88a]"></span>
+                    <p className="text-lg font-semibold text-[#0a7c6e] capitalize">{placement.status || "Active"}</p>
                   </div>
                 </div>
                 {placement.start_date && (
@@ -111,33 +111,33 @@ function StudentDashboard() {
 
         {/* Log Status Overview */}
         <div>
-          <h3 className="text-xs uppercase font-semibold text-[#129a95] mb-4 tracking-wide">Logbook Status Overview</h3>
+          <h3 className="text-xs uppercase font-semibold text-[#0a7c6e] mb-4 tracking-wide">Logbook Status Overview</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Draft Logs */}
             <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition">
               <div className="flex items-center gap-3 mb-2">
-                <Clock size={20} className="text-slate-400" />
-                <span className="text-sm font-semibold text-slate-700">Draft Logs</span>
+                <Clock size={20} className="text-[#0a7c6e]" />
+                <span className="text-sm font-semibold text-[#0a7c6e]">Draft Logs</span>
               </div>
-              <p className="text-3xl font-bold text-slate-400">{draft}</p>
+              <p className="text-3xl font-bold text-[#0a7c6e]">{draft}</p>
             </div>
 
             {/* Pending Logs */}
             <div className="bg-white rounded-2xl border border-amber-200 p-4 shadow-sm hover:shadow-md transition">
               <div className="flex items-center gap-3 mb-2">
-                <AlertCircle size={20} className="text-amber-600" />
-                <span className="text-sm font-semibold text-amber-700">Pending Review</span>
+                <AlertCircle size={20} className="text-[#0d9e8c]" />
+                <span className="text-sm font-semibold text-[#0a7c6e]">Pending Review</span>
               </div>
-              <p className="text-3xl font-bold text-amber-600">{pending}</p>
+              <p className="text-3xl font-bold text-[#0d9e8c]">{pending}</p>
             </div>
 
             {/* Approved Logs */}
             <div className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-sm hover:shadow-md transition">
               <div className="flex items-center gap-3 mb-2">
-                <CheckCircle size={20} className="text-[#4CAF50]" />
-                <span className="text-sm font-semibold text-[#2f855a]">Approved</span>
+                <CheckCircle size={20} className="text-[#3db88a]" />
+                <span className="text-sm font-semibold text-[#0a7c6e]">Approved</span>
               </div>
-              <p className="text-3xl font-bold text-[#4CAF50]">{approved}</p>
+              <p className="text-3xl font-bold text-[#3db88a]">{approved}</p>
             </div>
 
             {/* Rejected Logs */}
@@ -154,15 +154,15 @@ function StudentDashboard() {
         {/* Current Week Info Card */}
       {currentWeek > 0 && (
           <div className="rounded-lg border border-teal-100 bg-gradient-to-r from-teal-50 to-emerald-50 p-4">
-            <p className="text-sm text-[#129a95]">
+            <p className="text-sm text-[#0a7c6e]">
               <span className="font-semibold">Current Week:</span> Week {currentWeek}
             </p>
           </div>
         )}
 
         {/* Recent Logbook Entries */}
-        <div className={`${THEME.panel} shadow-[0_10px_30px_rgba(13,148,136,0.08)]`}>
-          <div className="bg-gradient-to-r from-[#129a95] via-[#14b8a6] to-[#4CAF50] px-6 py-4 flex items-center justify-between">
+        <div className={`${THEME.panel} shadow-[0_10px_30px_rgba(10,124,110,0.08)]`}>
+          <div className="bg-gradient-to-r from-[#0a7c6e] via-[#0d9e8c] to-[#3db88a] px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <BookOpen size={24} className="text-white" />
               <h2 className="text-xl font-semibold text-white">Recent Logbook Entries</h2>
@@ -196,9 +196,9 @@ function StudentDashboard() {
                     <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ml-2 ${
                           log.status === "approved"
-                            ? "bg-emerald-100 text-emerald-700"
+                            ? "bg-[#ecfdf5] text-[#0a7c6e]"
                             : log.status === "pending"
-                            ? "bg-amber-100 text-amber-700"
+                            ? "bg-[#d1fae5] text-[#0a7c6e]"
                             : log.status === "rejected"
                             ? "bg-rose-100 text-rose-700"
                             : "bg-slate-100 text-slate-700"

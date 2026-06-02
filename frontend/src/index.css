@@ -4,9 +4,10 @@
 
 @layer base {
   :root {
-    --app-primary: #129a95;
-    --app-primary-soft: #14b8a6;
-    --app-success: #4caf50;
+    --app-primary: #0a7c6e;
+    --app-primary-light: #0d9e8c;
+    --app-primary-dark: #065f52;
+    --app-accent: #3db88a;
     --app-bg: #f3fbf9;
   }
 

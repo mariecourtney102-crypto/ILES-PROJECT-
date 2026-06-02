@@ -102,7 +102,7 @@ export default function Settings() {
     <DashboardLayout title="Settings">
       <div className="grid gap-6 xl:grid-cols-2">
         <section className="rounded-xl bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800">Site Settings</h2>
+          <h2 className="text-xl font-semibold text-[#0a7c6e]">Site Settings</h2>
 
           {loading ? (
             <p className="py-10 text-sm text-gray-500">Loading settings...</p>
@@ -115,7 +115,7 @@ export default function Settings() {
               ) : null}
 
               {success ? (
-                <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                <div className="rounded-lg border border-[#c7f2e8] bg-[#f1fbf8] px-4 py-3 text-sm text-[#065f52]">
                   {success}
                 </div>
               ) : null}
@@ -127,7 +127,7 @@ export default function Settings() {
                   name="siteName"
                   value={settings.siteName}
                   onChange={handleSettingsChange}
-                  className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                  className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
                   required
                 />
               </label>
@@ -139,14 +139,14 @@ export default function Settings() {
                   name="adminEmail"
                   value={settings.adminEmail}
                   onChange={handleSettingsChange}
-                  className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                  className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
                 />
               </label>
 
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-lg bg-teal-500 px-5 py-2.5 font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg bg-[#0a7c6e] px-5 py-2.5 font-semibold text-white transition hover:bg-[#065f52] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {saving ? "Saving..." : "Save Settings"}
               </button>
@@ -155,7 +155,7 @@ export default function Settings() {
         </section>
 
         <section className="rounded-xl bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800">Change Password</h2>
+          <h2 className="text-xl font-semibold text-[#0a7c6e]">Change Password</h2>
 
           <form onSubmit={handlePasswordSubmit} className="mt-6 space-y-5">
             {passwordError ? (
@@ -165,7 +165,7 @@ export default function Settings() {
             ) : null}
 
             {passwordSuccess ? (
-              <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+              <div className="rounded-lg border border-[#c7f2e8] bg-[#f1fbf8] px-4 py-3 text-sm text-[#065f52]">
                 {passwordSuccess}
               </div>
             ) : null}
@@ -177,7 +177,7 @@ export default function Settings() {
                 name="current_password"
                 value={passwordForm.current_password}
                 onChange={handlePasswordChange}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
                 required
               />
             </label>
@@ -189,7 +189,7 @@ export default function Settings() {
                 name="new_password"
                 value={passwordForm.new_password}
                 onChange={handlePasswordChange}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
                 required
               />
             </label>
@@ -201,7 +201,7 @@ export default function Settings() {
                 name="confirm_password"
                 value={passwordForm.confirm_password}
                 onChange={handlePasswordChange}
-                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
                 required
               />
             </label>
@@ -209,7 +209,7 @@ export default function Settings() {
             <button
               type="submit"
               disabled={changingPassword}
-              className="rounded-lg bg-teal-500 px-5 py-2.5 font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-[#0a7c6e] px-5 py-2.5 font-semibold text-white transition hover:bg-[#065f52] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {changingPassword ? "Changing..." : "Change Password"}
             </button>

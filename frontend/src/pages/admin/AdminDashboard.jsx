@@ -52,9 +52,9 @@ function AdminDashboard() {
     <div className={`rounded-xl p-6 shadow-md border transition hover:shadow-lg ${color}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{title}</h3>
-        <Icon size={24} className={`${color.includes("emerald") || color.includes("green") ? "text-emerald-600" : color.includes("amber") ? "text-amber-600" : "text-[#129a95]"}`} />
+        <Icon size={24} className={`${color.includes("emerald") || color.includes("green") ? "text-[#3db88a]" : color.includes("amber") ? "text-[#0d9e8c]" : "text-[#0a7c6e]"}`} />
       </div>
-      <p className={`text-4xl font-bold ${color.includes("emerald") || color.includes("green") ? "text-emerald-600" : color.includes("amber") ? "text-amber-600" : "text-[#129a95]"}`}>
+      <p className={`text-4xl font-bold ${color.includes("emerald") || color.includes("green") ? "text-[#3db88a]" : color.includes("amber") ? "text-[#0d9e8c]" : "text-[#0a7c6e]"}`}>
         {value}
       </p>
     </div>
@@ -83,7 +83,7 @@ function AdminDashboard() {
         {!loading && (
           <>
             <div>
-              <h2 className="text-xs uppercase font-semibold text-[#129a95] mb-4">System Overview</h2>
+              <h2 className="text-xs uppercase font-semibold text-[#0a7c6e] mb-4">System Overview</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                   icon={Users}
@@ -114,7 +114,7 @@ function AdminDashboard() {
 
             {/* Management Cards */}
             <div>
-              <h2 className="text-xs uppercase font-semibold text-[#129a95] mb-4">Quick Actions</h2>
+              <h2 className="text-xs uppercase font-semibold text-[#0a7c6e] mb-4">Quick Actions</h2>
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="rounded-xl bg-white p-6 shadow-md border border-gray-100 hover:shadow-lg transition">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">User Management</h3>
@@ -123,7 +123,7 @@ function AdminDashboard() {
                   </p>
                   <Link
                     to="/admin/users"
-                    className="inline-flex items-center gap-2 rounded-lg bg-[#129a95] px-4 py-2 font-semibold text-white transition hover:bg-[#0f8d89]"
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#0a7c6e] px-4 py-2 font-semibold text-white transition hover:bg-[#065f52]"
                   >
                     <Users size={18} />
                     Manage Users
@@ -131,13 +131,13 @@ function AdminDashboard() {
                 </div>
 
                 <div className="rounded-xl bg-gradient-to-br from-teal-50 to-emerald-50 p-6 shadow-md border border-teal-200 hover:shadow-lg transition">
-                  <h3 className="text-lg font-semibold text-[#129a95] mb-2">System Stats</h3>
+                  <h3 className="text-lg font-semibold text-[#0a7c6e] mb-2">System Stats</h3>
                   <p className="text-sm text-slate-700 mb-4">
                     Dashboard shows real-time statistics from your backend. All students, supervisors, and internship placements are tracked automatically.
                   </p>
                   <Link
                     to="/admin/reports"
-                    className="inline-flex items-center gap-2 rounded-lg bg-[#129a95] px-4 py-2 font-semibold text-white transition hover:bg-[#0f8d89]"
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#0a7c6e] px-4 py-2 font-semibold text-white transition hover:bg-[#065f52]"
                   >
                     <CheckCircle size={18} />
                     View Reports

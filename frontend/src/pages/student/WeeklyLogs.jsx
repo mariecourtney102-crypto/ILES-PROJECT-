@@ -11,14 +11,14 @@ function WeeklyLogs() {
     }
 
     if (status === "approved") {
-      return "bg-green-100 text-green-700";
+      return "bg-[#d1fae5] text-[#0a7c6e]";
     }
 
     if (status === "rejected") {
       return "bg-red-100 text-red-700";
     }
 
-    return "bg-yellow-100 text-yellow-700";
+    return "bg-[#ecfdf5] text-[#065f52]";
   };
 
   if (loading) {
@@ -75,7 +75,7 @@ function WeeklyLogs() {
             {log.status === "draft" ? (
               <Link
                 to={`/submitlog/${log.id}`}
-                className="mt-4 inline-flex rounded-lg border border-teal-500 px-4 py-2 text-sm font-semibold text-teal-600 transition hover:bg-teal-50"
+                className="mt-4 inline-flex rounded-lg border border-[#0d9e8c] px-4 py-2 text-sm font-semibold text-[#0a7c6e] transition hover:bg-[#f1fbf8]"
               >
                 Edit Draft
               </Link>

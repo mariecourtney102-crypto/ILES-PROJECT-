@@ -12,7 +12,7 @@ const Feedback = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-teal-600 mb-4">
+      <h1 className="mb-4 text-2xl font-bold text-[#0a7c6e]">
         Feedback
       </h1>
 

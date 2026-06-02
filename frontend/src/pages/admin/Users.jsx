@@ -78,19 +78,19 @@ function Users() {
     <DashboardLayout title="Manage Users">
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-teal-100 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-[#c7f2e8] bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Total Students</p>
-            <p className="mt-2 text-3xl font-bold text-teal-600">{students.length}</p>
+            <p className="mt-2 text-3xl font-bold text-[#0a7c6e]">{students.length}</p>
           </div>
 
-          <div className="rounded-xl border border-teal-100 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-[#c7f2e8] bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Total Supervisors</p>
-            <p className="mt-2 text-3xl font-bold text-teal-600">{supervisors.length}</p>
+            <p className="mt-2 text-3xl font-bold text-[#0a7c6e]">{supervisors.length}</p>
           </div>
 
-          <div className="rounded-xl border border-teal-100 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-[#c7f2e8] bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Students Assigned</p>
-            <p className="mt-2 text-3xl font-bold text-teal-600">{assignedCount}</p>
+            <p className="mt-2 text-3xl font-bold text-[#0a7c6e]">{assignedCount}</p>
           </div>
         </div>
 
@@ -101,7 +101,7 @@ function Users() {
         ) : null}
 
         {success ? (
-          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          <div className="rounded-lg border border-[#c7f2e8] bg-[#f1fbf8] px-4 py-3 text-sm text-[#065f52]">
             {success}
           </div>
         ) : null}
@@ -146,7 +146,7 @@ function Users() {
                         <td className="px-3 py-4">
                           <div className="flex min-w-[250px] gap-2">
                             <select
-                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
                               value={selectedSupervisors[student.id] ?? student.assigned_supervisor ?? ""}
                               onChange={(e) => handleSupervisorSelect(student.id, e.target.value)}
                             >
@@ -162,7 +162,7 @@ function Users() {
                               type="button"
                               onClick={() => handleAssign(student.id)}
                               disabled={submittingId === student.id}
-                              className="rounded-lg bg-teal-500 px-4 py-2 font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg bg-[#0a7c6e] px-4 py-2 font-semibold text-white transition hover:bg-[#065f52] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               {submittingId === student.id ? "Saving..." : "Assign"}
                             </button>
@@ -197,7 +197,7 @@ function Users() {
                         <p className="text-sm text-gray-500">{supervisor.department}</p>
                         <p className="text-xs text-gray-500">{supervisor.place_of_work}</p>
                       </div>
-                      <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
+                      <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-[#0a7c6e]">
                         {supervisor.assigned_students_count || 0} students
                       </span>
                     </div>

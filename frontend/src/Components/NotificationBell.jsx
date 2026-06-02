@@ -68,12 +68,12 @@ function NotificationBell() {
       <button
         type="button"
         onClick={handleToggle}
-        className="relative rounded-full border border-teal-100 bg-white p-2 text-[#129a95] shadow-sm transition hover:bg-teal-50"
+        className="relative rounded-full border border-teal-100 bg-white p-2 text-[#0a7c6e] shadow-sm transition hover:bg-teal-50"
         aria-label="Notifications"
       >
         <Bell size={20} />
         {unreadCount > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#4CAF50] px-1 text-xs font-bold text-white">
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#3db88a] px-1 text-xs font-bold text-white">
             {unreadCount}
           </span>
         ) : null}
@@ -90,7 +90,7 @@ function NotificationBell() {
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="text-xs font-semibold text-[#129a95] hover:text-[#14b8a6]"
+                className="text-xs font-semibold text-[#0a7c6e] hover:text-[#0d9e8c]"
               >
                 Mark all read
               </button>
@@ -115,7 +115,7 @@ function NotificationBell() {
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm font-semibold text-gray-800">{notification.title}</p>
                     {!notification.is_read ? (
-                      <span className="mt-1 h-2 w-2 rounded-full bg-[#14b8a6]" />
+                      <span className="mt-1 h-2 w-2 rounded-full bg-[#3db88a]" />
                     ) : null}
                   </div>
                   <p className="mt-1 text-sm text-gray-600">{notification.message}</p>

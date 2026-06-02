@@ -14,7 +14,7 @@ function Reports() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-teal-700">Reports</h1>
+      <h1 className="text-2xl font-bold text-[#0a7c6e]">Reports</h1>
 
       <div className="grid grid-cols-3 gap-4 mt-4">
         <div className="bg-white p-4 rounded shadow">
