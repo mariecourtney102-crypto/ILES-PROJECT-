@@ -214,7 +214,7 @@ function Signup() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-[#0a7c6e] via-[#0d9e8c] to-[#3db88a]">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#0a7c6e] via-[#0d9e8c] to-[#3db88a] overflow-hidden">
 
       <div className="bg-white p-10 rounded-2xl shadow-xl w-96">
 
