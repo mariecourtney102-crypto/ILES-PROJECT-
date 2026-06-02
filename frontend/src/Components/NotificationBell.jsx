@@ -68,20 +68,20 @@ function NotificationBell() {
       <button
         type="button"
         onClick={handleToggle}
-        className="relative rounded-full border border-gray-200 bg-white p-2 text-gray-700 shadow-sm transition hover:bg-gray-50"
+        className="relative rounded-full border border-teal-100 bg-white p-2 text-[#129a95] shadow-sm transition hover:bg-teal-50"
         aria-label="Notifications"
       >
         <Bell size={20} />
         {unreadCount > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#4CAF50] px-1 text-xs font-bold text-white">
             {unreadCount}
           </span>
         ) : null}
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-20 mt-3 w-80 rounded-lg border border-gray-200 bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <div className="absolute right-0 z-20 mt-3 w-80 rounded-lg border border-teal-100 bg-white shadow-xl">
+          <div className="flex items-center justify-between border-b border-teal-100 px-4 py-3">
             <div>
               <h2 className="font-semibold text-gray-800">Notifications</h2>
               <p className="text-xs text-gray-500">{unreadCount} unread</p>
@@ -90,7 +90,7 @@ function NotificationBell() {
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="text-xs font-semibold text-teal-600 hover:text-teal-700"
+                className="text-xs font-semibold text-[#129a95] hover:text-[#14b8a6]"
               >
                 Mark all read
               </button>
@@ -109,13 +109,13 @@ function NotificationBell() {
                   type="button"
                   onClick={() => handleMarkRead(notification.id)}
                   className={`block w-full border-b border-gray-100 px-4 py-3 text-left transition last:border-b-0 ${
-                    notification.is_read ? "bg-white hover:bg-gray-50" : "bg-teal-50 hover:bg-teal-100"
+                    notification.is_read ? "bg-white hover:bg-teal-50" : "bg-teal-50 hover:bg-teal-100"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm font-semibold text-gray-800">{notification.title}</p>
                     {!notification.is_read ? (
-                      <span className="mt-1 h-2 w-2 rounded-full bg-teal-600" />
+                      <span className="mt-1 h-2 w-2 rounded-full bg-[#14b8a6]" />
                     ) : null}
                   </div>
                   <p className="mt-1 text-sm text-gray-600">{notification.message}</p>

@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --app-primary: #129a95;
+    --app-primary-soft: #14b8a6;
+    --app-success: #4caf50;
+    --app-bg: #f3fbf9;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    background: var(--app-bg);
+    color: #1f2937;
+  }
+}

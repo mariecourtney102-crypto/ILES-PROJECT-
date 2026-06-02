@@ -5,6 +5,10 @@ import { Link } from "react-router-dom";
 import { axiosInstance } from "../../api/api";
 import { Briefcase, BookOpen, CheckCircle, AlertCircle, Clock, XCircle } from "lucide-react";
 
+const THEME = {
+  panel: "bg-white rounded-xl shadow-md border border-teal-100 overflow-hidden",
+};
+
 function StudentDashboard() {
   const { logs, loading: logsLoading, error: logsError } = useLogs();
   const [placement, setPlacement] = useState(null);
@@ -42,11 +46,11 @@ function StudentDashboard() {
 
   return (
     <DashboardLayout title="Student Dashboard">
-      <div className="max-w-6xl space-y-6">
+      <div className="space-y-6">
         
         {/* Current Placement Card */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-[#4CAF50] to-[#45a049] px-6 py-4 flex items-center gap-3">
+        <div className={`${THEME.panel} shadow-[0_10px_30px_rgba(13,148,136,0.08)]`}>
+          <div className="bg-gradient-to-r from-[#129a95] via-[#14b8a6] to-[#4CAF50] px-6 py-4 flex items-center gap-3">
             <Briefcase size={24} className="text-white" />
             <h2 className="text-xl font-semibold text-white">Current Internship Placement</h2>
           </div>
@@ -55,9 +59,9 @@ function StudentDashboard() {
             {loadingPlacement ? (
               <p className="text-gray-500">Loading placement details...</p>
             ) : errorPlacement ? (
-              <p className="text-red-600">
+              <p className="text-rose-600">
                 {errorPlacement}
-                <Link to="/student/internship-details" className="ml-2 text-blue-600 hover:underline">
+                <Link to="/student/internship-details" className="ml-2 text-[#129a95] hover:text-[#14b8a6] hover:underline">
                   Add placement details
                 </Link>
               </p>
@@ -78,8 +82,8 @@ function StudentDashboard() {
                 <div>
                   <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Status</p>
                   <div className="flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 rounded-full bg-green-500"></span>
-                    <p className="text-lg font-semibold text-green-700 capitalize">{placement.status || "Active"}</p>
+                    <span className="inline-block w-3 h-3 rounded-full bg-[#4CAF50]"></span>
+                    <p className="text-lg font-semibold text-[#2f855a] capitalize">{placement.status || "Active"}</p>
                   </div>
                 </div>
                 {placement.start_date && (
@@ -107,72 +111,72 @@ function StudentDashboard() {
 
         {/* Log Status Overview */}
         <div>
-          <h3 className="text-xs uppercase font-semibold text-gray-600 mb-4">Logbook Status Overview</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <h3 className="text-xs uppercase font-semibold text-[#129a95] mb-4 tracking-wide">Logbook Status Overview</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Draft Logs */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition">
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition">
               <div className="flex items-center gap-3 mb-2">
-                <Clock size={20} className="text-gray-400" />
-                <span className="text-sm font-semibold text-gray-700">Draft Logs</span>
+                <Clock size={20} className="text-slate-400" />
+                <span className="text-sm font-semibold text-slate-700">Draft Logs</span>
               </div>
-              <p className="text-3xl font-bold text-gray-400">{draft}</p>
+              <p className="text-3xl font-bold text-slate-400">{draft}</p>
             </div>
 
             {/* Pending Logs */}
-            <div className="bg-white rounded-lg border border-yellow-200 p-4 shadow-sm hover:shadow-md transition">
+            <div className="bg-white rounded-2xl border border-amber-200 p-4 shadow-sm hover:shadow-md transition">
               <div className="flex items-center gap-3 mb-2">
-                <AlertCircle size={20} className="text-yellow-600" />
-                <span className="text-sm font-semibold text-yellow-700">Pending Review</span>
+                <AlertCircle size={20} className="text-amber-600" />
+                <span className="text-sm font-semibold text-amber-700">Pending Review</span>
               </div>
-              <p className="text-3xl font-bold text-yellow-600">{pending}</p>
+              <p className="text-3xl font-bold text-amber-600">{pending}</p>
             </div>
 
             {/* Approved Logs */}
-            <div className="bg-white rounded-lg border border-green-200 p-4 shadow-sm hover:shadow-md transition">
+            <div className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-sm hover:shadow-md transition">
               <div className="flex items-center gap-3 mb-2">
-                <CheckCircle size={20} className="text-green-600" />
-                <span className="text-sm font-semibold text-green-700">Approved</span>
+                <CheckCircle size={20} className="text-[#4CAF50]" />
+                <span className="text-sm font-semibold text-[#2f855a]">Approved</span>
               </div>
-              <p className="text-3xl font-bold text-green-600">{approved}</p>
+              <p className="text-3xl font-bold text-[#4CAF50]">{approved}</p>
             </div>
 
             {/* Rejected Logs */}
-            <div className="bg-white rounded-lg border border-red-200 p-4 shadow-sm hover:shadow-md transition">
+            <div className="bg-white rounded-2xl border border-rose-200 p-4 shadow-sm hover:shadow-md transition">
               <div className="flex items-center gap-3 mb-2">
-                <XCircle size={20} className="text-red-600" />
-                <span className="text-sm font-semibold text-red-700">Rejected</span>
+                <XCircle size={20} className="text-rose-600" />
+                <span className="text-sm font-semibold text-rose-700">Rejected</span>
               </div>
-              <p className="text-3xl font-bold text-red-600">{rejected}</p>
+              <p className="text-3xl font-bold text-rose-600">{rejected}</p>
             </div>
           </div>
         </div>
 
         {/* Current Week Info Card */}
-        {currentWeek > 0 && (
-          <div className="bg-gradient-to-r from-[#4CAF5015] to-[#4CAF5025] rounded-lg border border-[#4CAF50] p-4">
-            <p className="text-sm text-[#4CAF50]">
+      {currentWeek > 0 && (
+          <div className="rounded-lg border border-teal-100 bg-gradient-to-r from-teal-50 to-emerald-50 p-4">
+            <p className="text-sm text-[#129a95]">
               <span className="font-semibold">Current Week:</span> Week {currentWeek}
             </p>
           </div>
         )}
 
         {/* Recent Logbook Entries */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-[#4CAF50] to-[#45a049] px-6 py-4 flex items-center justify-between">
+        <div className={`${THEME.panel} shadow-[0_10px_30px_rgba(13,148,136,0.08)]`}>
+          <div className="bg-gradient-to-r from-[#129a95] via-[#14b8a6] to-[#4CAF50] px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <BookOpen size={24} className="text-white" />
               <h2 className="text-xl font-semibold text-white">Recent Logbook Entries</h2>
             </div>
             <Link
               to="/weeklylogs"
-              className="text-sm text-green-100 hover:text-white underline transition"
+              className="text-sm text-teal-50 hover:text-white underline transition"
             >
               View All
             </Link>
           </div>
 
           <div className="p-6">
-            {logsError && <p className="mb-4 text-sm text-red-600">{logsError}</p>}
+            {logsError && <p className="mb-4 text-sm text-rose-600">{logsError}</p>}
             {logsLoading ? (
               <p className="text-gray-500">Loading logs...</p>
             ) : recentLogs.length === 0 ? (
@@ -182,22 +186,22 @@ function StudentDashboard() {
                 {recentLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition"
+                    className="border border-teal-100 rounded-lg p-4 hover:bg-teal-50 transition"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <p className="font-semibold text-gray-900">Week {log.week_number}</p>
                         <p className="text-sm text-gray-600 mt-1">{log.description}</p>
                       </div>
-                      <span
+                    <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ml-2 ${
                           log.status === "approved"
-                            ? "bg-green-100 text-green-700"
+                            ? "bg-emerald-100 text-emerald-700"
                             : log.status === "pending"
-                            ? "bg-yellow-100 text-yellow-700"
+                            ? "bg-amber-100 text-amber-700"
                             : log.status === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-gray-100 text-gray-700"
+                            ? "bg-rose-100 text-rose-700"
+                            : "bg-slate-100 text-slate-700"
                         }`}
                       >
                         {log.status || "draft"}

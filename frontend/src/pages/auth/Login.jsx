@@ -48,7 +48,7 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-teal-700 to-teal-400">
+    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-[#129a95] via-[#14b8a6] to-[#4CAF50]">
 
       <div className="bg-white p-10 rounded-2xl shadow-xl w-80">
 
@@ -63,7 +63,7 @@ const Login = () => {
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
             disabled={loading}
           />
 
@@ -72,7 +72,7 @@ const Login = () => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14b8a6]"
             disabled={loading}
           />
 
@@ -85,7 +85,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-semibold transition duration-300 shadow-md hover:shadow-lg hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#129a95] hover:bg-[#0f8d89] text-white py-3 rounded-lg font-semibold transition duration-300 shadow-md hover:shadow-lg hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -96,7 +96,7 @@ const Login = () => {
           Don't have an account?{" "}
           <span
             onClick={() => navigate("/signup")}
-            className="text-teal-500 font-semibold cursor-pointer hover:underline"
+            className="text-[#129a95] font-semibold cursor-pointer hover:underline"
           >
             Sign up
           </span>
