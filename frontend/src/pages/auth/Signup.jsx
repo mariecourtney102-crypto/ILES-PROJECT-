@@ -233,6 +233,7 @@ function Signup() {
             onChange={handleChange}
             ref={fieldRefs.role}
             onKeyDown={(e) => focusNextField(e, fieldRefs.username)}
+            placeholder="Select your role"
             className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
             disabled={loading}
             required
@@ -245,200 +246,243 @@ function Signup() {
             <option value="admin">Admin</option>
           </select>
 
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            ref={fieldRefs.username}
-            onKeyDown={(e) => focusNextField(e, fieldRefs.name)}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-            disabled={loading}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Username</label>
+            <input
+              type="text"
+              name="username"
+              placeholder="e.g. John1000"
+              value={formData.username}
+              onChange={handleChange}
+              ref={fieldRefs.username}
+              onKeyDown={(e) => focusNextField(e, fieldRefs.name)}
+              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+              disabled={loading}
+            />
+          </div>
 
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={handleChange}
-            ref={fieldRefs.name}
-            onKeyDown={(e) => focusNextField(e, fieldRefs.email)}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-            disabled={loading}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Full Name</label>
+            <input
+              type="text"
+              name="name"
+              placeholder="e.g. Ssema John"
+              value={formData.name}
+              onChange={handleChange}
+              ref={fieldRefs.name}
+              onKeyDown={(e) => focusNextField(e, fieldRefs.email)}
+              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+              disabled={loading}
+            />
+          </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={formData.email}
-            onChange={handleChange}
-            ref={fieldRefs.email}
-            onKeyDown={(e) => focusNextField(e, fieldRefs.ID_number)}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-            disabled={loading}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Email Address</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              ref={fieldRefs.email}
+              onKeyDown={(e) => focusNextField(e, fieldRefs.ID_number)}
+              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+              disabled={loading}
+            />
+          </div>
 
-          <input
-            type="text"
-            name="ID_number"
-            placeholder="ID Number"
-            value={formData.ID_number}
-            onChange={handleChange}
-            ref={fieldRefs.ID_number}
-            onKeyDown={(e) => focusNextField(e, fieldRefs.telephone_number)}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-            disabled={loading}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">ID Number</label>
+            <input
+              type="text"
+              name="ID_number"
+              placeholder="e.g. 23/U/12345/PS"
+              value={formData.ID_number}
+              onChange={handleChange}
+              ref={fieldRefs.ID_number}
+              onKeyDown={(e) => focusNextField(e, fieldRefs.telephone_number)}
+              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+              disabled={loading}
+            />
+          </div>
 
-          <input
-            type="tel"
-            name="telephone_number"
-            placeholder="Phone Number (Optional)"
-            value={formData.telephone_number}
-            onChange={handleChange}
-            ref={fieldRefs.telephone_number}
-            onKeyDown={(e) => focusNextField(
-              e,
-              formData.role === "student"
-                ? fieldRefs.course_title
-                : formData.role === "supervisor"
-                  ? fieldRefs.place_of_work
-                  : formData.role === "admin"
-                    ? fieldRefs.department
-                    : fieldRefs.password
-            )}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-            disabled={loading}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Phone Number (Optional)</label>
+            <input
+              type="tel"
+              name="telephone_number"
+              placeholder="e.g. 700000000"
+              value={formData.telephone_number}
+              onChange={handleChange}
+              ref={fieldRefs.telephone_number}
+              onKeyDown={(e) => focusNextField(
+                e,
+                formData.role === "student"
+                  ? fieldRefs.course_title
+                  : formData.role === "supervisor"
+                    ? fieldRefs.place_of_work
+                    : formData.role === "admin"
+                      ? fieldRefs.department
+                      : fieldRefs.password
+              )}
+              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+              disabled={loading}
+            />
+          </div>
 
           {formData.role === "student" && (
             <>
-              <input
-                type="text"
-                name="course_title"
-                placeholder="Course Title"
-                value={formData.course_title}
-                onChange={handleChange}
-                ref={fieldRefs.course_title}
-                onKeyDown={(e) => focusNextField(e, fieldRefs.university_name)}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-                disabled={loading}
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Course Title</label>
+                <input
+                  type="text"
+                  name="course_title"
+                  placeholder="e.g. BSc Computer Science"
+                  value={formData.course_title}
+                  onChange={handleChange}
+                  ref={fieldRefs.course_title}
+                  onKeyDown={(e) => focusNextField(e, fieldRefs.university_name)}
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+                  disabled={loading}
+                />
+              </div>
 
-              <input
-                type="text"
-                name="university_name"
-                placeholder="University Name"
-                value={formData.university_name}
-                onChange={handleChange}
-                ref={fieldRefs.university_name}
-                onKeyDown={(e) => focusNextField(e, fieldRefs.year_of_study)}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-                disabled={loading}
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">University Name</label>
+                <input
+                  type="text"
+                  name="university_name"
+                  placeholder="e.g. Makerere University"
+                  value={formData.university_name}
+                  onChange={handleChange}
+                  ref={fieldRefs.university_name}
+                  onKeyDown={(e) => focusNextField(e, fieldRefs.year_of_study)}
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+                  disabled={loading}
+                />
+              </div>
 
-              <select
-                name="year_of_study"
-                value={formData.year_of_study}
-                onChange={handleChange}
-                ref={fieldRefs.year_of_study}
-                onKeyDown={(e) => focusNextField(e, fieldRefs.password)}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-                disabled={loading}
-                required
-              >
-                <option value="" disabled>
-                  Select Year of Study
-                </option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-                <option value="5">5th Year</option>
-              </select>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Year of Study</label>
+                <select
+                  name="year_of_study"
+                  value={formData.year_of_study}
+                  onChange={handleChange}
+                  ref={fieldRefs.year_of_study}
+                  onKeyDown={(e) => focusNextField(e, fieldRefs.password)}
+                  placeholder="Select year of study"
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+                  disabled={loading}
+                  required
+                >
+                  <option value="" disabled>
+                    Select Year of Study
+                  </option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                  <option value="5">5th Year</option>
+                </select>
+              </div>
             </>
           )}
 
           {formData.role === "supervisor" && (
             <>
-              <input
-                type="text"
-                name="place_of_work"
-                placeholder="Place of Work"
-                value={formData.place_of_work}
-                onChange={handleChange}
-                ref={fieldRefs.place_of_work}
-                onKeyDown={(e) => focusNextField(e, fieldRefs.department)}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-                disabled={loading}
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Place of Work</label>
+                <input
+                  type="text"
+                  name="place_of_work"
+                  placeholder="e.g. Ministry of Health"
+                  value={formData.place_of_work}
+                  onChange={handleChange}
+                  ref={fieldRefs.place_of_work}
+                  onKeyDown={(e) => focusNextField(e, fieldRefs.department)}
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+                  disabled={loading}
+                />
+              </div>
 
-              <input
-                type="text"
-                name="department"
-                placeholder="Department"
-                value={formData.department}
-                onChange={handleChange}
-                ref={fieldRefs.department}
-                onKeyDown={(e) => focusNextField(e, fieldRefs.staff_ID)}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-                disabled={loading}
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Department</label>
+                <input
+                  type="text"
+                  name="department"
+                  placeholder="e.g. ICT Department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  ref={fieldRefs.department}
+                  onKeyDown={(e) => focusNextField(e, fieldRefs.staff_ID)}
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+                  disabled={loading}
+                />
+              </div>
 
-              <input
-                type="text"
-                name="staff_ID"
-                placeholder="Staff ID"
-                value={formData.staff_ID}
-                onChange={handleChange}
-                ref={fieldRefs.staff_ID}
-                onKeyDown={(e) => focusNextField(e, fieldRefs.password)}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-                disabled={loading}
-              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Staff ID</label>
+                <input
+                  type="text"
+                  name="staff_ID"
+                  placeholder="e.g. STF-204"
+                  value={formData.staff_ID}
+                  onChange={handleChange}
+                  ref={fieldRefs.staff_ID}
+                  onKeyDown={(e) => focusNextField(e, fieldRefs.password)}
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+                  disabled={loading}
+                />
+              </div>
             </>
           )}
 
           {formData.role === "admin" && (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Department</label>
+              <input
+                type="text"
+                name="department"
+                placeholder="e.g. Administration"
+                value={formData.department}
+                onChange={handleChange}
+                ref={fieldRefs.department}
+                onKeyDown={(e) => focusNextField(e, fieldRefs.password)}
+                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+                disabled={loading}
+              />
+            </div>
+          )}
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Password</label>
             <input
-              type="text"
-              name="department"
-              placeholder="Department"
-              value={formData.department}
+              type="password"
+              name="password"
+              placeholder="Min. 8 characters"
+              value={formData.password}
               onChange={handleChange}
-              ref={fieldRefs.department}
-              onKeyDown={(e) => focusNextField(e, fieldRefs.password)}
+              ref={fieldRefs.password}
+              onKeyDown={(e) => focusNextField(e, fieldRefs.confirmPassword)}
               className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
               disabled={loading}
             />
-          )}
+          </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            ref={fieldRefs.password}
-            onKeyDown={(e) => focusNextField(e, fieldRefs.confirmPassword)}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-            disabled={loading}
-          />
-
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            ref={fieldRefs.confirmPassword}
-            onKeyDown={(e) => focusNextField(e, submitButtonRef)}
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
-            disabled={loading}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Repeat your password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              ref={fieldRefs.confirmPassword}
+              onKeyDown={(e) => focusNextField(e, submitButtonRef)}
+              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0d9e8c]"
+              disabled={loading}
+            />
+          </div>
 
           {error && (
             <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-2 rounded text-sm">
