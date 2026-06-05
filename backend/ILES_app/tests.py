@@ -14,7 +14,8 @@ class SupervisorAssignmentFlowTests(APITestCase):
             password='pass12345',
             role='admin',
             name='System Admin',
-            ID_number='ADM001'
+            ID_number='ADM001',
+            email='admin1@example.com'
         )
         Admin.objects.create(users=self.admin_user, department='ICT')
         self.admin_token = Token.objects.create(user=self.admin_user)
@@ -24,7 +25,8 @@ class SupervisorAssignmentFlowTests(APITestCase):
             password='pass12345',
             role='supervisor',
             name='Jane Supervisor',
-            ID_number='SUP001'
+            ID_number='SUP001',
+            email='super1@example.com'
         )
         self.supervisor = Supervisor.objects.create(
             users=self.supervisor_user,
@@ -39,7 +41,8 @@ class SupervisorAssignmentFlowTests(APITestCase):
             password='pass12345',
             role='supervisor',
             name='John Supervisor',
-            ID_number='SUP002'
+            ID_number='SUP002',
+            email='super2@example.com'
         )
         self.other_supervisor = Supervisor.objects.create(
             users=self.other_supervisor_user,
@@ -54,7 +57,8 @@ class SupervisorAssignmentFlowTests(APITestCase):
             password='pass12345',
             role='student',
             name='Alice Student',
-            ID_number='STD001'
+            ID_number='STD001',
+            email='student1@example.com'
         )
         self.student = Student.objects.create(
             users=self.student_user,
@@ -153,7 +157,8 @@ class InternshipPlacementTests(APITestCase):
             password='pass12345',
             role='student',
             name='Placement Student',
-            ID_number='STD100'
+            ID_number='STD100',
+            email='placementstudent@example.com'
         )
         Student.objects.create(
             users=self.student_user,

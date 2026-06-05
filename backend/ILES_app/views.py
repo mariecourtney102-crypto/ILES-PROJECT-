@@ -292,7 +292,7 @@ def dashboard(request):
     if permission_error:
         return permission_error
     
-    internship = InternshipPlacement.objects.filter(student=request.user)
+    internship = InternshipPlacement.objects.filter(user=request.user)
     total = internship.count()
 
     return Response({
@@ -311,13 +311,13 @@ def create_placement(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     with transaction.atomic():
-        placement = InternshipPlacement.objects.filter(student=request.user).order_by('-id').first()
+        placement = InternshipPlacement.objects.filter(user=request.user).order_by('-id').first()
         if placement is not None:
             serializer = InternshipPlacementSerializer(placement, data=request.data)
             serializer.is_valid(raise_exception=True)
-            placement = serializer.save(student=request.user)
+            placement = serializer.save(user=request.user)
         else:
-            placement = serializer.save(student=request.user)
+            placement = serializer.save(user=request.user)
 
     return Response(
         {
@@ -373,7 +373,7 @@ def assign_supervisor(request):
 
     student.assigned_supervisor = supervisor
     student.save()
-    placement = InternshipPlacement.objects.filter(student=student.users).order_by('-id').first()
+    placement = InternshipPlacement.objects.filter(user=student.users).order_by('-id').first()
     transaction.on_commit(
         lambda supervisor=supervisor, student=student, placement=placement: notify_supervisor_student_assigned(
             supervisor,
@@ -399,7 +399,7 @@ def get_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
         serializer = InternshipPlacementSerializer(placement)
         return Response(serializer.data,  status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
@@ -414,7 +414,7 @@ def update_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -422,7 +422,7 @@ def update_placement(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    placement = serializer.save(student=request.user)
+    placement = serializer.save(user=request.user)
     return Response(
         {
             "message":"Placement updated successfully",
@@ -440,7 +440,7 @@ def delete_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
         placement.delete()
         return Response({"message":"Placement deleted"}, status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:

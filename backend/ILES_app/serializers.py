@@ -195,7 +195,7 @@ class StudentSerializer(serializers.ModelSerializer):
     placement = serializers.SerializerMethodField()
 
     def get_placement(self, obj):
-        placement = InternshipPlacement.objects.filter(student=obj.users).order_by('-id').first()
+        placement = InternshipPlacement.objects.filter(user=obj.users).order_by('-id').first()
         if not placement:
             return None
 

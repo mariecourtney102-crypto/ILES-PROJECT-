@@ -73,16 +73,15 @@ class Admin(models.Model):
         return f"{self.users.username} -ADMIN"
     
 class InternshipPlacement(models.Model):
-    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    place_of_internship = models.ForeignKey('Company', on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    place_of_internship = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
     supervisor_name = models.CharField(max_length=50)
     start_date = models.DateField()
     end_date = models.DateField()
-    
 
     def __str__(self):
-        return f"{self.student.username} - {self.place_of_internship}"
+        return f"{self.user.username} - {self.place_of_internship}"
     
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
