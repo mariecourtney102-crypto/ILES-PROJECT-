@@ -270,8 +270,8 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
         return attrs
 
 class WeeklylogSerializer(serializers.ModelSerializer):
-    student_name = serializers.CharField(source='student.users.name', read_only=True)
-    student_user_id = serializers.IntegerField(source='student.users.id', read_only=True)
+    student_name = serializers.CharField(source='user.name', read_only=True)
+    student_user_id = serializers.IntegerField(source='user.id', read_only=True)
     supervisor_name = serializers.CharField(source='supervisor.users.name', read_only=True)
 
     class Meta:

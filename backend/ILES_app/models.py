@@ -126,7 +126,7 @@ class EvaluationCriteria(models.Model):
         return f"{self.criteria_name} - {self.criteria}"
     
 class Evaluation(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.SET_NULL, null=True)
     score = models.PositiveIntegerField()
@@ -134,7 +134,7 @@ class Evaluation(models.Model):
     evaluation_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.placement.student.username} - {self.criteria}: {self.score}"
+        return f"{self.user.username} - {self.criteria}: {self.score}"
 
 
 class Feedback(models.Model):

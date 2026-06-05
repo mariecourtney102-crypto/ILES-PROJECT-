@@ -28,9 +28,10 @@ class SupervisorAssignmentFlowTests(APITestCase):
             ID_number='SUP001',
             email='super1@example.com'
         )
+        self.supervisor_company = Company.objects.create(name='Main Office')
         self.supervisor = Supervisor.objects.create(
             users=self.supervisor_user,
-            place_of_work='Main Office',
+            place_of_work=self.supervisor_company,
             department='Engineering',
             staff_ID='STAFF001'
         )
@@ -44,9 +45,10 @@ class SupervisorAssignmentFlowTests(APITestCase):
             ID_number='SUP002',
             email='super2@example.com'
         )
+        self.other_supervisor_company = Company.objects.create(name='Branch Office')
         self.other_supervisor = Supervisor.objects.create(
             users=self.other_supervisor_user,
-            place_of_work='Branch Office',
+            place_of_work=self.other_supervisor_company,
             department='Engineering',
             staff_ID='STAFF002'
         )
