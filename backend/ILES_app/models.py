@@ -92,7 +92,7 @@ class WeeklyLog(models.Model):
         ('rejected', 'Rejected')
     ]
 
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='weekly_logs')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='weekly_logs')
     week_number = models.IntegerField()
     description = models.TextField()
     date_submitted = models.DateTimeField(auto_now_add=True)
@@ -109,7 +109,7 @@ class WeeklyLog(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
 
     def __str__(self):
-        return f"Week {self.week_number} - {self.student.username} - {self.status}"
+        return f"Week {self.week_number} - {self.user.username} - {self.status}"
     
 class EvaluationCriteria(models.Model):
     CRITERIA_CHOICES =[
