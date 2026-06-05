@@ -231,6 +231,7 @@ class SupervisorSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='users.username', read_only=True)
     name = serializers.CharField(source='users.name', read_only=True)
     supervisor_user_id = serializers.IntegerField(source='users.id', read_only=True)
+    place_of_work = serializers.CharField(source='place_of_work.name', read_only=True)
     assigned_students_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -256,7 +257,7 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
     class Meta:
         model = InternshipPlacement
         fields = '__all__'
-        read_only_fields = ['student']
+        read_only_fields = ['user']
 
     def validate(self, attrs):
         start_date = attrs.get('start_date', getattr(self.instance, 'start_date', None))

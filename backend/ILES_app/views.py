@@ -111,9 +111,9 @@ def signup(request):
                 user.email_verified_at = timezone.now()
                 user.save(update_fields=['is_verified', 'email_verified_at'])
 
-                transaction.on_commit(lambda: send_registration_confirmation(user))
+                send_registration_confirmation(user)
                 if user.role == 'student':
-                    transaction.on_commit(lambda user=user: notify_admin_student_signup(user))
+                    notify_admin_student_signup(user)
 
                 response_data = CustomUserSerializer(user).data
                 response_data.update({
