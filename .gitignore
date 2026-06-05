@@ -5,6 +5,7 @@ _pycache_/
 *.pyc
 *.pyo
 
+# Local environment secrets
 .env
 
 .vscode/
