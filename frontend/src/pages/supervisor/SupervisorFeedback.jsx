@@ -40,7 +40,7 @@ export default function SupervisorFeedback() {
     <DashboardLayout title="Feedback">
       <div className="rounded-lg bg-white p-6 shadow-md">
         <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-800">
-          <MessageSquare size={24} className="text-teal-600" />
+          <MessageSquare size={24} className="text-[#0a7c6e]" />
           Review Assigned Student Logs
         </h2>
 
@@ -63,7 +63,7 @@ export default function SupervisorFeedback() {
                       <p className="font-semibold text-gray-800">{log.student_name}</p>
                       <p className="text-sm text-gray-500">Week {log.week_number}</p>
                     </div>
-                    <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
+                    <span className="rounded-full bg-[#ecfdf5] px-3 py-1 text-xs font-semibold text-[#0a7c6e]">
                       {log.status}
                     </span>
                   </div>
@@ -75,7 +75,7 @@ export default function SupervisorFeedback() {
                       value={currentForm.supervisor_comment || ""}
                       onChange={(e) => handleChange(log.id, "supervisor_comment", e.target.value)}
                       placeholder="Add feedback, or provide a rejection reason"
-                      className="min-h-28 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                      className="min-h-28 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
                       disabled={reviewingId === log.id}
                     />
 
@@ -86,7 +86,7 @@ export default function SupervisorFeedback() {
                       value={currentForm.evaluation_score || ""}
                       onChange={(e) => handleChange(log.id, "evaluation_score", e.target.value)}
                       placeholder="Score (optional)"
-                      className="h-fit rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-teal-500"
+                      className="h-fit rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
                       disabled={reviewingId === log.id}
                     />
                   </div>
@@ -96,7 +96,7 @@ export default function SupervisorFeedback() {
                       type="button"
                       onClick={() => handleReview(log.id, "approved")}
                       disabled={reviewingId === log.id}
-                      className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
+                      className="rounded-lg bg-[#0a7c6e] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70 hover:bg-[#065f52]"
                     >
                       {reviewingId === log.id ? "Saving..." : "Approve"}
                     </button>
@@ -105,7 +105,7 @@ export default function SupervisorFeedback() {
                       type="button"
                       onClick={() => handleReview(log.id, "rejected")}
                       disabled={reviewingId === log.id}
-                      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
+                      className="rounded-lg bg-[#3db88a] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70 hover:bg-[#0d9e8c]"
                     >
                       {reviewingId === log.id ? "Saving..." : "Reject"}
                     </button>

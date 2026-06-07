@@ -168,20 +168,20 @@ function InternshipDetails() {
     <DashboardLayout title="Internship Details">
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="rounded-2xl bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-semibold text-gray-800">Placement Overview</h2>
+          <h2 className="text-2xl font-semibold text-[#0a7c6e]">Placement Overview</h2>
           <p className="mt-2 text-sm text-gray-500">
             Save your internship host, department, supervisor, and dates so your record stays available throughout the semester.
           </p>
         </div>
 
         {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
-        {success ? <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{success}</div> : null}
+        {success ? <div className="rounded-xl border border-[#c7f2e8] bg-[#f1fbf8] px-4 py-3 text-sm text-[#065f52]">{success}</div> : null}
 
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
-                <h3 className="text-xl font-semibold text-gray-800">{placement ? "Update Placement" : "Add Placement"}</h3>
+                <h3 className="text-xl font-semibold text-[#0a7c6e]">{placement ? "Update Placement" : "Add Placement"}</h3>
                 <p className="text-sm text-gray-500">Your placement details are stored in the backend and can be updated anytime.</p>
               </div>
               {placement ? (
@@ -189,7 +189,7 @@ function InternshipDetails() {
                   type="button"
                   onClick={handleDelete}
                   disabled={deleting || saving}
-                  className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-lg border border-[#0d9e8c] px-4 py-2 text-sm font-semibold text-[#0a7c6e] transition hover:bg-[#f1fbf8] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Trash2 size={16} />
                   {deleting ? "Deleting..." : "Delete"}
@@ -211,7 +211,7 @@ function InternshipDetails() {
                       onChange={handleChange}
                       required
                       disabled={saving || deleting}
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-teal-500"
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-[#0d9e8c]"
                     />
                     <span className="mt-1 block text-xs text-gray-400">{description}</span>
                   </label>
@@ -221,7 +221,7 @@ function InternshipDetails() {
                   <button
                     type="submit"
                     disabled={saving || deleting}
-                    className="rounded-xl bg-teal-500 px-5 py-3 font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="rounded-xl bg-[#0a7c6e] px-5 py-3 font-semibold text-white transition hover:bg-[#065f52] disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {saving ? "Saving..." : placement ? "Update Placement" : "Save Placement"}
                   </button>
@@ -239,7 +239,7 @@ function InternshipDetails() {
                   return (
                   <div key={field.key} className="rounded-xl border border-gray-100 p-4">
                     <div className="flex items-start gap-3">
-                      <div className="rounded-lg bg-teal-50 p-2 text-teal-600">
+                      <div className="rounded-lg bg-[#f1fbf8] p-2 text-[#0a7c6e]">
                         <IconComponent size={18} />
                       </div>
                       <div>
@@ -256,12 +256,12 @@ function InternshipDetails() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-gradient-to-br from-teal-600 via-teal-500 to-emerald-600 p-6 text-white shadow-sm">
+            <div className="rounded-2xl bg-gradient-to-br from-[#0a7c6e] to-[#3db88a] p-6 text-white shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.2em] text-teal-100">Placement Status</p>
+                  <p className="text-sm uppercase tracking-[0.2em] text-white/80">Placement Status</p>
                   <h3 className="mt-2 text-2xl font-semibold">{placement ? "Recorded" : "Pending Setup"}</h3>
-                  <p className="mt-2 text-sm text-teal-50">
+                  <p className="mt-2 text-sm text-white/90">
                     {placement
                       ? "Your internship placement is saved. Keep your weekly logs updated for supervisor review."
                       : "Add your placement details so your internship record is complete before weekly reporting begins."}
@@ -271,7 +271,7 @@ function InternshipDetails() {
               </div>
 
               <div className="mt-6 rounded-xl bg-white/10 p-4">
-                <p className="text-sm text-teal-100">Duration</p>
+                <p className="text-sm text-white/80">Duration</p>
                 <p className="mt-1 text-lg font-semibold">{durationText}</p>
               </div>
             </div>

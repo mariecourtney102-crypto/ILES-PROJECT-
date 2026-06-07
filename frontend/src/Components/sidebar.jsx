@@ -3,6 +3,18 @@ import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import { Menu, X, LayoutDashboard, FileText, LogOut, Send, Briefcase, MessageSquare, Users, BarChart3, Settings } from "lucide-react";
 
+const COLORS = {
+  sidebar: "bg-[#0a7c6e]",
+  sidebarDark: "bg-[#065f52]",
+  sidebarBorder: "border-white/10",
+  itemActive: "bg-[#0d9e8c]",
+  itemHover: "hover:bg-[#0d9e8c]",
+  itemText: "text-white",
+  logout: "bg-[#0a7c6e]",
+  logoutHover: "hover:bg-[#0d9e8c]",
+  toggle: "bg-[#0a7c6e]",
+};
+
 function Sidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -59,7 +71,7 @@ function Sidebar() {
       {/* Single toggle button for both mobile and desktop */}
       <button
         onClick={isOpen ? closeSidebar : toggleCollapse}
-        className="fixed left-0 top-0 z-50 p-3 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-all"
+        className={`fixed left-0 top-0 z-50 p-3 text-white transition-all ${COLORS.toggle}`}
         title={isOpen || isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {isOpen || isCollapsed ? <Menu size={24} /> : <X size={24} />}
@@ -75,17 +87,14 @@ function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-screen transition-all duration-300 ease-in-out z-40 flex flex-col bg-teal-600 text-white md:static md:z-auto md:transition-all ${
+        className={`fixed left-0 top-0 h-screen transition-all duration-300 ease-in-out z-40 flex flex-col ${COLORS.sidebar} text-white md:static md:z-auto md:transition-all ${
           isCollapsed ? "md:w-20" : "md:w-64"
         } ${isOpen ? "w-64" : "w-0 md:w-auto"} overflow-hidden md:overflow-visible`}
       >
         {/* Header */}
-        <div className={`flex items-center justify-center p-4 border-b border-teal-500 transition-all duration-300 ${isCollapsed ? "" : ""}`}>
-          {!isCollapsed && <h2 className="text-xl font-bold truncate">{getTitle()}</h2>}
+        <div className={`flex items-center justify-start gap-3 px-5 py-4 border-b ${COLORS.sidebarBorder} transition-all duration-300`}>
+          {!isCollapsed && <h2 className="text-2xl font-semibold tracking-tight truncate">{getTitle()}</h2>}
         </div>
-
-        {/* Navigation */}
-        <nav className={`flex-1 overflow-y-auto p-4 space-y-2 transition-all duration-300`}>
 
         {/* Navigation */}
         <nav className={`flex-1 overflow-y-auto p-4 space-y-2 transition-all duration-300`}>
@@ -98,10 +107,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Dashboard" : ""}
@@ -115,10 +124,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Weekly Logs" : ""}
@@ -132,10 +141,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Submit Log" : ""}
@@ -149,10 +158,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Internship Details" : ""}
@@ -166,10 +175,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Feedback" : ""}
@@ -188,10 +197,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Dashboard" : ""}
@@ -205,10 +214,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Assigned Students" : ""}
@@ -222,10 +231,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Feedback" : ""}
@@ -244,10 +253,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Dashboard" : ""}
@@ -261,10 +270,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Users" : ""}
@@ -278,10 +287,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Feedback" : ""}
@@ -295,10 +304,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Reports" : ""}
@@ -312,10 +321,10 @@ function Sidebar() {
                 end
                 onClick={closeSidebar}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-teal-500 text-white font-semibold"
-                      : "text-teal-50 hover:bg-teal-500"
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
                   } ${isCollapsed ? "md:justify-center" : ""}`
                 }
                 title={isCollapsed ? "Settings" : ""}
@@ -327,14 +336,12 @@ function Sidebar() {
           )}
         </nav>
 
-        </nav>
-
         {/* Logout Button */}
-        <div className={`border-t border-[#4CAF50] pt-4 transition-all duration-300`}>
+        <div className={`border-t ${COLORS.sidebarBorder} p-3 transition-all duration-300 ${COLORS.logout}`}>
           <button
             type="button"
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-[#4CAF50] hover:bg-[#45a049] text-white font-semibold transition-all duration-200 ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/15 bg-white/10 text-white font-semibold shadow-sm transition-all duration-200 ${COLORS.logoutHover} ${
               isCollapsed ? "md:justify-center" : ""
             }`}
             title={isCollapsed ? "Logout" : ""}

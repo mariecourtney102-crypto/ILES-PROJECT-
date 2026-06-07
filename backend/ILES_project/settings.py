@@ -51,8 +51,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ILES_app',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -149,6 +151,7 @@ SIMPLE_JWT = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
