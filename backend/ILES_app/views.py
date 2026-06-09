@@ -29,7 +29,7 @@ from .serializers import ( CustomUserSerializer,
                           EvaluationSerializer, StudentSerializer, SupervisorSerializer,
                           FeedbackSerializer, NotificationSerializer
 )
-from notifications.emails import (
+from backend.ILES_app.notifications.emails import (
     notify_admin_student_signup,
     notify_student_log_approved,
     notify_student_log_rejected,
