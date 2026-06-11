@@ -305,9 +305,38 @@ class WeeklylogSerializer(serializers.ModelSerializer):
         ]
 
 class EvaluationSerializer(serializers.ModelSerializer):
+    weekly_log_id = serializers.IntegerField(source='weekly_log.id', read_only=True)
+    criteria_name = serializers.CharField(source='criteria.criteria_name', read_only=True)
+    criteria_type = serializers.CharField(source='criteria.criteria', read_only=True)
+    criteria_weight = serializers.FloatField(source='criteria.criteria_weight', read_only=True)
+
     class Meta:
         model = Evaluation
-        fields = '__all__'
+        fields = [
+            'id',
+            'user',
+            'placement',
+            'weekly_log',
+            'weekly_log_id',
+            'criteria',
+            'criteria_name',
+            'criteria_type',
+            'criteria_weight',
+            'score',
+            'comment',
+            'evaluation_date',
+        ]
+
+
+class EvaluationCriteriaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EvaluationCriteria
+        fields = [
+            'id',
+            'criteria_name',
+            'criteria',
+            'criteria_weight',
+        ]
 
 
 class FeedbackSerializer(serializers.ModelSerializer):

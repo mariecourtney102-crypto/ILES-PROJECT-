@@ -106,6 +106,18 @@ export const reviewWeeklyLog = async (logId, payload) => {
   return res.data;
 };
 
+export const fetchSupervisorEvaluations = async (studentId) => {
+  const res = await api.get("/supervisor/evaluations/", {
+    params: { student_id: studentId },
+  });
+  return res.data;
+};
+
+export const saveSupervisorEvaluations = async (payload) => {
+  const res = await api.post("/supervisor/evaluations/", payload);
+  return res.data;
+};
+
 export const fetchPlacement = async () => {
   const res = await api.get("/placement/");
   return res.data;

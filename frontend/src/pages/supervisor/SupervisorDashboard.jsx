@@ -9,7 +9,7 @@ function SupervisorDashboard() {
   const { logs, loading, error } = useLogs();
 
   const pendingLogs = logs.filter((log) => log.status === "pending").length;
-  const approvedLogs = logs.filter((log) => log.status === "approved").length;
+  const approvedLogs = logs.filter((log) => log.status === "approved" || log.status === "evaluated").length;
   const rejectedLogs = logs.filter((log) => log.status === "rejected").length;
   const logsNeedingReview = logs.filter((log) => log.status === "pending");
 

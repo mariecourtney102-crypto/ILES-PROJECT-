@@ -29,6 +29,7 @@ urlpatterns = [
     path('supervisor/students/', views.supervisor_students, name='supervisor_students'),
     path('supervisor/weekly-logs/', views.supervisor_weekly_logs, name='supervisor_weekly_logs'),
     path('supervisor/weekly-logs/<int:log_id>/review/', views.review_weekly_log, name='review_weekly_log'),
+    path('supervisor/evaluations/', views.supervisor_evaluations, name='supervisor_evaluations'),
    # path('reports/', views.reports, name='reports'),
     #path('opportunities/', views.opportunities, name='opportunities'),
     path('feedback/', views.feedback, name='feedback'),

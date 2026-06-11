@@ -28,7 +28,7 @@ from .tokens import token_service
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer, StudentSerializer, SupervisorSerializer,
-                          FeedbackSerializer, NotificationSerializer
+                          EvaluationCriteriaSerializer, FeedbackSerializer, NotificationSerializer
 )
 from .notifications.emails import (
     notify_admin_student_signup,
@@ -109,6 +109,180 @@ def notify_weekly_log_submitted(weekly_log):
             f"New Weekly Log - Week {weekly_log.week_number}",
             supervisor_notification_message,
         )
+
+
+def _ensure_default_evaluation_criteria():
+    defaults = [
+        ("technical", "Technical Skills"),
+        ("cognitive", "Cognitive Skills"),
+        ("soft", "Soft Skills"),
+        ("professional", "Professionalism"),
+    ]
+
+    EvaluationCriteria.objects.filter(criteria="other").delete()
+
+    for criteria_key, criteria_name in defaults:
+        EvaluationCriteria.objects.get_or_create(
+            criteria=criteria_key,
+            defaults={
+                "criteria_name": criteria_name,
+                "criteria_weight": 0.25,
+            },
+        )
+
+    return EvaluationCriteria.objects.order_by("criteria", "criteria_name")
+
+
+def _calculate_weighted_score(evaluations):
+    total = 0
+    for evaluation in evaluations:
+        total += int(evaluation.score) * 0.25
+    return round(total, 2)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@role_required('supervisor')
+def supervisor_evaluations(request):
+    try:
+        supervisor = Supervisor.objects.get(users=request.user)
+    except Supervisor.DoesNotExist:
+        return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    weekly_log_id = request.data.get('weekly_log_id') if request.method == 'POST' else request.GET.get('weekly_log_id')
+    if not weekly_log_id:
+        return Response({"error": "weekly_log_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        weekly_log = WeeklyLog.objects.select_related('user__student', 'supervisor').get(id=weekly_log_id)
+    except WeeklyLog.DoesNotExist:
+        return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    student = getattr(weekly_log.user, 'student', None)
+    if student is None or student.assigned_supervisor_id != supervisor.id:
+        return Response(
+            {"error": "You can only manage evaluations for students assigned to you."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if weekly_log.status not in ['approved', 'evaluated']:
+        return Response(
+            {"error": "Evaluation is only available after the log has been approved."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    placement = InternshipPlacement.objects.filter(user=student.users).order_by('-id').first()
+    if placement is None:
+        return Response(
+            {"error": "This student does not have an internship placement yet."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    criteria_qs = _ensure_default_evaluation_criteria()
+    existing_evaluations = Evaluation.objects.filter(
+        user=student.users,
+        placement=placement,
+        weekly_log=weekly_log,
+    ).select_related('criteria').order_by('criteria__criteria')
+
+    if request.method == 'GET':
+        return Response(
+            {
+                "student": StudentSerializer(student).data,
+                "placement": InternshipPlacementSerializer(placement).data,
+                "weekly_log": WeeklylogSerializer(weekly_log).data,
+                "criteria": EvaluationCriteriaSerializer(criteria_qs, many=True).data,
+                "evaluations": EvaluationSerializer(existing_evaluations, many=True).data,
+                "weighted_score": _calculate_weighted_score(existing_evaluations),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    evaluations_payload = request.data.get('evaluations', [])
+    if not isinstance(evaluations_payload, list):
+        return Response({"error": "evaluations must be a list."}, status=status.HTTP_400_BAD_REQUEST)
+
+    parsed_rows = []
+    for item in evaluations_payload:
+        criteria_id = item.get('criteria_id')
+        if not criteria_id:
+            return Response(
+                {"error": "Each evaluation item requires criteria_id."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            criteria_obj = EvaluationCriteria.objects.get(id=criteria_id)
+        except EvaluationCriteria.DoesNotExist:
+            return Response(
+                {"error": f"Evaluation criteria {criteria_id} was not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            score_value = int(item.get('score'))
+        except (TypeError, ValueError):
+            return Response(
+                {"error": f"Score for {criteria_obj.criteria_name} must be an integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if score_value < 0 or score_value > 100:
+            return Response(
+                {"error": f"Score for {criteria_obj.criteria_name} must be between 0 and 100."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        parsed_rows.append({
+            "criteria_obj": criteria_obj,
+            "score": score_value,
+            "comment": item.get('comment', '') or '',
+        })
+
+    try:
+        with transaction.atomic():
+            for item in parsed_rows:
+                Evaluation.objects.update_or_create(
+                    user=student.users,
+                    placement=placement,
+                    weekly_log=weekly_log,
+                    criteria=item["criteria_obj"],
+                    defaults={
+                        "score": item["score"],
+                        "comment": item["comment"],
+                    },
+                )
+            weekly_log.status = 'evaluated'
+            weekly_log.evaluation_score = round(sum(item["score"] * 0.25 for item in parsed_rows), 2)
+            weekly_log.supervisor = supervisor
+            weekly_log.reviewed_at = timezone.now()
+            weekly_log.save(update_fields=['status', 'evaluation_score', 'supervisor', 'reviewed_at'])
+    except Exception:
+        logger.exception("Failed to save supervisor evaluations")
+        return Response(
+            {"error": "Unable to save evaluations at the moment."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    refreshed_criteria = _ensure_default_evaluation_criteria()
+    refreshed_evaluations = Evaluation.objects.filter(
+        user=student.users,
+        placement=placement,
+        weekly_log=weekly_log,
+    ).select_related('criteria').order_by('criteria__criteria')
+
+    return Response(
+        {
+            "message": "Evaluations saved successfully.",
+            "student": StudentSerializer(student).data,
+            "placement": InternshipPlacementSerializer(placement).data,
+            "weekly_log": WeeklylogSerializer(weekly_log).data,
+            "criteria": EvaluationCriteriaSerializer(refreshed_criteria, many=True).data,
+            "evaluations": EvaluationSerializer(refreshed_evaluations, many=True).data,
+            "weighted_score": _calculate_weighted_score(refreshed_evaluations),
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
 def should_expose_verification_link():
@@ -726,7 +900,7 @@ def reports(request):
     total_supervisors = Supervisor.objects.count()
     total_placements = InternshipPlacement.objects.count()
     total_logs = WeeklyLog.objects.count()
-    reviewed_logs = WeeklyLog.objects.filter(status__in=['approved', 'rejected']).count()
+    reviewed_logs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated', 'rejected']).count()
     pending_logs = WeeklyLog.objects.filter(status='pending').count()
 
     reports_data = [

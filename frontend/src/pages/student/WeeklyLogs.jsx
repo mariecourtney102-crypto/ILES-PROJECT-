@@ -14,6 +14,10 @@ function WeeklyLogs() {
       return "bg-[#d1fae5] text-[#0a7c6e]";
     }
 
+    if (status === "evaluated") {
+      return "bg-[#ecfdf5] text-[#065f52]";
+    }
+
     if (status === "rejected") {
       return "bg-red-100 text-red-700";
     }
