@@ -171,6 +171,7 @@ EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = str(os.getenv('EMAIL_USE_TLS', 'True')).strip().lower() in {'1', 'true', 'yes', 'on'}
+EMAIL_USE_SSL = str(os.getenv('EMAIL_USE_SSL', 'False')).strip().lower() in {'1', 'true', 'yes', 'on'}
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config(
@@ -178,6 +179,7 @@ DEFAULT_FROM_EMAIL = config(
     default=f'ILES System <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'ILES System <no-reply@iles.local>',
 )
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '20'))
 
 # Email verification settings
 EMAIL_VERIFICATION_TIMEOUT = 24  # hours
