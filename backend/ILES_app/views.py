@@ -639,7 +639,7 @@ def review_weekly_log(request, log_id):
     weekly_log.evaluation_score = request.data.get('evaluation_score', weekly_log.evaluation_score)
     weekly_log.reviewed_at = timezone.now()
     weekly_log.save()
-    student_profile = getattr(weekly_log, 'student', None)
+    student_profile = getattr(weekly_log.user, 'student', None)
     if new_status == 'approved':
         transaction.on_commit(
             lambda student=student_profile, log=weekly_log: notify_student_log_approved(student, log)
