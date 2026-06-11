@@ -3,11 +3,11 @@ import Sidebar from "../Components/sidebar";
 
 function AdminLayout() {
   return (
-    <div className="flex min-h-screen">
+    <div className="min-h-screen">
       
       <Sidebar />
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="min-h-screen overflow-y-auto md:ml-64">
         <div className="flex min-h-screen flex-col">
           <header className="bg-white shadow p-4">
             <h1>Admin Panel</h1>

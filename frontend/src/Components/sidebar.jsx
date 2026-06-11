@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Menu, X, LayoutDashboard, FileText, LogOut, Send, Briefcase, MessageSquare, Users, BarChart3, Settings } from "lucide-react";
 
 const COLORS = {
@@ -18,15 +18,8 @@ const COLORS = {
 function Sidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    const saved = localStorage.getItem("sidebarCollapsed");
-    return saved ? JSON.parse(saved) : false;
-  });
+  const [isCollapsed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem("sidebarCollapsed", JSON.stringify(isCollapsed));
-  }, [isCollapsed]);
 
   if (!user) return null;
 
@@ -41,8 +34,8 @@ function Sidebar() {
     navigate("/login", { replace: true });
   };
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+  const toggleMobileSidebar = () => {
+    setIsOpen((current) => !current);
   };
 
   const closeSidebar = () => {
@@ -70,11 +63,11 @@ function Sidebar() {
     <>
       {/* Single toggle button for both mobile and desktop */}
       <button
-        onClick={isOpen ? closeSidebar : toggleCollapse}
-        className={`fixed left-0 top-0 z-50 p-3 text-white transition-all ${COLORS.toggle}`}
-        title={isOpen || isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        onClick={toggleMobileSidebar}
+        className={`fixed left-4 top-4 z-50 rounded-lg p-3 text-white transition-all md:hidden ${COLORS.toggle}`}
+        title={isOpen ? "Close sidebar" : "Open sidebar"}
       >
-        {isOpen || isCollapsed ? <Menu size={24} /> : <X size={24} />}
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {/* Mobile overlay */}
@@ -87,9 +80,9 @@ function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`sticky top-0 h-screen flex flex-col bg-[#0a7c6e] overflow-y-auto transition-all duration-300 ease-in-out z-40 text-white ${
-          isCollapsed ? "md:w-20" : "md:w-64"
-        } ${isOpen ? "w-64" : "w-0 md:w-auto"} shrink-0`}
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 shrink-0 flex-col overflow-y-auto bg-[#0a7c6e] text-white transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
       >
         {/* Header */}
         <div className={`flex items-center justify-start gap-3 px-5 py-4 border-b ${COLORS.sidebarBorder} transition-all duration-300`}>
