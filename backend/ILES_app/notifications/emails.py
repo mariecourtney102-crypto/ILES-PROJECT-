@@ -30,7 +30,7 @@ def notify_supervisor_student_assigned(supervisor, student, internship):
         f"Hello {_display_name(supervisor_user)},\n\n"
         f"You have been assigned a new student in the ILES system.\n\n"
         f"Student: {_display_name(student)}\n"
-        f"Internship Place: {getattr(getattr(internship, 'place_of_internship', None), 'name', '')}\n"
+        f"Internship Place: {internship.place_of_internship if internship else 'N/A'}\n"
         f"Department: {getattr(internship, 'department', '')}\n"
         f"Start Date: {getattr(internship, 'start_date', '')}\n"
         f"End Date: {getattr(internship, 'end_date', '')}\n\n"
