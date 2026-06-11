@@ -22,7 +22,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
-from .services import send_email_verification, send_registration_confirmation
+from .services import send_email_verification, send_notification_email, send_registration_confirmation
 from .services import send_supervisor_assigned
 from .tokens import token_service
 from .serializers import ( CustomUserSerializer, 
@@ -82,18 +82,32 @@ def role_required(*allowed_roles):
 
 
 def notify_weekly_log_submitted(weekly_log):
+    student_notification_message = f"Your Week {weekly_log.week_number} log was submitted successfully."
     Notification.objects.create(
         user=weekly_log.user,
         title="Weekly Log Submitted",
-        message=f"Your Week {weekly_log.week_number} log was submitted successfully.",
+        message=student_notification_message,
+    )
+    send_notification_email(
+        weekly_log.user,
+        f"Weekly Log Submitted - Week {weekly_log.week_number}",
+        student_notification_message,
     )
 
     student_profile = getattr(weekly_log.user, 'student', None)
     if student_profile and student_profile.assigned_supervisor:
+        supervisor_notification_message = (
+            f"{weekly_log.user.name or weekly_log.user.username} submitted Week {weekly_log.week_number}."
+        )
         Notification.objects.create(
             user=student_profile.assigned_supervisor.users,
             title="New Weekly Log",
-            message=f"{weekly_log.user.name or weekly_log.user.username} submitted Week {weekly_log.week_number}.",
+            message=supervisor_notification_message,
+        )
+        send_notification_email(
+            student_profile.assigned_supervisor.users,
+            f"New Weekly Log - Week {weekly_log.week_number}",
+            supervisor_notification_message,
         )
 
 
