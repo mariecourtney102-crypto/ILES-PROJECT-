@@ -167,13 +167,17 @@ REST_FRAMEWORK = {
 }
 
 # Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = 'ILES System <' + os.environ.get('EMAIL_HOST_USER', '') + '>'
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = str(os.getenv('EMAIL_USE_TLS', 'True')).strip().lower() in {'1', 'true', 'yes', 'on'}
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config(
+    'DEFAULT_FROM_EMAIL',
+    default=f'ILES System <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'ILES System <no-reply@iles.local>',
+)
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Email verification settings
 EMAIL_VERIFICATION_TIMEOUT = 24  # hours

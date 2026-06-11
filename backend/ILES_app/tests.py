@@ -83,6 +83,22 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.refresh_from_db()
         self.assertEqual(self.student.assigned_supervisor, self.supervisor)
 
+    def test_admin_assigning_supervisor_triggers_email_notifications(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.admin_token.key}')
+
+        with patch('ILES_app.views.notify_supervisor_student_assigned') as mock_supervisor_email, patch(
+            'ILES_app.views.send_supervisor_assigned'
+        ) as mock_student_email:
+            response = self.client.post(
+                reverse('assign_supervisor'),
+                {'student_id': self.student.id, 'supervisor_id': self.supervisor.id},
+                format='json'
+            )
+
+        self.assertEqual(response.status_code, 200)
+        mock_supervisor_email.assert_called_once()
+        mock_student_email.assert_called_once()
+
     def test_assigned_supervisor_can_review_student_log(self):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
@@ -108,6 +124,27 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.assertEqual(weekly_log.status, 'approved')
         self.assertEqual(weekly_log.supervisor, self.supervisor)
         self.assertEqual(weekly_log.evaluation_score, 88)
+
+    def test_student_log_submission_triggers_email_notifications(self):
+        self.student.assigned_supervisor = self.supervisor
+        self.student.save()
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
+
+        with patch('ILES_app.views.notify_student_log_submitted') as mock_student_email, patch(
+            'ILES_app.views.notify_supervisor_log_submitted'
+        ) as mock_supervisor_email:
+            response = self.client.post(
+                reverse('create_weekly_log'),
+                {
+                    'week_number': 3,
+                    'description': 'Submitted weekly progress report.',
+                },
+                format='json'
+            )
+
+        self.assertEqual(response.status_code, 201)
+        mock_student_email.assert_called_once()
+        mock_supervisor_email.assert_called_once()
 
     def test_unassigned_supervisor_cannot_review_student_log(self):
         self.student.assigned_supervisor = self.supervisor

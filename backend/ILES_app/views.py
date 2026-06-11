@@ -23,6 +23,7 @@ from django.urls import reverse
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from .services import send_email_verification, send_registration_confirmation
+from .services import send_supervisor_assigned
 from .tokens import token_service
 from .serializers import ( CustomUserSerializer, 
                           InternshipPlacementSerializer, WeeklylogSerializer,
@@ -379,6 +380,12 @@ def assign_supervisor(request):
             supervisor,
             student,
             placement,
+        )
+    )
+    transaction.on_commit(
+        lambda student_user=student.users, supervisor_user=supervisor.users: send_supervisor_assigned(
+            student_user,
+            supervisor_user,
         )
     )
 
