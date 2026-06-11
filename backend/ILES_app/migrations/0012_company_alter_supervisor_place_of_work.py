@@ -27,7 +27,7 @@ def reverse_migrate_supervisor_place_of_work(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ILES_app', '0011_customuser_email_verified_at_customuser_is_verified_and_more'),
+        ('ILES_app', '0001_initial'),
     ]
 
     operations = [
