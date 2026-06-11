@@ -705,7 +705,7 @@ def reports(request):
     total_supervisors = Supervisor.objects.count()
     total_placements = InternshipPlacement.objects.count()
     total_logs = WeeklyLog.objects.count()
-    reviewed_logs = WeeklyLog.objects.exclude(status='pending').count()
+    reviewed_logs = WeeklyLog.objects.filter(status__in=['approved', 'rejected']).count()
     pending_logs = WeeklyLog.objects.filter(status='pending').count()
 
     reports_data = [
