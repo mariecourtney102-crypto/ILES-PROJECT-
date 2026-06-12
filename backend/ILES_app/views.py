@@ -545,7 +545,7 @@ def supervisor_weekly_logs(request):
 
     student_id = request.GET.get('student_id')
     if student_id:
-        logs = logs.filter(user__student__id=student_id)
+        logs = logs.filter(student__student__id=student_id)
 
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
