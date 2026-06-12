@@ -1,5 +1,6 @@
 from unittest.mock import patch
-
+from urllib.parse import urlparse
+from django.core.cache import cache
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
