@@ -136,7 +136,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.save()
         InternshipPlacement.objects.create(
             student=self.student,
-            place_of_internship=self.company,
+            place_of_internship=self.supervisor_company,
             department='Engineering',
             supervisor_name='Ms. Amina',
             start_date='2026-05-01',
@@ -150,7 +150,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'Alice Student')
         self.assertEqual(response.data[0]['course_title'], 'Computer Science')
-        self.assertEqual(response.data[0]['placement']['place_of_internship'], 'Open Labs')
+        self.assertEqual(response.data[0]['placement']['place_of_internship'], 'Main Office')
 
 
 class InternshipPlacementTests(APITestCase):
@@ -172,6 +172,8 @@ class InternshipPlacementTests(APITestCase):
         self.student_token = Token.objects.create(user=self.student_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
 
+        self.company = Company.objects.create(name='Open Labs')
+        self.supervisor_user = CustomUser.objects.create_user(name = 'Tech Hub')
     def test_student_can_create_and_fetch_placement(self):
         response = self.client.post(
             reverse('create_placement'),
