@@ -82,12 +82,12 @@ def role_required(*allowed_roles):
 
 def notify_weekly_log_submitted(weekly_log):
     Notification.objects.create(
-        user=weekly_log.user,
+        user=weekly_log.student,
         title="Weekly Log Submitted",
         message=f"Your Week {weekly_log.week_number} log was submitted successfully.",
     )
 
-    student_profile = getattr(weekly_log.user, 'student', None)
+    student_profile = getattr(weekly_log.student, 'student', None)
     if student_profile and student_profile.assigned_supervisor:
         Notification.objects.create(
             user=student_profile.assigned_supervisor.users,
@@ -584,12 +584,12 @@ def supervisor_weekly_logs(request):
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
     logs = WeeklyLog.objects.exclude(status='draft').filter(
-        user__student__assigned_supervisor=supervisor
-    ).select_related('user', 'supervisor__users').order_by('week_number', 'date_submitted')
+        student__student__assigned_supervisor=supervisor
+    ).select_related('student', 'supervisor__users').order_by('week_number', 'date_submitted')
 
     student_id = request.GET.get('student_id')
     if student_id:
-        logs = logs.filter(user__student__id=student_id)
+        logs = logs.filter(student__student__id=student_id)
 
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -608,11 +608,11 @@ def review_weekly_log(request, log_id):
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
     try:
-        weekly_log = WeeklyLog.objects.select_related('user__student').get(id=log_id)
+        weekly_log = WeeklyLog.objects.select_related('student__student').get(id=log_id)
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    student_profile = getattr(weekly_log.user, 'student', None)
+    student_profile = getattr(weekly_log.student, 'student', None)
     if student_profile is None or student_profile.assigned_supervisor_id != supervisor.id:
         return Response(
             {"error": "You can only review logs for students assigned to you."},

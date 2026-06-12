@@ -53,7 +53,7 @@ class Student(models.Model):
     )
     
     def __str__(self):
-        return f"{self.users.username} -STUDENT"
+        return f"{self.student.username} -STUDENT"
     
 class Supervisor(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
@@ -73,8 +73,8 @@ class Admin(models.Model):
         return f"{self.users.username} -ADMIN"
     
 class InternshipPlacement(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    place_of_internship = models.CharField(max_length=100)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    place_of_internship = models.ForeignKey('Company', on_delete=models.CASCADE)
     department = models.CharField(max_length=100)
     supervisor_name = models.CharField(max_length=50)
     start_date = models.DateField()
@@ -108,7 +108,7 @@ class WeeklyLog(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
 
     def __str__(self):
-        return f"Week {self.week_number} - {self.user.username} - {self.status}"
+        return f"Week {self.week_number} - {self.student} - {self.status}"
     
 class EvaluationCriteria(models.Model):
     CRITERIA_CHOICES =[
