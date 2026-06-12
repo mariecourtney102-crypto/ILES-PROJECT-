@@ -185,3 +185,4 @@ CACHES = {
         'LOCATION': 'iles-cache',
     }
 }
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
