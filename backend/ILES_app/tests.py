@@ -163,7 +163,7 @@ class InternshipPlacementTests(APITestCase):
             ID_number='STD100',
             email='placementstudent@example.com'
         )
-        Student.objects.create(
+        self.student=Student.objects.create(
             users=self.student_user,
             course_title='Computer Science',
             university_name='Makerere',
