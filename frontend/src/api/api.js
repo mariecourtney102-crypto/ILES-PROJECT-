@@ -106,6 +106,18 @@ export const reviewWeeklyLog = async (logId, payload) => {
   return res.data;
 };
 
+export const fetchSupervisorEvaluations = async (weeklyLogId) => {
+  const res = await api.get("/supervisor/evaluations/", {
+    params: { weekly_log_id: weeklyLogId },
+  });
+  return res.data;
+};
+
+export const saveSupervisorEvaluations = async (payload) => {
+  const res = await api.post("/supervisor/evaluations/", payload);
+  return res.data;
+};
+
 export const fetchPlacement = async () => {
   const res = await api.get("/placement/");
   return res.data;
@@ -128,6 +140,16 @@ export const deletePlacement = async () => {
 
 export const fetchNotifications = async () => {
   const res = await api.get("/notifications/");
+  return res.data;
+};
+
+export const fetchAdminReports = async () => {
+  const res = await api.get("/reports/");
+  return res.data;
+};
+
+export const fetchStudentReports = async () => {
+  const res = await api.get("/student/reports/");
   return res.data;
 };
 

@@ -89,6 +89,7 @@ class WeeklyLog(models.Model):
         ('draft', 'Draft'),
         ('pending', 'Pending'),
         ('approved', 'Approved'),
+        ('evaluated', 'Evaluated'),
         ('rejected', 'Rejected')
     ]
 
@@ -117,11 +118,10 @@ class EvaluationCriteria(models.Model):
         ('cognitive', 'Cognitive Skills'),
         ('soft', 'Soft Skills'),
         ('professional', 'Professionalism'),
-        ('other', 'Others')
     ]
     criteria_name =  models.CharField(max_length=150)
-    criteria = models.CharField(max_length=20, choices=CRITERIA_CHOICES, default='other')
-    criteria_weight = models.FloatField(help_text="Enter the weight as a decimal: ")
+    criteria = models.CharField(max_length=20, choices=CRITERIA_CHOICES)
+    criteria_weight = models.FloatField(default=0.25, help_text="Fixed at 0.25 for each criterion.")
 
     def __str__(self):
         return f"{self.criteria_name} - {self.criteria}"
@@ -129,6 +129,13 @@ class EvaluationCriteria(models.Model):
 class Evaluation(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
+    weekly_log = models.ForeignKey(
+        WeeklyLog,
+        on_delete=models.CASCADE,
+        related_name='evaluations',
+        null=True,
+        blank=True,
+    )
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.SET_NULL, null=True)
     score = models.PositiveIntegerField()
     comment = models.TextField(blank=True)

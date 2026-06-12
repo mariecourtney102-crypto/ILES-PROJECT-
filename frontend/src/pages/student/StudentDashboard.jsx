@@ -35,7 +35,7 @@ function StudentDashboard() {
   // Calculate log statistics
   const draft = logs.filter((log) => log.status === "draft").length;
   const pending = logs.filter((log) => log.status === "pending").length;
-  const approved = logs.filter((log) => log.status === "approved").length;
+  const approved = logs.filter((log) => log.status === "approved" || log.status === "evaluated").length;
   const rejected = logs.filter((log) => log.status === "rejected").length;
 
   // Get current week from latest log
@@ -195,7 +195,7 @@ function StudentDashboard() {
                       </div>
                     <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ml-2 ${
-                          log.status === "approved"
+                          log.status === "approved" || log.status === "evaluated"
                             ? "bg-[#ecfdf5] text-[#0a7c6e]"
                             : log.status === "pending"
                             ? "bg-[#d1fae5] text-[#0a7c6e]"

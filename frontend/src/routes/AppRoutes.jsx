@@ -12,6 +12,7 @@ import Users from "../pages/admin/Users";
 import SubmitLog from "../pages/student/SubmitLog";
 import WeeklyLogs from "../pages/student/WeeklyLogs";
 import InternshipDetails from "../pages/student/InternshipDetails";
+import StudentReports from "../pages/student/Reports";
 
 import Reports from "../pages/admin/Reports";
 import Settings from "../pages/admin/Settings";
@@ -30,6 +31,7 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/weeklylogs" element={<ProtectedRoute requiredRole="student"><WeeklyLogs /></ProtectedRoute>} />
+        <Route path="/student/reports" element={<ProtectedRoute requiredRole="student"><StudentReports /></ProtectedRoute>} />
         <Route path="/submitlog" element={<ProtectedRoute requiredRole="student"><SubmitLog /></ProtectedRoute>} />
         <Route path="/submitlog/:draftId" element={<ProtectedRoute requiredRole="student"><SubmitLog /></ProtectedRoute>} />
         <Route path="/student" element={<ProtectedRoute requiredRole="student"><StudentDashboard /></ProtectedRoute>} />

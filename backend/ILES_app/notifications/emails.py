@@ -16,7 +16,7 @@ def _display_name(entity):
 
 def _email(entity):
     user = _resolve_user(entity)
-    return getattr(user, "email", "")
+    return getattr(user, "email", "").strip()
 
 
 def notify_supervisor_student_assigned(supervisor, student, internship):

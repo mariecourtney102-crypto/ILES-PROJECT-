@@ -11,6 +11,26 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def send_notification_email(user, subject, message, from_email=None):
+    """
+    Send a plain text notification email to a specific user.
+
+    Args:
+        user (CustomUser): Recipient user.
+        subject (str): Email subject.
+        message (str): Plain text email body.
+        from_email (str): Optional sender address.
+
+    Returns:
+        int: Number of successfully sent emails.
+    """
+    recipient = getattr(user, "email", "").strip()
+    if not recipient:
+        return 0
+
+    return send_plain_email(subject, message, [recipient], from_email=from_email)
+
+
 def send_plain_email(subject, message, recipient_list, from_email=None):
     """
     Send a simple plain text email.

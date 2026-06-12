@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Menu, X, LayoutDashboard, FileText, LogOut, Send, Briefcase, MessageSquare, Users, BarChart3, Settings } from "lucide-react";
 
 const COLORS = {
@@ -18,15 +18,8 @@ const COLORS = {
 function Sidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    const saved = localStorage.getItem("sidebarCollapsed");
-    return saved ? JSON.parse(saved) : false;
-  });
+  const [isCollapsed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem("sidebarCollapsed", JSON.stringify(isCollapsed));
-  }, [isCollapsed]);
 
   if (!user) return null;
 
@@ -41,8 +34,8 @@ function Sidebar() {
     navigate("/login", { replace: true });
   };
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+  const toggleMobileSidebar = () => {
+    setIsOpen((current) => !current);
   };
 
   const closeSidebar = () => {
@@ -55,6 +48,7 @@ function Sidebar() {
     const iconMap = {
       "Dashboard": <LayoutDashboard {...iconProps} />,
       "Weekly Logs": <FileText {...iconProps} />,
+      "Reports": <BarChart3 {...iconProps} />,
       "Submit Log": <Send {...iconProps} />,
       "Internship Details": <Briefcase {...iconProps} />,
       "Feedback": <MessageSquare {...iconProps} />,
@@ -70,11 +64,11 @@ function Sidebar() {
     <>
       {/* Single toggle button for both mobile and desktop */}
       <button
-        onClick={isOpen ? closeSidebar : toggleCollapse}
-        className={`fixed left-2 top-2 z-50 p-3 text-white transition-all ${COLORS.toggle}`}
-        title={isOpen || isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        onClick={toggleMobileSidebar}
+        className={`fixed left-4 top-4 z-50 rounded-lg p-3 text-white transition-all md:hidden ${COLORS.toggle}`}
+        title={isOpen ? "Close sidebar" : "Open sidebar"}
       >
-        {isOpen || isCollapsed ? <Menu size={24} /> : <X size={24} />}
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {/* Mobile overlay */}
@@ -168,6 +162,23 @@ function Sidebar() {
               >
                 {getIcon("Internship Details")}
                 {!isCollapsed && <span className="truncate">Internship Details</span>}
+              </NavLink>
+
+              <NavLink
+                to="/student/reports"
+                end
+                onClick={closeSidebar}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                    isActive
+                      ? `${COLORS.itemActive} text-white font-semibold shadow-sm`
+                      : `text-white/90 ${COLORS.itemHover}`
+                  } ${isCollapsed ? "md:justify-center" : ""}`
+                }
+                title={isCollapsed ? "Reports" : ""}
+              >
+                {getIcon("Reports")}
+                {!isCollapsed && <span className="truncate">Reports</span>}
               </NavLink>
 
               <NavLink
