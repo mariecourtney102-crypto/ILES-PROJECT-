@@ -441,7 +441,7 @@ def delete_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(user=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(student=request.user.student).latest('id')
         placement.delete()
         return Response({"message":"Placement deleted"}, status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
@@ -457,7 +457,7 @@ def create_weekly_log(request):
 
     serializer = WeeklylogSerializer(data=request.data)
     if serializer.is_valid():
-        weekly_log = serializer.save(user=request.user, status='pending')
+        weekly_log = serializer.save(student=request.user.student, status='pending')
         notify_weekly_log_submitted(weekly_log)
         student_profile = getattr(request.user, 'student', None)
         supervisor_profile = getattr(student_profile, 'assigned_supervisor', None) if student_profile else None
@@ -487,7 +487,7 @@ def save_weekly_log_draft(request):
 
     if draft_id:
         try:
-            draft = WeeklyLog.objects.get(id=draft_id, user=request.user, status='draft')
+            draft = WeeklyLog.objects.get(id=draft_id, student=request.user.student, status='draft')
         except WeeklyLog.DoesNotExist:
             return Response({"error": "Draft not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -496,7 +496,7 @@ def save_weekly_log_draft(request):
         serializer = WeeklylogSerializer(data=request.data)
 
     if serializer.is_valid():
-        draft = serializer.save(user=request.user, status='draft')
+        draft = serializer.save(student=request.user.student, status='draft')
         return Response(WeeklylogSerializer(draft).data, status=status.HTTP_200_OK if draft_id else status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
