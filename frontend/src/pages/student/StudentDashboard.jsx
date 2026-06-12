@@ -108,6 +108,57 @@ function StudentDashboard() {
             )}
           </div>
         </div>
+        <div className="rounded-lg bg-white p-6 shadow-md">
+  <h2 className="mb-4 text-xl font-bold text-gray-800">
+    Academic Evaluation Results
+  </h2>
+
+  <div className="grid grid-cols-2 gap-4">
+
+    <div>
+      <p className="text-sm text-gray-500">
+        Technical Skills
+      </p>
+      <p className="font-bold">
+        18 / 20
+      </p>
+    </div>
+
+    <div>
+      <p className="text-sm text-gray-500">
+        Cognitive Skills
+      </p>
+      <p className="font-bold">
+        17 / 20
+      </p>
+    </div>
+
+    <div>
+      <p className="text-sm text-gray-500">
+        Soft Skills
+      </p>
+      <p className="font-bold">
+        19 / 20
+      </p>
+    </div>
+
+    <div>
+      <p className="text-sm text-gray-500">
+        Professionalism
+      </p>
+      <p className="font-bold">
+        20 / 20
+      </p>
+    </div>
+
+  </div>
+
+  <div className="mt-4 border-t pt-4">
+    <p className="text-lg font-semibold text-[#0a7c6e]">
+      Final Weighted Score: 92%
+    </p>
+  </div>
+</div>
 
         {/* Log Status Overview */}
         <div>
