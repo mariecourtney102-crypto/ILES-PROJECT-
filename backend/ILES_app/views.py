@@ -1,4 +1,5 @@
 from functools import wraps
+from unicodedata import name
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -82,17 +83,17 @@ def role_required(*allowed_roles):
 
 def notify_weekly_log_submitted(weekly_log):
     Notification.objects.create(
-        user=weekly_log.student,
+        user=weekly_log.student.users,
         title="Weekly Log Submitted",
         message=f"Your Week {weekly_log.week_number} log was submitted successfully.",
     )
 
-    student_profile = getattr(weekly_log.student, 'student', None)
+    student_profile = weekly_log.student
     if student_profile and student_profile.assigned_supervisor:
         Notification.objects.create(
             user=student_profile.assigned_supervisor.users,
             title="New Weekly Log",
-            message=f"{weekly_log.user.name or weekly_log.user.username} submitted Week {weekly_log.week_number}.",
+            message=f"{weekly_log.student.users.name or weekly_log.students.users.username} submitted Week {weekly_log.week_number}.",
         )
 
 
@@ -292,7 +293,7 @@ def dashboard(request):
     if permission_error:
         return permission_error
     
-    internship = InternshipPlacement.objects.filter(user=request.user)
+    internship = InternshipPlacement.objects.filter(student=request.user.student)
     total = internship.count()
 
     return Response({
@@ -311,13 +312,13 @@ def create_placement(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     with transaction.atomic():
-        placement = InternshipPlacement.objects.filter(user=request.user).order_by('-id').first()
+        placement = InternshipPlacement.objects.filter(student=request.user.student).order_by('-id').first()
         if placement is not None:
             serializer = InternshipPlacementSerializer(placement, data=request.data)
             serializer.is_valid(raise_exception=True)
-            placement = serializer.save(user=request.user)
+            placement = serializer.save(student=request.user.student)
         else:
-            placement = serializer.save(user=request.user)
+            placement = serializer.save(student=request.user.student)
 
     return Response(
         {
