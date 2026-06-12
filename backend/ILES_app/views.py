@@ -568,7 +568,7 @@ def review_weekly_log(request, log_id):
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    student_profile = getattr(weekly_log.user, 'student', None)
+    student_profile = getattr(weekly_log.student, 'student', None)
     if student_profile is None or student_profile.assigned_supervisor_id != supervisor.id:
         return Response(
             {"error": "You can only review logs for students assigned to you."},
