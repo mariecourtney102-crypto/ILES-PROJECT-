@@ -900,31 +900,125 @@ def reports(request):
     total_supervisors = Supervisor.objects.count()
     total_placements = InternshipPlacement.objects.count()
     total_logs = WeeklyLog.objects.count()
-    reviewed_logs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated', 'rejected']).count()
+    total_drafts = WeeklyLog.objects.filter(status='draft').count()
     pending_logs = WeeklyLog.objects.filter(status='pending').count()
+    approved_logs = WeeklyLog.objects.filter(status='approved').count()
+    evaluated_logs = WeeklyLog.objects.filter(status='evaluated').count()
+    rejected_logs = WeeklyLog.objects.filter(status='rejected').count()
+    evaluated_logs_qs = WeeklyLog.objects.filter(
+        status='evaluated',
+        evaluation_score__isnull=False,
+    )
+    average_score = round(
+        sum(log.evaluation_score or 0 for log in evaluated_logs_qs) / evaluated_logs_qs.count(),
+        2
+    ) if evaluated_logs_qs.exists() else 0
 
-    reports_data = [
+    recent_logs = WeeklyLog.objects.select_related('user', 'supervisor', 'user__student').order_by('-date_submitted')[:10]
+    recent_logs_data = [
         {
-            "id": "users",
-            "title": "User Summary",
-            "summary": f"{total_students} students and {total_supervisors} supervisors are registered.",
-            "created_at": timezone.now().date(),
-        },
-        {
-            "id": "placements",
-            "title": "Placement Summary",
-            "summary": f"{total_placements} internship placements have been submitted.",
-            "created_at": timezone.now().date(),
-        },
-        {
-            "id": "weekly-logs",
-            "title": "Weekly Log Summary",
-            "summary": f"{reviewed_logs} logs reviewed, {pending_logs} pending, {total_logs} total.",
-            "created_at": timezone.now().date(),
-        },
+            "id": log.id,
+            "student_name": log.user.name or log.user.username,
+            "week_number": log.week_number,
+            "status": log.status,
+            "description": log.description,
+            "evaluation_score": log.evaluation_score,
+            "submitted_at": log.date_submitted,
+        }
+        for log in recent_logs
     ]
 
-    return Response(reports_data, status=status.HTTP_200_OK)
+    return Response(
+        {
+            "overview": {
+                "students": total_students,
+                "supervisors": total_supervisors,
+                "placements": total_placements,
+                "total_logs": total_logs,
+                "draft_logs": total_drafts,
+                "pending_logs": pending_logs,
+                "approved_logs": approved_logs,
+                "evaluated_logs": evaluated_logs,
+                "rejected_logs": rejected_logs,
+                "average_score": average_score,
+            },
+            "recent_logs": recent_logs_data,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required('student')
+def student_reports(request):
+    student = getattr(request.user, 'student', None)
+    if student is None:
+        return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    placement = InternshipPlacement.objects.filter(user=request.user).order_by('-id').first()
+    logs = WeeklyLog.objects.filter(user=request.user).order_by('-week_number', '-date_submitted')
+    evaluations = Evaluation.objects.filter(user=request.user).select_related('criteria', 'weekly_log').order_by('-evaluation_date')
+
+    total_logs = logs.count()
+    draft_logs = logs.filter(status='draft').count()
+    pending_logs = logs.filter(status='pending').count()
+    approved_logs = logs.filter(status='approved').count()
+    evaluated_logs = logs.filter(status='evaluated').count()
+    rejected_logs = logs.filter(status='rejected').count()
+    evaluated_with_scores = logs.filter(status='evaluated', evaluation_score__isnull=False)
+    average_score = round(
+        sum(log.evaluation_score or 0 for log in evaluated_with_scores) / evaluated_with_scores.count(),
+        2
+    ) if evaluated_with_scores.exists() else 0
+
+    recent_logs = [
+        {
+            "id": log.id,
+            "week_number": log.week_number,
+            "status": log.status,
+            "description": log.description,
+            "evaluation_score": log.evaluation_score,
+            "reviewed_at": log.reviewed_at,
+            "submitted_at": log.date_submitted,
+            "supervisor_comment": log.supervisor_comment,
+        }
+        for log in logs[:10]
+    ]
+
+    evaluation_breakdown = []
+    for evaluation in evaluations[:20]:
+        evaluation_breakdown.append(
+            {
+                "id": evaluation.id,
+                "weekly_log_id": evaluation.weekly_log_id,
+                "week_number": evaluation.weekly_log.week_number if evaluation.weekly_log else None,
+                "criteria_name": evaluation.criteria.criteria_name if evaluation.criteria else None,
+                "criteria": evaluation.criteria.criteria if evaluation.criteria else None,
+                "score": evaluation.score,
+                "comment": evaluation.comment,
+                "evaluation_date": evaluation.evaluation_date,
+            }
+        )
+
+    return Response(
+        {
+            "student": StudentSerializer(student).data,
+            "placement": InternshipPlacementSerializer(placement).data if placement else None,
+            "overview": {
+                "total_logs": total_logs,
+                "draft_logs": draft_logs,
+                "pending_logs": pending_logs,
+                "approved_logs": approved_logs,
+                "evaluated_logs": evaluated_logs,
+                "rejected_logs": rejected_logs,
+                "average_score": average_score,
+            },
+            "recent_logs": recent_logs,
+            "evaluations": evaluation_breakdown,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(['GET'])

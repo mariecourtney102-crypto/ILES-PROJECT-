@@ -143,6 +143,16 @@ export const fetchNotifications = async () => {
   return res.data;
 };
 
+export const fetchAdminReports = async () => {
+  const res = await api.get("/reports/");
+  return res.data;
+};
+
+export const fetchStudentReports = async () => {
+  const res = await api.get("/student/reports/");
+  return res.data;
+};
+
 export const markNotificationRead = async (notificationId) => {
   const res = await api.patch(`/notifications/${notificationId}/read/`);
   return res.data;

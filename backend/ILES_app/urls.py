@@ -32,6 +32,7 @@ urlpatterns = [
     path('supervisor/evaluations/', views.supervisor_evaluations, name='supervisor_evaluations'),
    # path('reports/', views.reports, name='reports'),
     #path('opportunities/', views.opportunities, name='opportunities'),
+    path('student/reports/', views.student_reports, name='student_reports'),
     path('feedback/', views.feedback, name='feedback'),
     path('settings/', views.settings, name='settings'),
     path('change-password/', views.change_password, name='change_password'),
