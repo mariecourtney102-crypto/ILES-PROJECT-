@@ -195,12 +195,12 @@ class StudentSerializer(serializers.ModelSerializer):
     placement = serializers.SerializerMethodField()
 
     def get_placement(self, obj):
-        placement = InternshipPlacement.objects.filter(user=obj.users).order_by('-id').first()
+        placement = InternshipPlacement.objects.filter(student=obj).order_by('-id').first()
         if not placement:
             return None
 
         return {
-            'place_of_internship': placement.place_of_internship,
+            'place_of_internship': placement.place_of_internship.name,
             'department': placement.department,
             'supervisor_name': placement.supervisor_name,
             'start_date': placement.start_date,
@@ -257,7 +257,7 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
     class Meta:
         model = InternshipPlacement
         fields = '__all__'
-        read_only_fields = ['user']
+        read_only_fields = ['student']
 
     def validate(self, attrs):
         start_date = attrs.get('start_date', getattr(self.instance, 'start_date', None))
@@ -271,15 +271,15 @@ class InternshipPlacementSerializer(serializers.ModelSerializer):
         return attrs
 
 class WeeklylogSerializer(serializers.ModelSerializer):
-    student_name = serializers.CharField(source='user.name', read_only=True)
-    student_user_id = serializers.IntegerField(source='user.id', read_only=True)
+    student_name = serializers.CharField(source='student.users.name', read_only=True)
+    student_user_id = serializers.IntegerField(source='student.users.id', read_only=True)
     supervisor_name = serializers.CharField(source='supervisor.users.name', read_only=True)
 
     class Meta:
         model = WeeklyLog
         fields = [
             'id',
-            'user',
+            'student',
             'student_name',
             'student_user_id',
             'week_number',

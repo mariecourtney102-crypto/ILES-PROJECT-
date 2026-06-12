@@ -103,6 +103,28 @@ function SupervisorDashboard() {
             <p className="py-6 text-center text-gray-500">No pending logs from assigned students.</p>
           )}
         </div>
+          <div className="mt-6 rounded-lg bg-white p-6 shadow-md">
+  <h2 className="mb-4 text-xl font-bold text-gray-800">
+    Student Evaluation
+  </h2>
+
+  <p className="text-sm text-gray-600">
+    Evaluate assigned students based on:
+  </p>
+
+  <ul className="mt-2 list-disc pl-5 text-gray-700">
+    <li>Technical Skills</li>
+    <li>Cognitive Skills</li>
+    <li>Soft Skills</li>
+    <li>Professionalism</li>
+  </ul>
+
+  <button
+    className="mt-4 rounded bg-[#0a7c6e] px-4 py-2 text-white"
+  >
+    Evaluate Student
+  </button>
+        </div>
 
         <div className="rounded-lg bg-gradient-to-r from-[#0a7c6e] to-[#3db88a] p-6 text-white shadow-md">
             <h3 className="mb-4 text-lg font-bold">Dashboard Summary</h3>
