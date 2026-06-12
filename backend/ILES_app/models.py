@@ -53,7 +53,7 @@ class Student(models.Model):
     )
     
     def __str__(self):
-        return f"{self.users.username} -STUDENT"
+        return f"{self.student.username} -STUDENT"
     
 class Supervisor(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
