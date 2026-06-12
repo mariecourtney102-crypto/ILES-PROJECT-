@@ -540,8 +540,8 @@ def supervisor_weekly_logs(request):
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
     logs = WeeklyLog.objects.exclude(status='draft').filter(
-        user__student__assigned_supervisor=supervisor
-    ).select_related('user', 'supervisor__users').order_by('week_number', 'date_submitted')
+        student__student__assigned_supervisor=supervisor
+    ).select_related('student', 'supervisor__users').order_by('week_number', 'date_submitted')
 
     student_id = request.GET.get('student_id')
     if student_id:
