@@ -109,7 +109,7 @@ class WeeklyLog(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
 
     def __str__(self):
-        return f"Week {self.week_number} - {self.student.username} - {self.status}"
+        return f"Week {self.week_number} - {self.student} - {self.status}"
     
 class EvaluationCriteria(models.Model):
     CRITERIA_CHOICES =[
