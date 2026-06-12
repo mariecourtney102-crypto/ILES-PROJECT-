@@ -195,12 +195,12 @@ class StudentSerializer(serializers.ModelSerializer):
     placement = serializers.SerializerMethodField()
 
     def get_placement(self, obj):
-        placement = InternshipPlacement.objects.filter(student=obj.users).order_by('-id').first()
+        placement = InternshipPlacement.objects.filter(student=obj).order_by('-id').first()
         if not placement:
             return None
 
         return {
-            'place_of_internship': placement.place_of_internship,
+            'place_of_internship': placement.place_of_internship.name,
             'department': placement.department,
             'supervisor_name': placement.supervisor_name,
             'start_date': placement.start_date,
@@ -231,6 +231,7 @@ class SupervisorSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='users.username', read_only=True)
     name = serializers.CharField(source='users.name', read_only=True)
     supervisor_user_id = serializers.IntegerField(source='users.id', read_only=True)
+    place_of_work = serializers.CharField(source='place_of_work.name', read_only=True)
     assigned_students_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -278,7 +279,7 @@ class WeeklylogSerializer(serializers.ModelSerializer):
         model = WeeklyLog
         fields = [
             'id',
-            'user',
+            'student',
             'student_name',
             'student_user_id',
             'week_number',

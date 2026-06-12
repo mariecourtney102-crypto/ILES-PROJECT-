@@ -1,4 +1,5 @@
 from functools import wraps
+from unicodedata import name
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -28,6 +29,14 @@ from .serializers import ( CustomUserSerializer,
                           InternshipPlacementSerializer, WeeklylogSerializer,
                           EvaluationSerializer, StudentSerializer, SupervisorSerializer,
                           FeedbackSerializer, NotificationSerializer
+)
+from .notifications.emails import (
+    notify_admin_student_signup,
+    notify_student_log_approved,
+    notify_student_log_rejected,
+    notify_student_log_submitted,
+    notify_supervisor_log_submitted,
+    notify_supervisor_student_assigned,
 )
 import logging
 
@@ -74,17 +83,17 @@ def role_required(*allowed_roles):
 
 def notify_weekly_log_submitted(weekly_log):
     Notification.objects.create(
-        user=weekly_log.user,
+        user=weekly_log.student.users,
         title="Weekly Log Submitted",
         message=f"Your Week {weekly_log.week_number} log was submitted successfully.",
     )
 
-    student_profile = getattr(weekly_log.user, 'student', None)
+    student_profile = weekly_log.student
     if student_profile and student_profile.assigned_supervisor:
         Notification.objects.create(
             user=student_profile.assigned_supervisor.users,
             title="New Weekly Log",
-            message=f"{weekly_log.user.name or weekly_log.user.username} submitted Week {weekly_log.week_number}.",
+            message=f"{weekly_log.student.users.name or weekly_log.students.users.username} submitted Week {weekly_log.week_number}.",
         )
 
 
@@ -103,7 +112,9 @@ def signup(request):
                 user.email_verified_at = timezone.now()
                 user.save(update_fields=['is_verified', 'email_verified_at'])
 
-                transaction.on_commit(lambda: send_registration_confirmation(user))
+                send_registration_confirmation(user)
+                if user.role == 'student':
+                    notify_admin_student_signup(user)
 
                 response_data = CustomUserSerializer(user).data
                 response_data.update({
@@ -282,7 +293,7 @@ def dashboard(request):
     if permission_error:
         return permission_error
     
-    internship = InternshipPlacement.objects.filter(student=request.user)
+    internship = InternshipPlacement.objects.filter(student=request.user.student)
     total = internship.count()
 
     return Response({
@@ -301,13 +312,13 @@ def create_placement(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     with transaction.atomic():
-        placement = InternshipPlacement.objects.filter(student=request.user).order_by('-id').first()
+        placement = InternshipPlacement.objects.filter(student=request.user.student).order_by('-id').first()
         if placement is not None:
             serializer = InternshipPlacementSerializer(placement, data=request.data)
             serializer.is_valid(raise_exception=True)
-            placement = serializer.save(student=request.user)
+            placement = serializer.save(student=request.user.student)
         else:
-            placement = serializer.save(student=request.user)
+            placement = serializer.save(student=request.user.student)
 
     return Response(
         {
@@ -363,6 +374,14 @@ def assign_supervisor(request):
 
     student.assigned_supervisor = supervisor
     student.save()
+    placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
+    transaction.on_commit(
+        lambda supervisor=supervisor, student=student, placement=placement: notify_supervisor_student_assigned(
+            supervisor,
+            student,
+            placement,
+        )
+    )
 
     return Response(
         {
@@ -381,7 +400,7 @@ def get_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(student=request.user.student).latest('id')
         serializer = InternshipPlacementSerializer(placement)
         return Response(serializer.data,  status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
@@ -396,7 +415,7 @@ def update_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(student=request.user.student).latest('id')
     except InternshipPlacement.DoesNotExist:
         return Response({"error":"No placement found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -404,7 +423,7 @@ def update_placement(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    placement = serializer.save(student=request.user)
+    placement = serializer.save(student=request.user.student)
     return Response(
         {
             "message":"Placement updated successfully",
@@ -422,7 +441,7 @@ def delete_placement(request):
         return permission_error
 
     try:
-        placement = InternshipPlacement.objects.filter(student=request.user).latest('id')
+        placement = InternshipPlacement.objects.filter(student=request.user.student).latest('id')
         placement.delete()
         return Response({"message":"Placement deleted"}, status=status.HTTP_200_OK)
     except InternshipPlacement.DoesNotExist:
@@ -438,8 +457,21 @@ def create_weekly_log(request):
 
     serializer = WeeklylogSerializer(data=request.data)
     if serializer.is_valid():
-        weekly_log = serializer.save(student=request.user, status='pending')
+        weekly_log = serializer.save(student=request.user.student, status='pending')
         notify_weekly_log_submitted(weekly_log)
+        student_profile = getattr(request.user, 'student', None)
+        supervisor_profile = getattr(student_profile, 'assigned_supervisor', None) if student_profile else None
+        transaction.on_commit(
+            lambda student=request.user, log=weekly_log: notify_student_log_submitted(student, log)
+        )
+        if supervisor_profile:
+            transaction.on_commit(
+                lambda supervisor=supervisor_profile, student=student_profile, log=weekly_log: notify_supervisor_log_submitted(
+                    supervisor,
+                    student,
+                    log,
+                )
+            )
         return Response(WeeklylogSerializer(weekly_log).data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -455,7 +487,7 @@ def save_weekly_log_draft(request):
 
     if draft_id:
         try:
-            draft = WeeklyLog.objects.get(id=draft_id, student=request.user, status='draft')
+            draft = WeeklyLog.objects.get(id=draft_id, student=request.user.student, status='draft')
         except WeeklyLog.DoesNotExist:
             return Response({"error": "Draft not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -464,7 +496,7 @@ def save_weekly_log_draft(request):
         serializer = WeeklylogSerializer(data=request.data)
 
     if serializer.is_valid():
-        draft = serializer.save(student=request.user, status='draft')
+        draft = serializer.save(student=request.user.student, status='draft')
         return Response(WeeklylogSerializer(draft).data, status=status.HTTP_200_OK if draft_id else status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -478,7 +510,7 @@ def submit_weekly_log(request, log_id):
         return permission_error
 
     try:
-        weekly_log = WeeklyLog.objects.get(id=log_id, student=request.user)
+        weekly_log = WeeklyLog.objects.get(id=log_id, student=request.user.student)
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -494,6 +526,19 @@ def submit_weekly_log(request, log_id):
 
     weekly_log = serializer.save(status='pending')
     notify_weekly_log_submitted(weekly_log)
+    student_profile = getattr(request.user, 'student', None)
+    supervisor_profile = getattr(student_profile, 'assigned_supervisor', None) if student_profile else None
+    transaction.on_commit(
+        lambda student=request.user, log=weekly_log: notify_student_log_submitted(student, log)
+    )
+    if supervisor_profile:
+        transaction.on_commit(
+            lambda supervisor=supervisor_profile, student=student_profile, log=weekly_log: notify_supervisor_log_submitted(
+                supervisor,
+                student,
+                log,
+            )
+        )
 
     return Response(WeeklylogSerializer(weekly_log).data, status=status.HTTP_200_OK)
 
@@ -505,7 +550,7 @@ def my_weekly_logs(request):
     if permission_error:
         return permission_error
 
-    logs = WeeklyLog.objects.filter(student=request.user).select_related('supervisor__users').order_by('week_number')
+    logs = WeeklyLog.objects.filter(student=request.user.student).select_related('supervisor__users').order_by('week_number')
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -540,12 +585,12 @@ def supervisor_weekly_logs(request):
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
     logs = WeeklyLog.objects.exclude(status='draft').filter(
-        user__student__assigned_supervisor=supervisor
-    ).select_related('user', 'supervisor__users').order_by('week_number', 'date_submitted')
+        student__student__assigned_supervisor=supervisor
+    ).select_related('student', 'supervisor__users').order_by('week_number', 'date_submitted')
 
     student_id = request.GET.get('student_id')
     if student_id:
-        logs = logs.filter(user__student__id=student_id)
+        logs = logs.filter(student__student__id=student_id)
 
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -564,11 +609,11 @@ def review_weekly_log(request, log_id):
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
     try:
-        weekly_log = WeeklyLog.objects.select_related('user__student').get(id=log_id)
+        weekly_log = WeeklyLog.objects.select_related('student__users', 'student__assigned_supervisor').get(id=log_id)
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    student_profile = getattr(weekly_log.user, 'student', None)
+    student_profile = weekly_log.student
     if student_profile is None or student_profile.assigned_supervisor_id != supervisor.id:
         return Response(
             {"error": "You can only review logs for students assigned to you."},
@@ -595,6 +640,19 @@ def review_weekly_log(request, log_id):
     weekly_log.evaluation_score = request.data.get('evaluation_score', weekly_log.evaluation_score)
     weekly_log.reviewed_at = timezone.now()
     weekly_log.save()
+    student_profile = weekly_log.student
+    if new_status == 'approved':
+        transaction.on_commit(
+            lambda student=student_profile, log=weekly_log: notify_student_log_approved(student, log)
+        )
+    else:
+        transaction.on_commit(
+            lambda student=student_profile, log=weekly_log, feedback=supervisor_comment: notify_student_log_rejected(
+                student,
+                log,
+                feedback,
+            )
+        )
 
     serializer = WeeklylogSerializer(weekly_log)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -648,7 +706,7 @@ def reports(request):
     total_supervisors = Supervisor.objects.count()
     total_placements = InternshipPlacement.objects.count()
     total_logs = WeeklyLog.objects.count()
-    reviewed_logs = WeeklyLog.objects.exclude(status='pending').count()
+    reviewed_logs = WeeklyLog.objects.filter(status__in=['approved', 'rejected']).count()
     pending_logs = WeeklyLog.objects.filter(status='pending').count()
 
     reports_data = [
