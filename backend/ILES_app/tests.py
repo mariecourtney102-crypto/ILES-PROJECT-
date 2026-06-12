@@ -87,7 +87,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         weekly_log = WeeklyLog.objects.create(
-            user=self.student_user,
+            student=self.student_user,
             week_number=1,
             description='Worked on the API endpoints.'
         )
@@ -113,7 +113,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         weekly_log = WeeklyLog.objects.create(
-            user=self.student_user,
+            student=self.student_user,
             week_number=2,
             description='Prepared weekly summary.'
         )
@@ -134,7 +134,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         InternshipPlacement.objects.create(
-            user=self.student_user,
+            student=self.student_user,
             place_of_internship='Open Labs',
             department='Engineering',
             supervisor_name='Ms. Amina',
