@@ -194,7 +194,7 @@ class InternshipPlacementTests(APITestCase):
 
     def test_student_can_update_existing_placement(self):
         InternshipPlacement.objects.create(
-            user=self.student_user,
+            student=self.student,
             place_of_internship='Open Labs',
             department='Engineering',
             supervisor_name='Ms. Amina',
