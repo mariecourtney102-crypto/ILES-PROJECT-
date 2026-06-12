@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { createElement, useState, useEffect } from "react";
 import DashboardLayout from "../../Components/dashboard_layout";
 import { axiosInstance } from "../../api/api";
 import { Users, Briefcase, CheckCircle, Award } from "lucide-react";
@@ -48,11 +48,11 @@ function AdminDashboard() {
   }, []);
 
   // Stat card component
-  const StatCard = ({ icon: Icon, title, value, className, iconClassName, valueClassName }) => (
+  const StatCard = ({ icon, title, value, className, iconClassName, valueClassName }) => (
     <div className={`rounded-xl border p-6 shadow-md transition hover:shadow-lg ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{title}</h3>
-        <Icon size={24} className={iconClassName} />
+        {createElement(icon, { size: 24, className: iconClassName })}
       </div>
       <p className={`text-4xl font-bold ${valueClassName}`}>
         {value}

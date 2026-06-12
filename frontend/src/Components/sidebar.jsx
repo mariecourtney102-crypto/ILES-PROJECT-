@@ -87,9 +87,9 @@ function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-screen transition-all duration-300 ease-in-out z-40 flex flex-col ${COLORS.sidebar} text-white md:static md:z-auto md:transition-all ${
+        className={`sticky top-0 h-screen flex flex-col bg-[#0a7c6e] overflow-y-auto transition-all duration-300 ease-in-out z-40 text-white ${
           isCollapsed ? "md:w-20" : "md:w-64"
-        } ${isOpen ? "w-64" : "w-0 md:w-auto"} overflow-hidden md:overflow-visible`}
+        } ${isOpen ? "w-64" : "w-0 md:w-auto"} shrink-0`}
       >
         {/* Header */}
         <div className={`flex items-center justify-start gap-3 px-5 py-4 border-b ${COLORS.sidebarBorder} transition-all duration-300`}>
@@ -97,7 +97,7 @@ function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className={`flex-1 overflow-y-auto p-4 space-y-2 transition-all duration-300`}>
+        <nav className={`flex-1 p-4 space-y-2 transition-all duration-300`}>
 
           {/* Student Menu */}
           {user.role === "student" && (
