@@ -103,11 +103,7 @@ def notify_weekly_log_submitted(weekly_log):
         Notification.objects.create(
             user=student_profile.assigned_supervisor.users,
             title="New Weekly Log",
-<<<<<<< HEAD
             message=supervisor_notification_message,
-=======
-            message=f"{weekly_log.student.users.name or weekly_log.students.users.username} submitted Week {weekly_log.week_number}.",
->>>>>>> 67d4798243879c25e26cb0ce90f7f06ab79bd7e1
         )
         send_notification_email(
             student_profile.assigned_supervisor.users,
