@@ -1,18 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import DashboardLayout from "../../Components/dashboard_layout";
-import { MessageSquare, Save, Star } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { useLogs } from "../../context/LogContext";
 import { fetchSupervisorEvaluations, saveSupervisorEvaluations } from "../../api/api";
+import SupervisorEvaluationForm, { createFallbackEvaluationRows } from "./SupervisorEvaluationForm";
 
-const EMPTY_EVALUATION_STATE = {
+const createEmptyEvaluationState = () => ({
   logId: null,
   loading: false,
   saving: false,
   error: "",
   criteria: [],
-  rows: [],
+  rows: createFallbackEvaluationRows(),
   weighted_score: null,
-};
+});
 
 function createEmptyReviewState() {
   return {};
@@ -22,7 +23,7 @@ export default function SupervisorFeedback() {
   const { logs, loading, error, reviewLog, reviewingId, loadLogs } = useLogs();
   const [reviewState, setReviewState] = useState(createEmptyReviewState());
   const [activeEvaluationId, setActiveEvaluationId] = useState(null);
-  const [evaluationState, setEvaluationState] = useState(EMPTY_EVALUATION_STATE);
+  const [evaluationState, setEvaluationState] = useState(createEmptyEvaluationState);
   const [localError, setLocalError] = useState("");
 
   const reviewableLogs = logs.filter((log) => log.status !== "draft");
@@ -34,13 +35,13 @@ export default function SupervisorFeedback() {
 
   useEffect(() => {
     if (!activeLog) {
-      setEvaluationState(EMPTY_EVALUATION_STATE);
+      setEvaluationState(createEmptyEvaluationState());
       return;
     }
 
     if (activeLog.status !== "approved" && activeLog.status !== "evaluated") {
       setActiveEvaluationId(null);
-      setEvaluationState(EMPTY_EVALUATION_STATE);
+      setEvaluationState(createEmptyEvaluationState());
       return;
     }
 
@@ -90,7 +91,9 @@ export default function SupervisorFeedback() {
         setEvaluationState((prev) => ({
           ...prev,
           loading: false,
-          error: err.response?.data?.error || "Failed to load evaluation criteria.",
+          error:
+            err.response?.data?.error ||
+            "Failed to load evaluation criteria. You can still enter scores and try saving again.",
         }));
       }
     };
@@ -125,6 +128,13 @@ export default function SupervisorFeedback() {
       status,
       supervisor_comment: currentForm.supervisor_comment || "",
     });
+
+    if (result.success) {
+      setReviewState((prev) => ({
+        ...prev,
+        [logId]: {},
+      }));
+    }
 
     if (result.success && status === "approved") {
       setActiveEvaluationId(logId);
@@ -226,98 +236,6 @@ export default function SupervisorFeedback() {
     }
   };
 
-  const renderEvaluationForm = (log) => {
-    if (activeEvaluationId !== log.id) {
-      return null;
-    }
-
-    return (
-      <div className="mt-4 rounded-xl border border-[#c7f2e8] bg-[#f1fbf8] p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-[#065f52]">Evaluation Form</p>
-            <p className="text-sm text-[#065f52]/80">
-              Enter whole-number scores from 0 to 100 for each criterion. Each criterion contributes 25% to the final score.
-            </p>
-          </div>
-          <div className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-[#0a7c6e] shadow-sm">
-            Final Score: {weightedScore ?? evaluationState.weighted_score ?? "Pending"}
-          </div>
-        </div>
-
-        {evaluationState.loading ? (
-          <p className="mt-4 text-sm text-[#065f52]">Loading criteria...</p>
-        ) : evaluationState.error ? (
-          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{evaluationState.error}</p>
-        ) : evaluationState.rows.length === 0 ? (
-          <p className="mt-4 text-sm text-[#065f52]">No evaluation criteria are available yet.</p>
-        ) : (
-          <div className="mt-4 space-y-3">
-            {evaluationState.rows.map((row) => (
-              <div key={row.criteria_id} className="rounded-xl border border-white/60 bg-white p-4 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-gray-800">{row.criteria_name}</p>
-                    <p className="text-sm text-gray-500 capitalize">{row.criteria}</p>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-full bg-[#f1fbf8] px-3 py-1 text-sm text-[#065f52]">
-                    <Star size={14} />
-                    25%
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-3 md:grid-cols-[120px_1fr]">
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">
-                      Score
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="1"
-                      inputMode="numeric"
-                      value={row.score}
-                      onChange={(e) => handleEvaluationChange(row.criteria_id, "score", e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
-                      disabled={evaluationState.saving}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">
-                      Comment
-                    </label>
-                    <input
-                      type="text"
-                      value={row.comment}
-                      onChange={(e) => handleEvaluationChange(row.criteria_id, "comment", e.target.value)}
-                      placeholder="Optional note"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
-                      disabled={evaluationState.saving}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-4 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={saveEvaluation}
-            disabled={evaluationState.saving}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#0d9e8c] px-4 py-2 text-sm font-semibold text-[#0a7c6e] transition hover:bg-[#f1fbf8] disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            <Save size={16} />
-            {evaluationState.saving ? "Saving..." : "Save Evaluation"}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   if (loading) {
     return (
       <DashboardLayout title="Feedback">
@@ -361,13 +279,23 @@ export default function SupervisorFeedback() {
                   <p className="mt-3 text-gray-700">{log.description}</p>
 
                   <div className="mt-4 grid gap-3 md:grid-cols-[2fr_1fr]">
-                    <textarea
-                      value={currentForm.supervisor_comment || ""}
-                      onChange={(e) => handleChange(log.id, "supervisor_comment", e.target.value)}
-                      placeholder="Add feedback, or provide a rejection reason"
-                      className="min-h-28 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
-                      disabled={reviewingId === log.id}
-                    />
+                    {log.status === "pending" ? (
+                      <textarea
+                        value={currentForm.supervisor_comment || ""}
+                        onChange={(e) => handleChange(log.id, "supervisor_comment", e.target.value)}
+                        placeholder="Add feedback, or provide a rejection reason"
+                        className="min-h-28 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-[#0d9e8c]"
+                        disabled={reviewingId === log.id}
+                      />
+                    ) : (
+                      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                        {log.status === "approved"
+                          ? "This log has been approved."
+                          : log.status === "evaluated"
+                          ? "This log has been evaluated."
+                          : "This log has been rejected."}
+                      </div>
+                    )}
 
                     <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                       <p className="text-sm font-semibold text-gray-700">Review Status</p>
@@ -422,7 +350,14 @@ export default function SupervisorFeedback() {
                     ) : null}
                   </div>
 
-                  {renderEvaluationForm(log)}
+                  {activeEvaluationId === log.id ? (
+                    <SupervisorEvaluationForm
+                      evaluationState={evaluationState}
+                      weightedScore={weightedScore}
+                      onEvaluationChange={handleEvaluationChange}
+                      onSave={saveEvaluation}
+                    />
+                  ) : null}
                 </div>
               );
             })}
