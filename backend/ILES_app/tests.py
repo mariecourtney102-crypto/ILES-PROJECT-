@@ -134,7 +134,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         InternshipPlacement.objects.create(
-            user=self.student_user,
+            student=self.student_user,
             place_of_internship='Open Labs',
             department='Engineering',
             supervisor_name='Ms. Amina',
