@@ -53,7 +53,7 @@ class Student(models.Model):
     )
     
     def __str__(self):
-        return f"{self.student.username} -STUDENT"
+        return f"{self.users.username} -STUDENT"
     
 class Supervisor(models.Model):
     users = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
@@ -79,9 +79,10 @@ class InternshipPlacement(models.Model):
     supervisor_name = models.CharField(max_length=50)
     start_date = models.DateField()
     end_date = models.DateField()
+    
 
     def __str__(self):
-        return f"{self.user.username} - {self.place_of_internship}"
+        return f"{self.student.username} - {self.place_of_internship}"
     
 class WeeklyLog(models.Model):
     STATUS_CHOICES = [
@@ -91,7 +92,7 @@ class WeeklyLog(models.Model):
         ('rejected', 'Rejected')
     ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='weekly_logs')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='weekly_logs')
     week_number = models.IntegerField()
     description = models.TextField()
     date_submitted = models.DateTimeField(auto_now_add=True)
@@ -126,7 +127,7 @@ class EvaluationCriteria(models.Model):
         return f"{self.criteria_name} - {self.criteria}"
     
 class Evaluation(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     placement = models.ForeignKey(InternshipPlacement, on_delete=models.CASCADE)
     criteria = models.ForeignKey(EvaluationCriteria, on_delete=models.SET_NULL, null=True)
     score = models.PositiveIntegerField()
@@ -134,7 +135,7 @@ class Evaluation(models.Model):
     evaluation_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.criteria}: {self.score}"
+        return f"{self.placement.student.username} - {self.criteria}: {self.score}"
 
 
 class Feedback(models.Model):

@@ -1,5 +1,6 @@
 from unittest.mock import patch
-
+from urllib.parse import urlparse
+from django.core.cache import cache
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
@@ -134,7 +135,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         InternshipPlacement.objects.create(
-            student=self.student_user,
+            student=self.student,
             place_of_internship='Open Labs',
             department='Engineering',
             supervisor_name='Ms. Amina',
@@ -162,7 +163,7 @@ class InternshipPlacementTests(APITestCase):
             ID_number='STD100',
             email='placementstudent@example.com'
         )
-        Student.objects.create(
+        self.student=Student.objects.create(
             users=self.student_user,
             course_title='Computer Science',
             university_name='Makerere',
@@ -193,7 +194,7 @@ class InternshipPlacementTests(APITestCase):
 
     def test_student_can_update_existing_placement(self):
         InternshipPlacement.objects.create(
-            user=self.student_user,
+            student=self.student,
             place_of_internship='Open Labs',
             department='Engineering',
             supervisor_name='Ms. Amina',
@@ -220,7 +221,7 @@ class InternshipPlacementTests(APITestCase):
 
     def test_create_placement_updates_existing_record_instead_of_duplicating(self):
         InternshipPlacement.objects.create(
-            user=self.student_user,
+            student=self.student,
             place_of_internship='Open Labs',
             department='Engineering',
             supervisor_name='Ms. Amina',
