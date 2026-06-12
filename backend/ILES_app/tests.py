@@ -173,7 +173,7 @@ class InternshipPlacementTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
 
         self.company = Company.objects.create(name='Open Labs')
-        self.supervisor_user = CustomUser.objects.create_user(name = 'Tech Hub')
+        self.company2 = Company.objects.create(name='Tech Hub')
     def test_student_can_create_and_fetch_placement(self):
         response = self.client.post(
             reverse('create_placement'),
