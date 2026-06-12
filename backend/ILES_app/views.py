@@ -510,7 +510,7 @@ def submit_weekly_log(request, log_id):
         return permission_error
 
     try:
-        weekly_log = WeeklyLog.objects.get(id=log_id, user=request.user)
+        weekly_log = WeeklyLog.objects.get(id=log_id, student=request.user.student)
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -550,7 +550,7 @@ def my_weekly_logs(request):
     if permission_error:
         return permission_error
 
-    logs = WeeklyLog.objects.filter(user=request.user).select_related('supervisor__users').order_by('week_number')
+    logs = WeeklyLog.objects.filter(student=request.user.student).select_related('supervisor__users').order_by('week_number')
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -640,7 +640,7 @@ def review_weekly_log(request, log_id):
     weekly_log.evaluation_score = request.data.get('evaluation_score', weekly_log.evaluation_score)
     weekly_log.reviewed_at = timezone.now()
     weekly_log.save()
-    student_profile = getattr(weekly_log.user, 'student', None)
+    student_profile = weekly_log.student
     if new_status == 'approved':
         transaction.on_commit(
             lambda student=student_profile, log=weekly_log: notify_student_log_approved(student, log)
