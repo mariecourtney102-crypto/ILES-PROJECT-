@@ -74,7 +74,7 @@ def role_required(*allowed_roles):
 
 def notify_weekly_log_submitted(weekly_log):
     Notification.objects.create(
-        user=weekly_log.user,
+        user=weekly_log.student,
         title="Weekly Log Submitted",
         message=f"Your Week {weekly_log.week_number} log was submitted successfully.",
     )
