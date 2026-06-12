@@ -135,7 +135,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         InternshipPlacement.objects.create(
-            student=self.student_user,
+            student=self.student,
             place_of_internship='Open Labs',
             department='Engineering',
             supervisor_name='Ms. Amina',
@@ -221,7 +221,7 @@ class InternshipPlacementTests(APITestCase):
 
     def test_create_placement_updates_existing_record_instead_of_duplicating(self):
         InternshipPlacement.objects.create(
-            user=self.student_user,
+            student=self.student,
             place_of_internship='Open Labs',
             department='Engineering',
             supervisor_name='Ms. Amina',
