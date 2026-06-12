@@ -373,7 +373,7 @@ def assign_supervisor(request):
 
     student.assigned_supervisor = supervisor
     student.save()
-    placement = InternshipPlacement.objects.filter(user=student.users).order_by('-id').first()
+    placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
     transaction.on_commit(
         lambda supervisor=supervisor, student=student, placement=placement: notify_supervisor_student_assigned(
             supervisor,
