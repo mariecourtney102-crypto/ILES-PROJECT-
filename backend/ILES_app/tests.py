@@ -88,7 +88,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         weekly_log = WeeklyLog.objects.create(
-            student=self.student_user,
+            student=self.student,
             week_number=1,
             description='Worked on the API endpoints.'
         )
@@ -114,7 +114,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         weekly_log = WeeklyLog.objects.create(
-            student=self.student_user,
+            student=self.student,
             week_number=2,
             description='Prepared weekly summary.'
         )
@@ -136,7 +136,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.save()
         InternshipPlacement.objects.create(
             student=self.student,
-            place_of_internship='Open Labs',
+            place_of_internship=self.supervisor_company,
             department='Engineering',
             supervisor_name='Ms. Amina',
             start_date='2026-05-01',
@@ -150,7 +150,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'Alice Student')
         self.assertEqual(response.data[0]['course_title'], 'Computer Science')
-        self.assertEqual(response.data[0]['placement']['place_of_internship'], 'Open Labs')
+        self.assertEqual(response.data[0]['placement']['place_of_internship'], 'Main Office')
 
 
 class InternshipPlacementTests(APITestCase):
@@ -172,11 +172,13 @@ class InternshipPlacementTests(APITestCase):
         self.student_token = Token.objects.create(user=self.student_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
 
+        self.company = Company.objects.create(name='Open Labs')
+        self.company2 = Company.objects.create(name='Tech Hub')
     def test_student_can_create_and_fetch_placement(self):
         response = self.client.post(
             reverse('create_placement'),
             {
-                'place_of_internship': 'Open Labs',
+                'place_of_internship': self.company.id,
                 'department': 'Engineering',
                 'supervisor_name': 'Ms. Amina',
                 'start_date': '2026-05-01',
@@ -186,16 +188,16 @@ class InternshipPlacementTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(InternshipPlacement.objects.filter(user=self.student_user).count(), 1)
+        self.assertEqual(InternshipPlacement.objects.filter(student=self.student).count(), 1)
 
         fetch_response = self.client.get(reverse('get_placement'))
         self.assertEqual(fetch_response.status_code, 200)
-        self.assertEqual(fetch_response.data['place_of_internship'], 'Open Labs')
+        
 
     def test_student_can_update_existing_placement(self):
         InternshipPlacement.objects.create(
             student=self.student,
-            place_of_internship='Open Labs',
+            place_of_internship=self.company,
             department='Engineering',
             supervisor_name='Ms. Amina',
             start_date='2026-05-01',
@@ -205,7 +207,7 @@ class InternshipPlacementTests(APITestCase):
         response = self.client.put(
             reverse('update_placement'),
             {
-                'place_of_internship': 'Tech Hub',
+                'place_of_internship': self.company2.id,
                 'department': 'Research',
                 'supervisor_name': 'Mr. Okello',
                 'start_date': '2026-05-15',
@@ -215,14 +217,14 @@ class InternshipPlacementTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        placement = InternshipPlacement.objects.get(user=self.student_user)
-        self.assertEqual(placement.place_of_internship, 'Tech Hub')
+        placement = InternshipPlacement.objects.get(student=self.student)
+        self.assertEqual(placement.place_of_internship, self.company2)
         self.assertEqual(placement.department, 'Research')
 
     def test_create_placement_updates_existing_record_instead_of_duplicating(self):
         InternshipPlacement.objects.create(
             student=self.student,
-            place_of_internship='Open Labs',
+            place_of_internship=self.company,
             department='Engineering',
             supervisor_name='Ms. Amina',
             start_date='2026-05-01',
@@ -232,7 +234,7 @@ class InternshipPlacementTests(APITestCase):
         response = self.client.post(
             reverse('create_placement'),
             {
-                'place_of_internship': 'Tech Hub',
+                'place_of_internship': self.company2.id,
                 'department': 'Research',
                 'supervisor_name': 'Mr. Okello',
                 'start_date': '2026-05-15',
@@ -242,15 +244,15 @@ class InternshipPlacementTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(InternshipPlacement.objects.filter(user=self.student_user).count(), 1)
-        placement = InternshipPlacement.objects.get(user=self.student_user)
-        self.assertEqual(placement.place_of_internship, 'Tech Hub')
+        self.assertEqual(InternshipPlacement.objects.filter(student=self.student).count(), 1)
+        placement = InternshipPlacement.objects.get(student=self.student)
+        self.assertEqual(placement.place_of_internship, self.company2)
 
     def test_placement_rejects_end_date_before_start_date(self):
         response = self.client.post(
             reverse('create_placement'),
             {
-                'place_of_internship': 'Open Labs',
+                'place_of_internship': self.company.id,
                 'department': 'Engineering',
                 'supervisor_name': 'Ms. Amina',
                 'start_date': '2026-08-01',

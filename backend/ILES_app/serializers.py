@@ -200,7 +200,7 @@ class StudentSerializer(serializers.ModelSerializer):
             return None
 
         return {
-            'place_of_internship': placement.place_of_internship,
+            'place_of_internship': placement.place_of_internship.name,
             'department': placement.department,
             'supervisor_name': placement.supervisor_name,
             'start_date': placement.start_date,

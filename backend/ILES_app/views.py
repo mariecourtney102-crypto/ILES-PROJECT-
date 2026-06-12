@@ -609,11 +609,11 @@ def review_weekly_log(request, log_id):
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
     try:
-        weekly_log = WeeklyLog.objects.select_related('student__student').get(id=log_id)
+        weekly_log = WeeklyLog.objects.select_related('student__users', 'student__assigned_supervisor').get(id=log_id)
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    student_profile = getattr(weekly_log.student, 'student', None)
+    student_profile = weekly_log.student
     if student_profile is None or student_profile.assigned_supervisor_id != supervisor.id:
         return Response(
             {"error": "You can only review logs for students assigned to you."},
