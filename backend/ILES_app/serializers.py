@@ -293,7 +293,6 @@ class WeeklylogSerializer(serializers.ModelSerializer):
             'status',
         ]
         read_only_fields = [
-            'user',
             'supervisor',
             'supervisor_comment',
             'evaluation_score',

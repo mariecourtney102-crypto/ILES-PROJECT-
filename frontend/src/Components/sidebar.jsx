@@ -71,7 +71,7 @@ function Sidebar() {
       {/* Single toggle button for both mobile and desktop */}
       <button
         onClick={isOpen ? closeSidebar : toggleCollapse}
-        className={`fixed left-0 top-0 z-50 p-3 text-white transition-all ${COLORS.toggle}`}
+        className={`fixed left-2 top-2 z-50 p-3 text-white transition-all ${COLORS.toggle}`}
         title={isOpen || isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {isOpen || isCollapsed ? <Menu size={24} /> : <X size={24} />}
@@ -88,12 +88,12 @@ function Sidebar() {
       {/* Sidebar */}
       <div
         className={`sticky top-0 h-screen flex flex-col bg-[#0a7c6e] overflow-y-auto transition-all duration-300 ease-in-out z-40 text-white ${
-          isCollapsed ? "md:w-20" : "md:w-64"
-        } ${isOpen ? "w-64" : "w-0 md:w-auto"} shrink-0`}
+          isCollapsed ? "md:w-20" : "md:w-80"
+        } ${isOpen ? "w-64" :""} shrink-0`}
       >
         {/* Header */}
-        <div className={`flex items-center justify-start gap-3 px-5 py-4 border-b ${COLORS.sidebarBorder} transition-all duration-300`}>
-          {!isCollapsed && <h2 className="text-2xl font-semibold tracking-tight truncate">{getTitle()}</h2>}
+        <div className={`flex items-center justify-start gap-3 pl-16 pr-5 py-4 border-b ${COLORS.sidebarBorder} transition-all duration-300`}>
+          {!isCollapsed && <h2 className="text-2xl font-semibold tracking-tight whitespace-nowrap">{getTitle()}</h2>}
         </div>
 
         {/* Navigation */}

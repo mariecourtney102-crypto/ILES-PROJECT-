@@ -6,7 +6,7 @@ import { axiosInstance } from "../../api/api";
 import { Briefcase, BookOpen, CheckCircle, AlertCircle, Clock, XCircle } from "lucide-react";
 
 const THEME = {
-  panel: "bg-white rounded-xl shadow-md border border-[#c7f2e8] overflow-hidden",
+  panel: "bg-white rounded-xl shadow-md border border-[#c7f2e8] ",
 };
 
 function StudentDashboard() {
@@ -46,7 +46,7 @@ function StudentDashboard() {
 
   return (
     <DashboardLayout title="Student Dashboard">
-      <div className="space-y-6">
+      <div className="space-y-9">
         
         {/* Current Placement Card */}
         <div className={`${THEME.panel} shadow-[0_10px_30px_rgba(13,148,136,0.08)]`}>
@@ -108,58 +108,7 @@ function StudentDashboard() {
             )}
           </div>
         </div>
-        <div className="rounded-lg bg-white p-6 shadow-md">
-  <h2 className="mb-4 text-xl font-bold text-gray-800">
-    Academic Evaluation Results
-  </h2>
-
-  <div className="grid grid-cols-2 gap-4">
-
-    <div>
-      <p className="text-sm text-gray-500">
-        Technical Skills
-      </p>
-      <p className="font-bold">
-        18 / 20
-      </p>
-    </div>
-
-    <div>
-      <p className="text-sm text-gray-500">
-        Cognitive Skills
-      </p>
-      <p className="font-bold">
-        17 / 20
-      </p>
-    </div>
-
-    <div>
-      <p className="text-sm text-gray-500">
-        Soft Skills
-      </p>
-      <p className="font-bold">
-        19 / 20
-      </p>
-    </div>
-
-    <div>
-      <p className="text-sm text-gray-500">
-        Professionalism
-      </p>
-      <p className="font-bold">
-        20 / 20
-      </p>
-    </div>
-
-  </div>
-
-  <div className="mt-4 border-t pt-4">
-    <p className="text-lg font-semibold text-[#0a7c6e]">
-      Final Weighted Score: 92%
-    </p>
-  </div>
-</div>
-
+        
         {/* Log Status Overview */}
         <div>
           <h3 className="text-xs uppercase font-semibold text-[#0a7c6e] mb-4 tracking-wide">Logbook Status Overview</h3>
