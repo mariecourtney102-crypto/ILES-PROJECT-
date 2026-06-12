@@ -81,13 +81,13 @@ function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 shrink-0 flex-col overflow-y-auto bg-[#0a7c6e] text-white transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}
+        className={`sticky top-0 h-screen flex flex-col bg-[#0a7c6e] overflow-y-auto transition-all duration-300 ease-in-out z-40 text-white ${
+          isCollapsed ? "md:w-20" : "md:w-80"
+        } ${isOpen ? "w-64" :""} shrink-0`}
       >
         {/* Header */}
-        <div className={`flex items-center justify-start gap-3 px-5 py-4 border-b ${COLORS.sidebarBorder} transition-all duration-300`}>
-          {!isCollapsed && <h2 className="text-2xl font-semibold tracking-tight truncate">{getTitle()}</h2>}
+        <div className={`flex items-center justify-start gap-3 pl-16 pr-5 py-4 border-b ${COLORS.sidebarBorder} transition-all duration-300`}>
+          {!isCollapsed && <h2 className="text-2xl font-semibold tracking-tight whitespace-nowrap">{getTitle()}</h2>}
         </div>
 
         {/* Navigation */}
