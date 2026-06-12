@@ -79,7 +79,7 @@ def notify_weekly_log_submitted(weekly_log):
         message=f"Your Week {weekly_log.week_number} log was submitted successfully.",
     )
 
-    student_profile = getattr(weekly_log.user, 'student', None)
+    student_profile = getattr(weekly_log.student, 'student', None)
     if student_profile and student_profile.assigned_supervisor:
         Notification.objects.create(
             user=student_profile.assigned_supervisor.users,
