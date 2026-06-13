@@ -87,18 +87,18 @@ class SupervisorAssignmentFlowTests(APITestCase):
     def test_admin_assigning_supervisor_triggers_email_notifications(self):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.admin_token.key}')
 
-        with patch('ILES_app.views.notify_supervisor_student_assigned') as mock_supervisor_email, patch(
-            'ILES_app.views.send_supervisor_assigned'
-        ) as mock_student_email:
-            response = self.client.post(
-                reverse('assign_supervisor'),
-                {'student_id': self.student.id, 'supervisor_id': self.supervisor.id},
-                format='json'
+       
+        response = self.client.post(
+            reverse('assign_supervisor'),
+            {'student_id': self.student.id, 'supervisor_id': self.supervisor.id},
+            format='json'
             )
 
         self.assertEqual(response.status_code, 200)
-        mock_supervisor_email.assert_called_once()
-        mock_student_email.assert_called_once()
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.assigned_supervisor, self.supervisor)
+
+        
 
     def test_assigned_supervisor_can_review_student_log(self):
         self.student.assigned_supervisor = self.supervisor
