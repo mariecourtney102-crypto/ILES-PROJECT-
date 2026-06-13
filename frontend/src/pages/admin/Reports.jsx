@@ -42,7 +42,9 @@ function Reports() {
   }
 
   const overview = report?.overview || {};
+  const academicOverview = report?.academic_overview || {};
   const recentLogs = report?.recent_logs || [];
+  const recentAcademicEvaluations = report?.recent_academic_evaluations || [];
 
   return (
     <DashboardLayout title="Reports">
@@ -96,27 +98,53 @@ function Reports() {
         </div>
 
         <div className={CARD}>
-          <h2 className="text-xl font-semibold text-gray-800">Recent Log Activity</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Academic Performance</h2>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div className="rounded-xl bg-[#f1fbf8] p-4">
+              <p className="text-sm text-gray-500">Evaluations</p>
+              <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{academicOverview.total_academic_evaluations ?? 0}</p>
+            </div>
+            <div className="rounded-xl bg-[#f1fbf8] p-4">
+              <p className="text-sm text-gray-500">Average Academic Score</p>
+              <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{academicOverview.average_academic_score ?? 0}</p>
+            </div>
+            <div className="rounded-xl bg-[#f1fbf8] p-4">
+              <p className="text-sm text-gray-500">Top Student</p>
+              <p className="mt-2 text-base font-semibold text-[#0a7c6e]">{academicOverview.top_students?.[0]?.student_name ?? "N/A"}</p>
+              <p className="text-sm text-gray-600">{academicOverview.top_students?.[0]?.average_score ? `${academicOverview.top_students[0].average_score}` : "N/A"}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-5">
+            {['A', 'B', 'C', 'D', 'F'].map((grade) => (
+              <div key={grade} className="rounded-xl bg-white p-4 shadow-sm">
+                <p className="text-sm text-gray-500">Grade {grade}</p>
+                <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{academicOverview.grade_distribution?.[grade] ?? 0}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={CARD}>
+          <h2 className="text-xl font-semibold text-gray-800">Recent Academic Evaluations</h2>
           <div className="mt-4 space-y-3">
-            {recentLogs.length === 0 ? (
-              <p className="text-gray-500">No recent log activity found.</p>
+            {recentAcademicEvaluations.length === 0 ? (
+              <p className="text-gray-500">No academic evaluations found.</p>
             ) : (
-              recentLogs.map((log) => (
-                <div key={log.id} className="rounded-xl border border-gray-200 p-4">
+              recentAcademicEvaluations.map((evaluation) => (
+                <div key={evaluation.id} className="rounded-xl border border-gray-200 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-gray-900">
-                        {log.student_name} - Week {log.week_number}
-                      </p>
-                      <p className="text-sm text-gray-600">{log.description}</p>
+                      <p className="font-semibold text-gray-900">{evaluation.student_name}</p>
+                      <p className="text-sm text-gray-600">{evaluation.term} · {evaluation.academic_year}</p>
                     </div>
                     <span className="rounded-full bg-[#ecfdf5] px-3 py-1 text-xs font-semibold text-[#0a7c6e]">
-                      {log.status}
+                      {evaluation.grade || 'Pending'}
                     </span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-500">
-                    <span>Score: {log.evaluation_score ?? "Pending"}</span>
-                    <span>Submitted: {log.submitted_at ? new Date(log.submitted_at).toLocaleString() : "Unknown"}</span>
+                    <span>Score: {evaluation.score ?? 'N/A'}</span>
+                    <span>Supervisor: {evaluation.supervisor_name ?? 'Unknown'}</span>
                   </div>
                 </div>
               ))
