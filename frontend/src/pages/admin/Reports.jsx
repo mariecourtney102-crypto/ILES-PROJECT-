@@ -16,7 +16,8 @@ function Reports() {
         setReport(data);
         setError("");
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to load reports.");
+        const message = err.response?.data?.error || err.message || "Failed to load reports.";
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -115,7 +116,7 @@ function Reports() {
         </p>
       </div>
 
-        <div className={CARD}>
+      <div className={CARD}>
           <h2 className="text-xl font-semibold text-gray-800">Recent Academic Evaluations</h2>
           <div className="mt-4 space-y-3">
             {recentAcademicEvaluations.length === 0 ? (

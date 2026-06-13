@@ -5,7 +5,7 @@ import { useState } from "react";
 import { deleteWeeklyLog } from "../../api/api";
 
 function WeeklyLogs() {
-  const { logs, loading, error, setLogs } = useLogs();
+  const { logs, loading, error, loadLogs } = useLogs();
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -33,7 +33,8 @@ function WeeklyLogs() {
     setDeleting(true);
     try {
       await deleteWeeklyLog(logId);
-      setLogs(logs.filter(log => log.id !== logId));
+      // Refresh logs after deletion
+      await loadLogs();
       setDeleteConfirm(null);
     } catch (err) {
       console.error("Error deleting log:", err);
