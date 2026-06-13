@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
-import { Menu, X, LayoutDashboard, FileText, LogOut, Send, Briefcase, MessageSquare, Users, BarChart3, Settings } from "lucide-react";
+import { Menu, X, LayoutDashboard, FileText, LogOut, Send, Briefcase, MessageSquare, Users, BarChart3, Settings, ChevronLeft, ChevronRight } from "lucide-react";
 
 const COLORS = {
   sidebar: "bg-[#0a7c6e]",
@@ -15,11 +15,13 @@ const COLORS = {
   toggle: "bg-[#0a7c6e]",
 };
 
-function Sidebar() {
+function Sidebar({ isCollapsed: collapsedProp = null, setIsCollapsed: setCollapsedProp = null }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [isCollapsed] = useState(false);
+  const [localCollapsed, setLocalCollapsed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const isCollapsed = collapsedProp !== null ? collapsedProp : localCollapsed;
+  const setIsCollapsed = setCollapsedProp || setLocalCollapsed;
 
   if (!user) return null;
 
@@ -36,6 +38,10 @@ function Sidebar() {
 
   const toggleMobileSidebar = () => {
     setIsOpen((current) => !current);
+  };
+
+  const toggleDesktopSidebar = () => {
+    setIsCollapsed((current) => !current);
   };
 
   const closeSidebar = () => {
@@ -65,7 +71,7 @@ function Sidebar() {
       {/* Single toggle button for both mobile and desktop */}
       <button
         onClick={toggleMobileSidebar}
-        className={`fixed left-4 top-4 z-50 rounded-lg p-3 text-white transition-all md:hidden ${COLORS.toggle}`}
+        className={`fixed left-2 top-2 z-50 rounded-lg p-3 text-white transition-all md:hidden ${COLORS.toggle}`}
         title={isOpen ? "Close sidebar" : "Open sidebar"}
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -81,13 +87,19 @@ function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`sticky top-0 h-screen flex flex-col bg-[#0a7c6e] overflow-y-auto transition-all duration-300 ease-in-out z-40 text-white ${
-          isCollapsed ? "md:w-20" : "md:w-80"
-        } ${isOpen ? "w-64" :""} shrink-0`}
+        className={`fixed left-0 top-0 h-screen flex flex-col bg-[#0a7c6e] overflow-y-auto transition-all duration-300 ease-in-out z-40 text-white ${isCollapsed ? "w-20" : "w-64"} ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         {/* Header */}
-        <div className={`flex items-center justify-start gap-3 pl-16 pr-5 py-4 border-b ${COLORS.sidebarBorder} transition-all duration-300`}>
+        <div className={`flex items-center justify-between gap-3 px-3 py-4 border-b ${COLORS.sidebarBorder} transition-all duration-300`}>
           {!isCollapsed && <h2 className="text-2xl font-semibold tracking-tight whitespace-nowrap">{getTitle()}</h2>}
+          <button
+            type="button"
+            className="hidden rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 md:inline-flex"
+            onClick={toggleDesktopSidebar}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </button>
         </div>
 
         {/* Navigation */}
