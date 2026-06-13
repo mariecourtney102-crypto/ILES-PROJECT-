@@ -112,12 +112,10 @@ function Reports() {
         </div>
         <p className="mt-4 text-sm text-gray-500">
           Average logs per student: <span className="font-semibold text-[#0a7c6e]">{overview.average_logs_per_student ?? 0}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        </p>
+      </div>
 
-        <div className={CARD}>
+      <div className={CARD}>
           <h2 className="text-xl font-semibold text-gray-800">Recent Academic Evaluations</h2>
           <div className="mt-4 space-y-3">
             {recentAcademicEvaluations.length === 0 ? (
