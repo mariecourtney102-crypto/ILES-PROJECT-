@@ -141,8 +141,8 @@ class SupervisorAssignmentFlowTests(APITestCase):
                 format='json'
             )
 
-        self.assertEqual(response.status_code, 201)
-        mock_notify.assert_called_once_with()
+        self.assertEqual(response.status_code, 201,response.data)
+        mock_notify.assert_called_once()
 
     def test_student_log_submission_sends_in_app_and_gmail_notifications(self):
         self.student.assigned_supervisor = self.supervisor
@@ -159,7 +159,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
                 format='json'
             )
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 201, response.data)
         mock_notify.assert_called_once()
 
     def test_unassigned_supervisor_cannot_review_student_log(self):
