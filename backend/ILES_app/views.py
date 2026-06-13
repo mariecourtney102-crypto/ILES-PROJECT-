@@ -244,7 +244,7 @@ def supervisor_evaluations(request):
         with transaction.atomic():
             for item in parsed_rows:
                 Evaluation.objects.update_or_create(
-                    user=student.users,
+                    student=student,
                     placement=placement,
                     weekly_log=weekly_log,
                     criteria=item["criteria_obj"],
