@@ -1,6 +1,20 @@
 from django.db import IntegrityError, transaction
 from rest_framework import serializers
-from .models import Company, CustomUser, Student, Supervisor, Admin, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Feedback, Notification
+from .models import (
+    Company,
+    CustomUser,
+    Student,
+    Supervisor,
+    Admin,
+    InternshipPlacement,
+    WeeklyLog,
+    Evaluation,
+    EvaluationCriteria,
+    AcademicEvaluation,
+    AcademicEvaluationDetail,
+    Feedback,
+    Notification,
+)
 
 class CustomUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
@@ -319,6 +333,8 @@ class WeeklylogSerializer(serializers.ModelSerializer):
         ]
 
 class EvaluationSerializer(serializers.ModelSerializer):
+    student_id = serializers.IntegerField(source='student.id', read_only=True)
+    student_name = serializers.CharField(source='student.users.name', read_only=True)
     weekly_log_id = serializers.IntegerField(source='weekly_log.id', read_only=True)
     criteria_name = serializers.CharField(source='criteria.criteria_name', read_only=True)
     criteria_type = serializers.CharField(source='criteria.criteria', read_only=True)
@@ -328,6 +344,9 @@ class EvaluationSerializer(serializers.ModelSerializer):
         model = Evaluation
         fields = [
             'id',
+            'student',
+            'student_id',
+            'student_name',
             'placement',
             'weekly_log',
             'weekly_log_id',
@@ -339,6 +358,143 @@ class EvaluationSerializer(serializers.ModelSerializer):
             'comment',
             'evaluation_date',
         ]
+
+
+class AcademicEvaluationDetailSerializer(serializers.ModelSerializer):
+    normalized_score = serializers.SerializerMethodField()
+    weighted_contribution = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AcademicEvaluationDetail
+        fields = [
+            'id',
+            'academic_evaluation',
+            'subject',
+            'score',
+            'max_score',
+            'weight',
+            'comment',
+            'normalized_score',
+            'weighted_contribution',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['normalized_score', 'weighted_contribution', 'created_at', 'updated_at']
+
+    def get_normalized_score(self, obj):
+        return round(obj.normalized_score(), 2)
+
+    def get_weighted_contribution(self, obj):
+        return round(obj.weighted_contribution(), 2)
+
+
+class AcademicEvaluationSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.users.name', read_only=True)
+    supervisor_name = serializers.CharField(source='supervisor.users.name', read_only=True)
+    placement_summary = serializers.SerializerMethodField()
+    details = AcademicEvaluationDetailSerializer(many=True, required=False)
+
+    class Meta:
+        model = AcademicEvaluation
+        fields = [
+            'id',
+            'student',
+            'student_name',
+            'supervisor',
+            'supervisor_name',
+            'placement',
+            'placement_summary',
+            'term',
+            'academic_year',
+            'total_weighted_score',
+            'grade',
+            'remarks',
+            'details',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['student_name', 'supervisor_name', 'placement_summary', 'created_at', 'updated_at']
+
+    def get_placement_summary(self, obj):
+        if not obj.placement:
+            return None
+        return {
+            'place_of_internship': obj.placement.place_of_internship.name,
+            'department': obj.placement.department,
+            'supervisor_name': obj.placement.supervisor_name,
+            'start_date': obj.placement.start_date,
+            'end_date': obj.placement.end_date,
+        }
+
+    def validate(self, attrs):
+        details = self.initial_data.get('details', [])
+        if details:
+            total_weight = sum(float(item.get('weight', 0)) for item in details)
+            if not (0.99 <= total_weight <= 1.01):
+                raise serializers.ValidationError({'details': 'The detail weights must sum to 1.0.'})
+
+            for item in details:
+                score = item.get('score')
+                max_score = item.get('max_score', 100)
+                if score is None:
+                    raise serializers.ValidationError({'details': 'Each detail row must include score.'})
+                try:
+                    score_value = float(score)
+                    max_score_value = float(max_score)
+                except (TypeError, ValueError):
+                    raise serializers.ValidationError({'details': 'Score and max_score must be numeric values.'})
+                if max_score_value <= 0:
+                    raise serializers.ValidationError({'details': 'max_score must be greater than zero.'})
+                if score_value < 0 or score_value > max_score_value:
+                    raise serializers.ValidationError({'details': 'Scores must be between 0 and max_score.'})
+
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        details_data = validated_data.pop('details', [])
+        evaluation = AcademicEvaluation.objects.create(**validated_data)
+        for detail_data in details_data:
+            AcademicEvaluationDetail.objects.create(academic_evaluation=evaluation, **detail_data)
+        evaluation.total_weighted_score = self._calculate_total_score(evaluation)
+        evaluation.grade = self._grade_from_score(evaluation.total_weighted_score)
+        evaluation.save(update_fields=['total_weighted_score', 'grade'])
+        return evaluation
+
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop('details', None)
+        instance.term = validated_data.get('term', instance.term)
+        instance.academic_year = validated_data.get('academic_year', instance.academic_year)
+        instance.remarks = validated_data.get('remarks', instance.remarks)
+        instance.save()
+
+        if details_data is not None:
+            instance.details.all().delete()
+            for detail_data in details_data:
+                AcademicEvaluationDetail.objects.create(academic_evaluation=instance, **detail_data)
+            instance.total_weighted_score = self._calculate_total_score(instance)
+            instance.grade = self._grade_from_score(instance.total_weighted_score)
+            instance.save(update_fields=['total_weighted_score', 'grade'])
+
+        return instance
+
+    def _calculate_total_score(self, evaluation):
+        details = evaluation.details.all()
+        total = sum(detail.weighted_contribution() for detail in details)
+        return round(total, 2)
+
+    def _grade_from_score(self, score):
+        if score is None:
+            return ''
+        score = float(score)
+        if score >= 90:
+            return 'A'
+        if score >= 80:
+            return 'B'
+        if score >= 70:
+            return 'C'
+        if score >= 60:
+            return 'D'
+        return 'F'
 
 
 class EvaluationCriteriaSerializer(serializers.ModelSerializer):

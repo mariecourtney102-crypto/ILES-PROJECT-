@@ -16,7 +16,8 @@ function Reports() {
         setReport(data);
         setError("");
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to load reports.");
+        const message = err.response?.data?.error || err.message || "Failed to load reports.";
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -42,7 +43,9 @@ function Reports() {
   }
 
   const overview = report?.overview || {};
+  const academicOverview = report?.academic_overview || {};
   const recentLogs = report?.recent_logs || [];
+  const recentAcademicEvaluations = report?.recent_academic_evaluations || [];
 
   return (
     <DashboardLayout title="Reports">
@@ -82,41 +85,57 @@ function Reports() {
               <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.approved_logs ?? 0}</p>
             </div>
             <div className="rounded-xl bg-[#f1fbf8] p-4">
-              <p className="text-sm text-gray-500">Evaluated</p>
-              <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.evaluated_logs ?? 0}</p>
-            </div>
-            <div className="rounded-xl bg-[#f1fbf8] p-4">
-              <p className="text-sm text-gray-500">Rejected</p>
-              <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.rejected_logs ?? 0}</p>
-            </div>
+            <p className="text-sm text-gray-500">Rejected</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.rejected_logs ?? 0}</p>
           </div>
-          <p className="mt-4 text-sm text-gray-500">
-            Average evaluated score: <span className="font-semibold text-[#0a7c6e]">{overview.average_score ?? 0}</span>
-          </p>
+          <div className="rounded-xl bg-[#f1fbf8] p-4">
+            <p className="text-sm text-gray-500">Avg Score</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.average_score ?? 0}</p>
+          </div>
         </div>
+      </div>
 
-        <div className={CARD}>
-          <h2 className="text-xl font-semibold text-gray-800">Recent Log Activity</h2>
+      <div className={CARD}>
+        <h2 className="text-xl font-semibold text-gray-800">Student-Supervisor Coverage</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <div className="rounded-xl bg-[#f1fbf8] p-4">
+            <p className="text-sm text-gray-500">Students with Supervisors</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.students_with_supervisors ?? 0}</p>
+          </div>
+          <div className="rounded-xl bg-[#f1fbf8] p-4">
+            <p className="text-sm text-gray-500">Students without Supervisors</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.students_without_supervisors ?? 0}</p>
+          </div>
+          <div className="rounded-xl bg-[#f1fbf8] p-4">
+            <p className="text-sm text-gray-500">Supervisor Coverage</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.supervisor_coverage ?? 0}%</p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-gray-500">
+          Average logs per student: <span className="font-semibold text-[#0a7c6e]">{overview.average_logs_per_student ?? 0}</span>
+        </p>
+      </div>
+
+      <div className={CARD}>
+          <h2 className="text-xl font-semibold text-gray-800">Recent Academic Evaluations</h2>
           <div className="mt-4 space-y-3">
-            {recentLogs.length === 0 ? (
-              <p className="text-gray-500">No recent log activity found.</p>
+            {recentAcademicEvaluations.length === 0 ? (
+              <p className="text-gray-500">No academic evaluations found.</p>
             ) : (
-              recentLogs.map((log) => (
-                <div key={log.id} className="rounded-xl border border-gray-200 p-4">
+              recentAcademicEvaluations.map((evaluation) => (
+                <div key={evaluation.id} className="rounded-xl border border-gray-200 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-gray-900">
-                        {log.student_name} - Week {log.week_number}
-                      </p>
-                      <p className="text-sm text-gray-600">{log.description}</p>
+                      <p className="font-semibold text-gray-900">{evaluation.student_name}</p>
+                      <p className="text-sm text-gray-600">{evaluation.term} · {evaluation.academic_year}</p>
                     </div>
                     <span className="rounded-full bg-[#ecfdf5] px-3 py-1 text-xs font-semibold text-[#0a7c6e]">
-                      {log.status}
+                      {evaluation.grade || 'Pending'}
                     </span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-500">
-                    <span>Score: {log.evaluation_score ?? "Pending"}</span>
-                    <span>Submitted: {log.submitted_at ? new Date(log.submitted_at).toLocaleString() : "Unknown"}</span>
+                    <span>Score: {evaluation.score ?? 'N/A'}</span>
+                    <span>Supervisor: {evaluation.supervisor_name ?? 'Unknown'}</span>
                   </div>
                 </div>
               ))
