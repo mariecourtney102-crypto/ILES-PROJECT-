@@ -1318,128 +1318,147 @@ def get_supervisors(request):
 @permission_classes([IsAuthenticated])
 @role_required('admin')
 def get_reports(request):
-    students = CustomUser.objects.filter(role='student').count()
-    supervisors = CustomUser.objects.filter(role='supervisor').count()
-    opportunities = InternshipPlacement.objects.count()
+    try:
+        students = CustomUser.objects.filter(role='student').count()
+        supervisors = CustomUser.objects.filter(role='supervisor').count()
+        opportunities = InternshipPlacement.objects.count()
 
-    total_logs = WeeklyLog.objects.count()
-    total_drafts = WeeklyLog.objects.filter(status='draft').count()
-    pending_logs = WeeklyLog.objects.filter(status='pending').count()
-    approved_logs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated']).count()
-    rejected_logs = WeeklyLog.objects.filter(status='rejected').count()
-    approved_with_scores_qs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated'], evaluation_score__isnull=False)
-    average_log_score = round(
-        sum(log.evaluation_score or 0 for log in approved_with_scores_qs) / approved_with_scores_qs.count(),
-        2
-    ) if approved_with_scores_qs.exists() else 0
+        total_logs = WeeklyLog.objects.count()
+        total_drafts = WeeklyLog.objects.filter(status='draft').count()
+        pending_logs = WeeklyLog.objects.filter(status='pending').count()
+        approved_logs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated']).count()
+        rejected_logs = WeeklyLog.objects.filter(status='rejected').count()
 
-    students_with_supervisors = Student.objects.filter(assigned_supervisor__isnull=False).count()
-    students_without_supervisors = students - students_with_supervisors
-    supervisor_coverage = round((students_with_supervisors / students) * 100, 2) if students else 0
-    average_logs_per_student = round(total_logs / students, 2) if students else 0
+        approved_with_scores_qs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated'], evaluation_score__isnull=False)
+        avg_agg = approved_with_scores_qs.aggregate(avg=Avg('evaluation_score'))['avg'] or 0
+        average_log_score = round(float(avg_agg), 2) if avg_agg else 0
 
-    supervisor_stats = []
-    supervisor_scores = Supervisor.objects.annotate(
-        average_score=Avg('reviewed_logs__evaluation_score')
-    ).order_by('-average_score')[:5]
-    for supervisor in supervisor_scores:
-        supervisor_stats.append({
-            'supervisor_name': supervisor.users.name,
-            'supervisor_id': supervisor.id,
-            'average_score': round(float(supervisor.average_score), 2) if supervisor.average_score is not None else None,
-            'student_count': supervisor.assigned_students.count(),
-        })
+        students_with_supervisors = Student.objects.filter(assigned_supervisor__isnull=False).count()
+        students_without_supervisors = students - students_with_supervisors
+        supervisor_coverage = round((students_with_supervisors / students) * 100, 2) if students else 0
+        average_logs_per_student = round(total_logs / students, 2) if students else 0
 
-    recent_logs_qs = WeeklyLog.objects.select_related('student__users', 'supervisor__users').order_by('-date_submitted')[:10]
-    recent_logs = [
-        {
-            'id': log.id,
-            'student_name': log.student.users.name,
-            'supervisor_name': log.supervisor.users.name if log.supervisor else None,
-            'week_number': log.week_number,
-            'status': log.status,
-            'evaluation_score': float(log.evaluation_score) if log.evaluation_score is not None else None,
-            'submitted_at': log.date_submitted,
-        }
-        for log in recent_logs_qs
-    ]
+        supervisor_stats = []
+        supervisor_scores = Supervisor.objects.annotate(average_score=Avg('reviewed_logs__evaluation_score')).order_by('-average_score')[:5]
+        for supervisor in supervisor_scores:
+            sup_user = getattr(supervisor, 'users', None)
+            sup_name = None
+            if sup_user:
+                sup_name = getattr(sup_user, 'name', None) or getattr(sup_user, 'username', None)
+            supervisor_stats.append({
+                'supervisor_name': sup_name,
+                'supervisor_id': supervisor.id,
+                'average_score': round(float(supervisor.average_score), 2) if supervisor.average_score is not None else None,
+                'student_count': supervisor.assigned_students.count() if hasattr(supervisor, 'assigned_students') else 0,
+            })
 
-    academic_qs = AcademicEvaluation.objects.all()
-    total_academic_evaluations = academic_qs.count()
-    average_academic_score = academic_qs.filter(total_weighted_score__isnull=False).aggregate(avg=Avg('total_weighted_score'))['avg'] or 0
-    average_academic_score = round(float(average_academic_score), 2) if average_academic_score else 0
+        recent_logs_qs = WeeklyLog.objects.select_related('student__users', 'supervisor__users').order_by('-date_submitted')[:10]
+        recent_logs = []
+        for log in recent_logs_qs:
+            student_name = None
+            try:
+                student_user = getattr(log.student, 'users', None)
+                student_name = getattr(student_user, 'name', None) or getattr(student_user, 'username', None)
+            except Exception:
+                student_name = None
 
-    grade_counts = {item['grade']: item['count'] for item in academic_qs.values('grade').annotate(count=Count('id'))}
+            supervisor_name = None
+            if getattr(log, 'supervisor', None):
+                sup_user = getattr(log.supervisor, 'users', None)
+                supervisor_name = getattr(sup_user, 'name', None) or getattr(sup_user, 'username', None)
 
-    top_students = (
-        academic_qs.filter(total_weighted_score__isnull=False)
-        .values('student__users__id', 'student__users__name')
-        .annotate(avg_score=Avg('total_weighted_score'))
-        .order_by('-avg_score')[:5]
-    )
-    top_students_data = [
-        {
-            'student_id': item['student__users__id'],
-            'student_name': item['student__users__name'],
-            'average_score': round(float(item['avg_score']), 2),
-        }
-        for item in top_students
-    ]
+            recent_logs.append({
+                'id': log.id,
+                'student_name': student_name,
+                'supervisor_name': supervisor_name,
+                'week_number': log.week_number,
+                'status': log.status,
+                'evaluation_score': float(log.evaluation_score) if log.evaluation_score is not None else None,
+                'submitted_at': log.date_submitted,
+            })
 
-    recent_academic_evaluations = (
-        AcademicEvaluation.objects.select_related('student__users', 'supervisor__users')
-        .order_by('-created_at')[:10]
-    )
-    recent_academic_data = [
-        {
-            'id': eval.id,
-            'student_name': eval.student.users.name or eval.student.users.username,
-            'term': eval.term,
-            'academic_year': eval.academic_year,
-            'score': eval.total_weighted_score,
-            'grade': eval.grade,
-            'supervisor_name': eval.supervisor.users.name if eval.supervisor else None,
-            'created_at': eval.created_at,
-        }
-        for eval in recent_academic_evaluations
-    ]
+        academic_qs = AcademicEvaluation.objects.all()
+        total_academic_evaluations = academic_qs.count()
+        avg_acad = academic_qs.filter(total_weighted_score__isnull=False).aggregate(avg=Avg('total_weighted_score'))['avg'] or 0
+        average_academic_score = round(float(avg_acad), 2) if avg_acad else 0
 
-    return Response(
-        {
-            'overview': {
-                'students': students,
-                'supervisors': supervisors,
-                'placements': opportunities,
-                'total_logs': total_logs,
-                'draft_logs': total_drafts,
-                'pending_logs': pending_logs,
-                'approved_logs': approved_logs,
-                'rejected_logs': rejected_logs,
-                'average_score': average_log_score,
-                'students_with_supervisors': students_with_supervisors,
-                'students_without_supervisors': students_without_supervisors,
-                'supervisor_coverage': supervisor_coverage,
-                'average_logs_per_student': average_logs_per_student,
-            },
-            'recent_logs': recent_logs,
-            'supervisor_stats': supervisor_stats,
-            'academic_overview': {
-                'total_academic_evaluations': total_academic_evaluations,
-                'average_academic_score': average_academic_score,
-                'grade_distribution': {
-                    'A': grade_counts.get('A', 0),
-                    'B': grade_counts.get('B', 0),
-                    'C': grade_counts.get('C', 0),
-                    'D': grade_counts.get('D', 0),
-                    'F': grade_counts.get('F', 0),
-                    'ungraded': grade_counts.get('', 0),
+        grade_counts = { (item['grade'] or ''): item['count'] for item in academic_qs.values('grade').annotate(count=Count('id')) }
+
+        top_students = (
+            academic_qs.filter(total_weighted_score__isnull=False)
+            .values('student__users__id', 'student__users__name')
+            .annotate(avg_score=Avg('total_weighted_score'))
+            .order_by('-avg_score')[:5]
+        )
+        top_students_data = []
+        for item in top_students:
+            top_students_data.append({
+                'student_id': item.get('student__users__id'),
+                'student_name': item.get('student__users__name'),
+                'average_score': round(float(item.get('avg_score') or 0), 2),
+            })
+
+        recent_academic_evaluations = (
+            AcademicEvaluation.objects.select_related('student__users', 'supervisor__users')
+            .order_by('-created_at')[:10]
+        )
+        recent_academic_data = []
+        for ev in recent_academic_evaluations:
+            stu_user = getattr(ev.student, 'users', None)
+            stu_name = getattr(stu_user, 'name', None) or getattr(stu_user, 'username', None) if stu_user else None
+            sup_user = getattr(ev.supervisor, 'users', None) if getattr(ev, 'supervisor', None) else None
+            sup_name = getattr(sup_user, 'name', None) or getattr(sup_user, 'username', None) if sup_user else None
+            recent_academic_data.append({
+                'id': ev.id,
+                'student_name': stu_name,
+                'term': ev.term,
+                'academic_year': ev.academic_year,
+                'score': ev.total_weighted_score,
+                'grade': ev.grade,
+                'supervisor_name': sup_name,
+                'created_at': ev.created_at,
+            })
+
+        return Response(
+            {
+                'overview': {
+                    'students': students,
+                    'supervisors': supervisors,
+                    'placements': opportunities,
+                    'total_logs': total_logs,
+                    'draft_logs': total_drafts,
+                    'pending_logs': pending_logs,
+                    'approved_logs': approved_logs,
+                    'rejected_logs': rejected_logs,
+                    'average_score': average_log_score,
+                    'students_with_supervisors': students_with_supervisors,
+                    'students_without_supervisors': students_without_supervisors,
+                    'supervisor_coverage': supervisor_coverage,
+                    'average_logs_per_student': average_logs_per_student,
                 },
-                'top_students': top_students_data,
+                'recent_logs': recent_logs,
+                'supervisor_stats': supervisor_stats,
+                'academic_overview': {
+                    'total_academic_evaluations': total_academic_evaluations,
+                    'average_academic_score': average_academic_score,
+                    'grade_distribution': {
+                        'A': grade_counts.get('A', 0),
+                        'B': grade_counts.get('B', 0),
+                        'C': grade_counts.get('C', 0),
+                        'D': grade_counts.get('D', 0),
+                        'F': grade_counts.get('F', 0),
+                        'ungraded': grade_counts.get('', 0),
+                    },
+                    'top_students': top_students_data,
+                },
+                'recent_academic_evaluations': recent_academic_data,
             },
-            'recent_academic_evaluations': recent_academic_data,
-        },
-        status=status.HTTP_200_OK,
-    )
+            status=status.HTTP_200_OK,
+        )
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        return Response({'error': str(e), 'trace': tb}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

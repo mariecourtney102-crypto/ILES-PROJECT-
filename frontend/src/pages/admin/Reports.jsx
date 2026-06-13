@@ -16,7 +16,8 @@ function Reports() {
         setReport(data);
         setError("");
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to load reports.");
+        const message = err.response?.data?.error || err.message || "Failed to load reports.";
+        setError(message);
       } finally {
         setLoading(false);
       }
