@@ -84,42 +84,34 @@ function Reports() {
               <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.approved_logs ?? 0}</p>
             </div>
             <div className="rounded-xl bg-[#f1fbf8] p-4">
-              <p className="text-sm text-gray-500">Evaluated</p>
-              <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.evaluated_logs ?? 0}</p>
-            </div>
-            <div className="rounded-xl bg-[#f1fbf8] p-4">
-              <p className="text-sm text-gray-500">Rejected</p>
-              <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.rejected_logs ?? 0}</p>
-            </div>
+            <p className="text-sm text-gray-500">Rejected</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.rejected_logs ?? 0}</p>
           </div>
-          <p className="mt-4 text-sm text-gray-500">
-            Average evaluated score: <span className="font-semibold text-[#0a7c6e]">{overview.average_score ?? 0}</span>
-          </p>
+          <div className="rounded-xl bg-[#f1fbf8] p-4">
+            <p className="text-sm text-gray-500">Avg Score</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.average_score ?? 0}</p>
+          </div>
         </div>
+      </div>
 
-        <div className={CARD}>
-          <h2 className="text-xl font-semibold text-gray-800">Academic Performance</h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <div className="rounded-xl bg-[#f1fbf8] p-4">
-              <p className="text-sm text-gray-500">Evaluations</p>
-              <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{academicOverview.total_academic_evaluations ?? 0}</p>
-            </div>
-            <div className="rounded-xl bg-[#f1fbf8] p-4">
-              <p className="text-sm text-gray-500">Average Academic Score</p>
-              <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{academicOverview.average_academic_score ?? 0}</p>
-            </div>
-            <div className="rounded-xl bg-[#f1fbf8] p-4">
-              <p className="text-sm text-gray-500">Top Student</p>
-              <p className="mt-2 text-base font-semibold text-[#0a7c6e]">{academicOverview.top_students?.[0]?.student_name ?? "N/A"}</p>
-              <p className="text-sm text-gray-600">{academicOverview.top_students?.[0]?.average_score ? `${academicOverview.top_students[0].average_score}` : "N/A"}</p>
-            </div>
+      <div className={CARD}>
+        <h2 className="text-xl font-semibold text-gray-800">Student-Supervisor Coverage</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <div className="rounded-xl bg-[#f1fbf8] p-4">
+            <p className="text-sm text-gray-500">Students with Supervisors</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.students_with_supervisors ?? 0}</p>
           </div>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-5">
-            {['A', 'B', 'C', 'D', 'F'].map((grade) => (
-              <div key={grade} className="rounded-xl bg-white p-4 shadow-sm">
-                <p className="text-sm text-gray-500">Grade {grade}</p>
-                <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{academicOverview.grade_distribution?.[grade] ?? 0}</p>
+          <div className="rounded-xl bg-[#f1fbf8] p-4">
+            <p className="text-sm text-gray-500">Students without Supervisors</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.students_without_supervisors ?? 0}</p>
+          </div>
+          <div className="rounded-xl bg-[#f1fbf8] p-4">
+            <p className="text-sm text-gray-500">Supervisor Coverage</p>
+            <p className="mt-2 text-2xl font-bold text-[#0a7c6e]">{overview.supervisor_coverage ?? 0}%</p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-gray-500">
+          Average logs per student: <span className="font-semibold text-[#0a7c6e]">{overview.average_logs_per_student ?? 0}</span>
               </div>
             ))}
           </div>
