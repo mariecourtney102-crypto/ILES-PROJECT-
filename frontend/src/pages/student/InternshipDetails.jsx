@@ -57,6 +57,7 @@ const fieldMeta = [
 function InternshipDetails() {
   const [formData, setFormData] = useState(emptyForm);
   const [placement, setPlacement] = useState(null);
+  const [formOpen, setFormOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -70,6 +71,7 @@ function InternshipDetails() {
     try {
       const data = await fetchPlacement();
       setPlacement(data);
+      setFormOpen(false);
       setFormData({
         place_of_internship: data.place_of_internship || "",
         department: data.department || "",
@@ -80,6 +82,7 @@ function InternshipDetails() {
     } catch (err) {
       if (err.response?.status === 404) {
         setPlacement(null);
+        setFormOpen(true);
         setFormData(emptyForm);
       } else {
         setError(err.response?.data?.error || "Failed to load internship placement.");
@@ -128,6 +131,7 @@ function InternshipDetails() {
       const response = placement ? await updatePlacement(formData) : await createPlacement(formData);
       const savedPlacement = response.placement;
       setPlacement(savedPlacement);
+      setFormOpen(false);
       setFormData({
         place_of_internship: savedPlacement.place_of_internship || "",
         department: savedPlacement.department || "",
@@ -155,6 +159,7 @@ function InternshipDetails() {
     try {
       const response = await deletePlacement();
       setPlacement(null);
+      setFormOpen(true);
       setFormData(emptyForm);
       setSuccess(response.message || "Placement deleted.");
     } catch (err) {
@@ -199,7 +204,7 @@ function InternshipDetails() {
 
             {loading ? (
               <p className="py-12 text-sm text-gray-500">Loading placement details...</p>
-            ) : (
+            ) : formOpen ? (
               <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
                 {fieldMeta.map(({ key, label, type, description }) => (
                   <label key={key} className={key === "place_of_internship" ? "md:col-span-2" : ""}>
@@ -227,6 +232,18 @@ function InternshipDetails() {
                   </button>
                 </div>
               </form>
+            ) : (
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-[#c7f2e8] bg-[#f1fbf8] px-4 py-3 text-sm text-[#065f52]">
+                <p>Placement details are saved. Use the update button to reopen the form.</p>
+                <button
+                  type="button"
+                  onClick={() => setFormOpen(true)}
+                  disabled={saving || deleting}
+                  className="rounded-lg border border-[#0d9e8c] px-4 py-2 font-semibold text-[#0a7c6e] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  Update Placement
+                </button>
+              </div>
             )}
           </section>
 

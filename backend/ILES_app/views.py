@@ -570,6 +570,12 @@ def assign_supervisor(request):
     except Supervisor.DoesNotExist:
         return Response({"error": "Supervisor not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    if student.assigned_supervisor_id is not None:
+        return Response(
+            {"error": "This student already has a supervisor assigned."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     student.assigned_supervisor = supervisor
     student.save()
     placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
@@ -1149,61 +1155,9 @@ def mark_notification_read(request, notification_id):
 @permission_classes([IsAuthenticated])
 @role_required('supervisor')
 def update_log_status(request, log_id):
-    """
-    Supervisor endpoint to update weekly log status.
-    Allows supervisors to change log status for students assigned to them.
-    """
-    try:
-        supervisor = Supervisor.objects.get(users=request.user)
-    except Supervisor.DoesNotExist:
-        return Response(
-            {"error": "User is not a registered supervisor."},
-            status=status.HTTP_403_FORBIDDEN
-        )
-
-    try:
-        weekly_log = WeeklyLog.objects.select_related('student__users', 'student__assigned_supervisor').get(id=log_id)
-    except WeeklyLog.DoesNotExist:
-        return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
-
-    student_profile = weekly_log.student
-    if student_profile is None or student_profile.assigned_supervisor_id != supervisor.id:
-        return Response(
-            {"error": "You can only update logs for students assigned to you."},
-            status=status.HTTP_403_FORBIDDEN
-        )
-
-    new_status = request.data.get('status')
-    valid_statuses = ['draft', 'pending', 'approved', 'rejected', 'evaluated']
-    
-    if new_status not in valid_statuses:
-        return Response(
-            {"error": f"status must be one of {valid_statuses}."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    # Validate rejection reason if changing to rejected status
-    if new_status == 'rejected':
-        reason = request.data.get('reason', '').strip()
-        if not reason:
-            return Response(
-                {"error": "A rejection reason is required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        weekly_log.supervisor_comment = reason
-
-    weekly_log.status = new_status
-    weekly_log.supervisor = supervisor
-    weekly_log.reviewed_at = timezone.now()
-    weekly_log.save()
-
-    serializer = WeeklylogSerializer(weekly_log)
     return Response(
-        {
-            "message": f"Log status updated to {new_status}",
-            "weekly_log": serializer.data
-        },
-        status=status.HTTP_200_OK
+        {"error": "Weekly log status is controlled by the review flow and cannot be edited manually."},
+        status=status.HTTP_405_METHOD_NOT_ALLOWED,
     )
 
 
