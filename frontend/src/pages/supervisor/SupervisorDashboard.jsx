@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../Components/dashboard_layout";
 import { useAuth } from "../../context/AuthContext";
 import { useLogs } from "../../context/LogContext";
 import { CheckCircle, Clock, Users, FileText, XCircle } from "lucide-react";
 
 function SupervisorDashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { logs, loading, error } = useLogs();
+
+  const latestApprovedLog = useMemo(() => {
+    return [...logs]
+      .filter((log) => log.status === "approved")
+      .sort((a, b) => b.week_number - a.week_number)[0] || null;
+  }, [logs]);
 
   const pendingLogs = logs.filter((log) => log.status === "pending").length;
   const approvedLogs = logs.filter((log) => log.status === "approved" || log.status === "evaluated").length;
@@ -96,6 +104,16 @@ function SupervisorDashboard() {
                   <p className="text-xs text-gray-400">
                     Submitted {new Date(log.date_submitted).toLocaleString()}
                   </p>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/supervisor/feedback?weekly_log_id=${log.id}`)}
+                      className="rounded-lg bg-[#0a7c6e] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#065f52]"
+                    >
+                      Open Review
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -120,7 +138,15 @@ function SupervisorDashboard() {
   </ul>
 
   <button
-    className="mt-4 rounded bg-[#0a7c6e] px-4 py-2 text-white"
+    type="button"
+    onClick={() => {
+      if (latestApprovedLog) {
+        navigate(`/supervisor/feedback?weekly_log_id=${latestApprovedLog.id}`);
+      } else {
+        navigate("/supervisor/feedback");
+      }
+    }}
+    className="mt-4 rounded bg-[#0a7c6e] px-4 py-2 text-white hover:bg-[#065f52]"
   >
     Evaluate Student
   </button>

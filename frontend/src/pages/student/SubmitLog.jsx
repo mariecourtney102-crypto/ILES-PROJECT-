@@ -13,6 +13,7 @@ function SubmitLog() {
   const [description, setDescription] = useState("");
   const [success, setSuccess] = useState("");
   const [draftError, setDraftError] = useState("");
+  const [localError, setLocalError] = useState("");
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -40,15 +41,25 @@ function SubmitLog() {
 
   const validateLog = () => {
     if (!week || Number(week) <= 0) {
-      alert("Week number must be greater than 0");
+      setLocalError("Week number must be greater than 0.");
       return false;
     }
 
     if (!description.trim()) {
-      alert("Please describe the work completed this week.");
+      setLocalError("Please describe the work completed this week.");
       return false;
     }
 
+    const duplicate = logs.find(
+      (log) => log.week_number === Number(week) && log.id !== draftId
+    );
+
+    if (duplicate) {
+      setLocalError("A log already exists for this week. Edit the existing one or choose a different week.");
+      return false;
+    }
+
+    setLocalError("");
     return true;
   };
 
@@ -131,6 +142,7 @@ function SubmitLog() {
           disabled={submitting || Boolean(draftError)}
         />
 
+        {localError ? <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{localError}</p> : null}
         {error ? <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
         {success ? <p className="rounded-lg border border-[#c7f2e8] bg-[#f1fbf8] px-3 py-2 text-sm text-[#065f52]">{success}</p> : null}
 

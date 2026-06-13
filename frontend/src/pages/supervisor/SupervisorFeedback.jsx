@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "../../Components/dashboard_layout";
 import { MessageSquare } from "lucide-react";
 import { useLogs } from "../../context/LogContext";
@@ -20,6 +21,7 @@ function createEmptyReviewState() {
 }
 
 export default function SupervisorFeedback() {
+  const [searchParams] = useSearchParams();
   const { logs, loading, error, reviewLog, reviewingId, loadLogs } = useLogs();
   const [reviewState, setReviewState] = useState(createEmptyReviewState());
   const [activeEvaluationId, setActiveEvaluationId] = useState(null);
@@ -32,6 +34,19 @@ export default function SupervisorFeedback() {
     () => reviewableLogs.find((log) => log.id === activeEvaluationId) || null,
     [reviewableLogs, activeEvaluationId]
   );
+
+  useEffect(() => {
+    const weeklyLogId = Number(searchParams.get("weekly_log_id"));
+    if (!weeklyLogId || loading) {
+      return;
+    }
+
+    const log = reviewableLogs.find((item) => item.id === weeklyLogId);
+    if (log && (log.status === "approved" || log.status === "evaluated")) {
+      setActiveEvaluationId(weeklyLogId);
+      setLocalError("");
+    }
+  }, [searchParams, reviewableLogs, loading]);
 
   useEffect(() => {
     if (!activeLog) {

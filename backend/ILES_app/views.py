@@ -90,20 +90,21 @@ def notify_weekly_log_submitted(weekly_log):
         message=student_notification_message,
     )
     send_notification_email(
-        weekly_log.user,
+        weekly_log.student.users,
         f"Weekly Log Submitted - Week {weekly_log.week_number}",
         student_notification_message,
     )
 
     student_profile = weekly_log.student
     if student_profile and student_profile.assigned_supervisor:
+        student_user = weekly_log.student.users
         supervisor_notification_message = (
-            f"{weekly_log.user.name or weekly_log.user.username} submitted Week {weekly_log.week_number}."
+            f"{student_user.name or student_user.username} submitted Week {weekly_log.week_number}."
         )
         Notification.objects.create(
             user=student_profile.assigned_supervisor.users,
             title="New Weekly Log",
-            message=f"{weekly_log.student.users.name or weekly_log.students.users.username} submitted Week {weekly_log.week_number}.",
+            message=f"{student_user.name or student_user.username} submitted Week {weekly_log.week_number}.",
         )
         send_notification_email(
             student_profile.assigned_supervisor.users,
@@ -155,11 +156,11 @@ def supervisor_evaluations(request):
         return Response({"error": "weekly_log_id is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        weekly_log = WeeklyLog.objects.select_related('user__student', 'supervisor').get(id=weekly_log_id)
+        weekly_log = WeeklyLog.objects.select_related('student__users', 'supervisor').get(id=weekly_log_id)
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    student = getattr(weekly_log.user, 'student', None)
+    student = weekly_log.student
     if student is None or student.assigned_supervisor_id != supervisor.id:
         return Response(
             {"error": "You can only manage evaluations for students assigned to you."},
@@ -172,7 +173,7 @@ def supervisor_evaluations(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    placement = InternshipPlacement.objects.filter(user=student.users).order_by('-id').first()
+    placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
     if placement is None:
         return Response(
             {"error": "This student does not have an internship placement yet."},
@@ -650,6 +651,15 @@ def create_weekly_log(request):
     if permission_error:
         return permission_error
 
+    week_number = request.data.get('week_number')
+    try:
+        week_number_value = int(week_number) if week_number is not None else None
+    except (TypeError, ValueError):
+        week_number_value = None
+
+    if week_number_value is not None and WeeklyLog.objects.filter(student=request.user.student, week_number=week_number_value).exists():
+        return Response({"error": "You already have a weekly log for this week."}, status=status.HTTP_400_BAD_REQUEST)
+
     serializer = WeeklylogSerializer(data=request.data)
     if serializer.is_valid():
         weekly_log = serializer.save(student=request.user.student, status='pending')
@@ -679,6 +689,18 @@ def save_weekly_log_draft(request):
         return permission_error
 
     draft_id = request.data.get('id')
+    week_number = request.data.get('week_number')
+    try:
+        week_number_value = int(week_number) if week_number is not None else None
+    except (TypeError, ValueError):
+        week_number_value = None
+
+    if week_number_value is not None:
+        duplicate_qs = WeeklyLog.objects.filter(student=request.user.student, week_number=week_number_value)
+        if draft_id:
+            duplicate_qs = duplicate_qs.exclude(id=draft_id)
+        if duplicate_qs.exists():
+            return Response({"error": "You already have a weekly log for this week."}, status=status.HTTP_400_BAD_REQUEST)
 
     if draft_id:
         try:
@@ -714,6 +736,10 @@ def submit_weekly_log(request, log_id):
             {"error": "Only draft logs can be submitted."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+    duplicate_qs = WeeklyLog.objects.filter(student=request.user.student, week_number=weekly_log.week_number).exclude(id=weekly_log.id)
+    if duplicate_qs.exists():
+        return Response({"error": "You already have a weekly log for this week."}, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = WeeklylogSerializer(weekly_log, data=request.data, partial=True)
     if not serializer.is_valid():
@@ -780,12 +806,12 @@ def supervisor_weekly_logs(request):
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
     logs = WeeklyLog.objects.exclude(status='draft').filter(
-        student__student__assigned_supervisor=supervisor
+        student__assigned_supervisor=supervisor
     ).select_related('student', 'supervisor__users').order_by('week_number', 'date_submitted')
 
     student_id = request.GET.get('student_id')
     if student_id:
-        logs = logs.filter(student__student__id=student_id)
+        logs = logs.filter(student__id=student_id)
 
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)

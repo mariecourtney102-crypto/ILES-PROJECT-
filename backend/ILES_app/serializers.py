@@ -254,10 +254,25 @@ class AdminSerializer(serializers.ModelSerializer):
         fields = ['users', 'department']
 
 class InternshipPlacementSerializer(serializers.ModelSerializer):
+    place_of_internship = serializers.CharField()
+
     class Meta:
         model = InternshipPlacement
         fields = '__all__'
         read_only_fields = ['student']
+
+    def create(self, validated_data):
+        company_name = validated_data.pop('place_of_internship')
+        company, _ = Company.objects.get_or_create(name=company_name)
+        validated_data['place_of_internship'] = company
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        company_name = validated_data.pop('place_of_internship', None)
+        if company_name:
+            company, _ = Company.objects.get_or_create(name=company_name)
+            validated_data['place_of_internship'] = company
+        return super().update(instance, validated_data)
 
     def validate(self, attrs):
         start_date = attrs.get('start_date', getattr(self.instance, 'start_date', None))
