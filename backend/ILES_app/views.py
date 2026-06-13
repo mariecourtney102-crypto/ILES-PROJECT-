@@ -983,9 +983,9 @@ def student_reports(request):
     if student is None:
         return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    placement = InternshipPlacement.objects.filter(user=request.user).order_by('-id').first()
-    logs = WeeklyLog.objects.filter(user=request.user).order_by('-week_number', '-date_submitted')
-    evaluations = Evaluation.objects.filter(user=request.user).select_related('criteria', 'weekly_log').order_by('-evaluation_date')
+    placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
+    logs = WeeklyLog.objects.filter(student=student).order_by('-week_number', '-date_submitted')
+    evaluations = Evaluation.objects.filter(student=student).select_related('criteria', 'weekly_log').order_by('-evaluation_date')
 
     total_logs = logs.count()
     draft_logs = logs.filter(status='draft').count()
