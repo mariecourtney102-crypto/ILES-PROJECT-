@@ -146,7 +146,7 @@ def _calculate_weighted_score(evaluations):
 @role_required('supervisor')
 def supervisor_evaluations(request):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        supervisor = Supervisor.objects.get(users=request.user)
     except Supervisor.DoesNotExist:
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -267,7 +267,7 @@ def supervisor_evaluations(request):
 
     refreshed_criteria = _ensure_default_evaluation_criteria()
     refreshed_evaluations = Evaluation.objects.filter(
-        user=student.user,
+        student=student,
         placement=placement,
         weekly_log=weekly_log,
     ).select_related('criteria').order_by('criteria__criteria')

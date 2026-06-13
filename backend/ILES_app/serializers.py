@@ -328,7 +328,6 @@ class EvaluationSerializer(serializers.ModelSerializer):
         model = Evaluation
         fields = [
             'id',
-            'user',
             'placement',
             'weekly_log',
             'weekly_log_id',
