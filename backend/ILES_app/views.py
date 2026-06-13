@@ -11,9 +11,9 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
 from django.db import transaction
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Avg
 from django.utils import timezone
-from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Student, Supervisor, Feedback, SiteSetting, Notification
+from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Student, Supervisor, AcademicEvaluation, AcademicEvaluationDetail, Feedback, SiteSetting, Notification
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -26,10 +26,18 @@ from django.utils.http import urlsafe_base64_decode
 from .services import send_email_verification, send_notification_email, send_registration_confirmation
 from .services import send_supervisor_assigned
 from .tokens import token_service
-from .serializers import ( CustomUserSerializer, 
-                          InternshipPlacementSerializer, WeeklylogSerializer,
-                          EvaluationSerializer, StudentSerializer, SupervisorSerializer,
-                          EvaluationCriteriaSerializer, FeedbackSerializer, NotificationSerializer
+from .serializers import (
+    CustomUserSerializer,
+    InternshipPlacementSerializer,
+    WeeklylogSerializer,
+    EvaluationSerializer,
+    StudentSerializer,
+    SupervisorSerializer,
+    EvaluationCriteriaSerializer,
+    FeedbackSerializer,
+    NotificationSerializer,
+    AcademicEvaluationSerializer,
+    AcademicEvaluationDetailSerializer,
 )
 from .notifications.emails import (
     notify_admin_student_signup,
@@ -941,11 +949,11 @@ def reports(request):
         2
     ) if evaluated_logs_qs.exists() else 0
 
-    recent_logs = WeeklyLog.objects.select_related('user', 'supervisor', 'user__student').order_by('-date_submitted')[:10]
+    recent_logs = WeeklyLog.objects.select_related('student__users', 'supervisor__users').order_by('-date_submitted')[:10]
     recent_logs_data = [
         {
             "id": log.id,
-            "student_name": log.user.name or log.user.username,
+            "student_name": log.student.users.name or log.student.users.username,
             "week_number": log.week_number,
             "status": log.status,
             "description": log.description,
@@ -983,9 +991,9 @@ def student_reports(request):
     if student is None:
         return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    placement = InternshipPlacement.objects.filter(user=request.user).order_by('-id').first()
-    logs = WeeklyLog.objects.filter(user=request.user).order_by('-week_number', '-date_submitted')
-    evaluations = Evaluation.objects.filter(user=request.user).select_related('criteria', 'weekly_log').order_by('-evaluation_date')
+    placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
+    logs = WeeklyLog.objects.filter(student=student).order_by('-week_number', '-date_submitted')
+    evaluations = Evaluation.objects.filter(student=student).select_related('criteria', 'weekly_log').order_by('-evaluation_date')
 
     total_logs = logs.count()
     draft_logs = logs.filter(status='draft').count()
@@ -1206,12 +1214,91 @@ def get_reports(request):
     students = CustomUser.objects.filter(role='student').count()
     supervisors = CustomUser.objects.filter(role='supervisor').count()
     opportunities = InternshipPlacement.objects.count()
-    
-    return Response({
-        "students": students,
-        "supervisors": supervisors,
-        "opportunities": opportunities
-    })
+
+    total_logs = WeeklyLog.objects.count()
+    total_drafts = WeeklyLog.objects.filter(status='draft').count()
+    pending_logs = WeeklyLog.objects.filter(status='pending').count()
+    approved_logs = WeeklyLog.objects.filter(status='approved').count()
+    evaluated_logs = WeeklyLog.objects.filter(status='evaluated').count()
+    rejected_logs = WeeklyLog.objects.filter(status='rejected').count()
+    evaluated_logs_qs = WeeklyLog.objects.filter(status='evaluated', evaluation_score__isnull=False)
+    average_log_score = round(
+        sum(log.evaluation_score or 0 for log in evaluated_logs_qs) / evaluated_logs_qs.count(),
+        2
+    ) if evaluated_logs_qs.exists() else 0
+
+    academic_qs = AcademicEvaluation.objects.all()
+    total_academic_evaluations = academic_qs.count()
+    average_academic_score = academic_qs.filter(total_weighted_score__isnull=False).aggregate(avg=Avg('total_weighted_score'))['avg'] or 0
+    average_academic_score = round(float(average_academic_score), 2) if average_academic_score else 0
+
+    grade_counts = {item['grade']: item['count'] for item in academic_qs.values('grade').annotate(count=Count('id'))}
+
+    top_students = (
+        academic_qs.filter(total_weighted_score__isnull=False)
+        .values('student__users__id', 'student__users__name')
+        .annotate(avg_score=Avg('total_weighted_score'))
+        .order_by('-avg_score')[:5]
+    )
+    top_students_data = [
+        {
+            'student_id': item['student__users__id'],
+            'student_name': item['student__users__name'],
+            'average_score': round(float(item['avg_score']), 2),
+        }
+        for item in top_students
+    ]
+
+    recent_academic_evaluations = (
+        AcademicEvaluation.objects.select_related('student__users', 'supervisor__users')
+        .order_by('-created_at')[:10]
+    )
+    recent_academic_data = [
+        {
+            'id': eval.id,
+            'student_name': eval.student.users.name or eval.student.users.username,
+            'term': eval.term,
+            'academic_year': eval.academic_year,
+            'score': eval.total_weighted_score,
+            'grade': eval.grade,
+            'supervisor_name': eval.supervisor.users.name if eval.supervisor else None,
+            'created_at': eval.created_at,
+        }
+        for eval in recent_academic_evaluations
+    ]
+
+    return Response(
+        {
+            'overview': {
+                'students': students,
+                'supervisors': supervisors,
+                'placements': opportunities,
+                'total_logs': total_logs,
+                'draft_logs': total_drafts,
+                'pending_logs': pending_logs,
+                'approved_logs': approved_logs,
+                'evaluated_logs': evaluated_logs,
+                'rejected_logs': rejected_logs,
+                'average_score': average_log_score,
+            },
+            'recent_logs': [],
+            'academic_overview': {
+                'total_academic_evaluations': total_academic_evaluations,
+                'average_academic_score': average_academic_score,
+                'grade_distribution': {
+                    'A': grade_counts.get('A', 0),
+                    'B': grade_counts.get('B', 0),
+                    'C': grade_counts.get('C', 0),
+                    'D': grade_counts.get('D', 0),
+                    'F': grade_counts.get('F', 0),
+                    'ungraded': grade_counts.get('', 0),
+                },
+                'top_students': top_students_data,
+            },
+            'recent_academic_evaluations': recent_academic_data,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

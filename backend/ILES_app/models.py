@@ -145,6 +145,63 @@ class Evaluation(models.Model):
         return f"{self.placement.student.username} - {self.criteria}: {self.score}"
 
 
+class AcademicEvaluation(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='academic_evaluations')
+    supervisor = models.ForeignKey(
+        Supervisor,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='academic_evaluations'
+    )
+    placement = models.ForeignKey(
+        InternshipPlacement,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='academic_evaluations'
+    )
+    term = models.CharField(max_length=50, blank=True)
+    academic_year = models.CharField(max_length=20, blank=True)
+    total_weighted_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    grade = models.CharField(max_length=5, blank=True)
+    remarks = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.student.users.username} - {self.term or self.academic_year or 'Evaluation'}"
+
+
+class AcademicEvaluationDetail(models.Model):
+    academic_evaluation = models.ForeignKey(
+        AcademicEvaluation,
+        on_delete=models.CASCADE,
+        related_name='details'
+    )
+    subject = models.CharField(max_length=100)
+    score = models.DecimalField(max_digits=5, decimal_places=2)
+    max_score = models.DecimalField(max_digits=5, decimal_places=2, default=100)
+    weight = models.FloatField(default=0.0)
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def normalized_score(self):
+        if self.max_score <= 0:
+            return 0
+        return float(self.score) / float(self.max_score) * 100
+
+    def weighted_contribution(self):
+        return self.normalized_score() * self.weight
+
+    def __str__(self):
+        return f"{self.academic_evaluation.student.users.username} - {self.subject}: {self.score}/{self.max_score}"
+
+
 class Feedback(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='feedback')
     subject = models.CharField(max_length=150)

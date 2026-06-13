@@ -148,6 +148,11 @@ export const fetchAdminReports = async () => {
   return res.data;
 };
 
+export const fetchAcademicEvaluations = async () => {
+  const res = await api.get("/academic-evaluations/");
+  return res.data;
+};
+
 export const fetchStudentReports = async () => {
   const res = await api.get("/student/reports/");
   return res.data;
