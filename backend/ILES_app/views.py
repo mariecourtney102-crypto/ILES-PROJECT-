@@ -181,7 +181,7 @@ def supervisor_evaluations(request):
 
     criteria_qs = _ensure_default_evaluation_criteria()
     existing_evaluations = Evaluation.objects.filter(
-        student=student,
+        weekly_log__student=student,
         placement=placement,
         weekly_log=weekly_log,
     ).select_related('criteria').order_by('criteria__criteria')
