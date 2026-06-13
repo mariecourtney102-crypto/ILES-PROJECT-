@@ -190,7 +190,7 @@ def supervisor_evaluations(request):
 
     criteria_qs = _ensure_default_evaluation_criteria()
     existing_evaluations = Evaluation.objects.filter(
-        user=student.users,
+        student=student,
         placement=placement,
         weekly_log=weekly_log,
     ).select_related('criteria').order_by('criteria__criteria')
@@ -253,7 +253,7 @@ def supervisor_evaluations(request):
         with transaction.atomic():
             for item in parsed_rows:
                 Evaluation.objects.update_or_create(
-                    user=student.users,
+                    student=student,
                     placement=placement,
                     weekly_log=weekly_log,
                     criteria=item["criteria_obj"],
@@ -276,7 +276,7 @@ def supervisor_evaluations(request):
 
     refreshed_criteria = _ensure_default_evaluation_criteria()
     refreshed_evaluations = Evaluation.objects.filter(
-        user=student.users,
+        student=student,
         placement=placement,
         weekly_log=weekly_log,
     ).select_related('criteria').order_by('criteria__criteria')
