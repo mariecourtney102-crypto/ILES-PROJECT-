@@ -131,9 +131,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.save()
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
 
-        with patch('ILES_app.views.notify_student_log_submitted') as mock_student_email, patch(
-            'ILES_app.views.notify_supervisor_log_submitted'
-        ) as mock_supervisor_email:
+        with patch('ILES_app.views.notify_weekly_log_submitted') as mock_notify:
             response = self.client.post(
                 reverse('create_weekly_log'),
                 {
@@ -144,19 +142,14 @@ class SupervisorAssignmentFlowTests(APITestCase):
             )
 
         self.assertEqual(response.status_code, 201)
-        mock_student_email.assert_called_once()
-        mock_supervisor_email.assert_called_once()
+        mock_notify.assert_called_once_with()
 
     def test_student_log_submission_sends_in_app_and_gmail_notifications(self):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
 
-        with patch('ILES_app.views.send_notification_email') as mock_notification_email, patch(
-            'ILES_app.views.notify_student_log_submitted'
-        ) as mock_student_email, patch(
-            'ILES_app.views.notify_supervisor_log_submitted'
-        ) as mock_supervisor_email:
+        with patch('ILES_app.views.notify_weekly_log_submitted') as mock_notify:
             response = self.client.post(
                 reverse('create_weekly_log'),
                 {
@@ -167,9 +160,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
             )
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(mock_notification_email.call_count, 2)
-        mock_student_email.assert_called_once()
-        mock_supervisor_email.assert_called_once()
+        mock_notify.assert_called_once()
 
     def test_unassigned_supervisor_cannot_review_student_log(self):
         self.student.assigned_supervisor = self.supervisor
