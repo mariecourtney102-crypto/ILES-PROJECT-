@@ -403,6 +403,7 @@ export default function SupervisorFeedback() {
                         Edit Status
                       </button>
                     ) : null}
+
                   </div>
 
                   {activeEvaluationId === log.id ? (

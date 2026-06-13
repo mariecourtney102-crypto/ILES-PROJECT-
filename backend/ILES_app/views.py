@@ -570,6 +570,12 @@ def assign_supervisor(request):
     except Supervisor.DoesNotExist:
         return Response({"error": "Supervisor not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    if student.assigned_supervisor_id is not None:
+        return Response(
+            {"error": "This student already has a supervisor assigned."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     student.assigned_supervisor = supervisor
     student.save()
     placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
