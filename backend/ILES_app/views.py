@@ -172,7 +172,7 @@ def supervisor_evaluations(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
+    placement = InternshipPlacement.objects.filter(student=student.student).order_by('-id').first()
     if placement is None:
         return Response(
             {"error": "This student does not have an internship placement yet."},
@@ -181,7 +181,7 @@ def supervisor_evaluations(request):
 
     criteria_qs = _ensure_default_evaluation_criteria()
     existing_evaluations = Evaluation.objects.filter(
-        student=studeny,
+        student=student,
         placement=placement,
         weekly_log=weekly_log,
     ).select_related('criteria').order_by('criteria__criteria')
