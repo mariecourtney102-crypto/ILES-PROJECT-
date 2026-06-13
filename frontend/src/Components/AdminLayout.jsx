@@ -1,13 +1,15 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../Components/sidebar";
 
 function AdminLayout() {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   return (
     <div className="min-h-screen">
       
-      <Sidebar />
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-      <div className="min-h-screen overflow-y-auto md:ml-64">
+      <div className={`min-h-screen overflow-y-auto transition-all duration-300 ${isCollapsed ? "md:ml-20" : "md:ml-64"}`}>
         <div className="flex min-h-screen flex-col">
           <header className="bg-white shadow p-4">
             <h1>Admin Panel</h1>
