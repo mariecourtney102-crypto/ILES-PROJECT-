@@ -146,7 +146,7 @@ def _calculate_weighted_score(evaluations):
 @role_required('supervisor')
 def supervisor_evaluations(request):
     try:
-        supervisor = Supervisor.objects.get(users=request.user)
+        supervisor = Supervisor.objects.get(user=request.user)
     except Supervisor.DoesNotExist:
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -172,7 +172,7 @@ def supervisor_evaluations(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    placement = InternshipPlacement.objects.filter(student=student.student).order_by('-id').first()
+    placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
     if placement is None:
         return Response(
             {"error": "This student does not have an internship placement yet."},
