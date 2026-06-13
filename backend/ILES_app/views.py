@@ -175,9 +175,9 @@ def supervisor_evaluations(request):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    if weekly_log.status not in ['approved', 'evaluated']:
+    if weekly_log.status not in ['pending', 'approved', 'evaluated']:
         return Response(
-            {"error": "Evaluation is only available after the log has been approved."},
+            {"error": "Evaluation is only available for pending, approved, or evaluated logs."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -262,8 +262,8 @@ def supervisor_evaluations(request):
                         "comment": item["comment"],
                     },
                 )
-            weekly_log.status = 'evaluated'
-            weekly_log.evaluation_score = round(sum(item["score"] * 0.25 for item in parsed_rows), 2)
+            weekly_log.status = 'approved'
+            weekly_log.evaluation_score = int(round(sum(item["score"] * 0.25 for item in parsed_rows), 0))
             weekly_log.supervisor = supervisor
             weekly_log.reviewed_at = timezone.now()
             weekly_log.save(update_fields=['status', 'evaluation_score', 'supervisor', 'reviewed_at'])
@@ -1147,6 +1147,113 @@ def mark_notification_read(request, notification_id):
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@role_required('supervisor')
+def update_log_status(request, log_id):
+    """
+    Supervisor endpoint to update weekly log status.
+    Allows supervisors to change log status for students assigned to them.
+    """
+    try:
+        supervisor = Supervisor.objects.get(users=request.user)
+    except Supervisor.DoesNotExist:
+        return Response(
+            {"error": "User is not a registered supervisor."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        weekly_log = WeeklyLog.objects.select_related('student__users', 'student__assigned_supervisor').get(id=log_id)
+    except WeeklyLog.DoesNotExist:
+        return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    student_profile = weekly_log.student
+    if student_profile is None or student_profile.assigned_supervisor_id != supervisor.id:
+        return Response(
+            {"error": "You can only update logs for students assigned to you."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    new_status = request.data.get('status')
+    valid_statuses = ['draft', 'pending', 'approved', 'rejected', 'evaluated']
+    
+    if new_status not in valid_statuses:
+        return Response(
+            {"error": f"status must be one of {valid_statuses}."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Validate rejection reason if changing to rejected status
+    if new_status == 'rejected':
+        reason = request.data.get('reason', '').strip()
+        if not reason:
+            return Response(
+                {"error": "A rejection reason is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        weekly_log.supervisor_comment = reason
+
+    weekly_log.status = new_status
+    weekly_log.supervisor = supervisor
+    weekly_log.reviewed_at = timezone.now()
+    weekly_log.save()
+
+    serializer = WeeklylogSerializer(weekly_log)
+    return Response(
+        {
+            "message": f"Log status updated to {new_status}",
+            "weekly_log": serializer.data
+        },
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@role_required('student')
+def delete_weekly_log(request, log_id):
+    """
+    Student endpoint to delete their own weekly log.
+    Only allows deletion of draft and pending logs (not approved/evaluated).
+    """
+    try:
+        student = Student.objects.get(users=request.user)
+    except Student.DoesNotExist:
+        return Response(
+            {"error": "User is not a registered student."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        weekly_log = WeeklyLog.objects.get(id=log_id, student=student)
+    except WeeklyLog.DoesNotExist:
+        return Response(
+            {"error": "Weekly log not found or does not belong to you."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Only allow deletion of draft or pending logs
+    if weekly_log.status not in ['draft', 'pending']:
+        return Response(
+            {
+                "error": f"Cannot delete a log with status '{weekly_log.status}'. Only draft or pending logs can be deleted."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    log_week = weekly_log.week_number
+    weekly_log.delete()
+
+    return Response(
+        {
+            "message": f"Weekly log for week {log_week} has been deleted successfully.",
+            "log_id": log_id
+        },
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
 def mark_all_notifications_read(request):
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return Response({"message": "All notifications marked as read."}, status=status.HTTP_200_OK)
@@ -1218,14 +1325,44 @@ def get_reports(request):
     total_logs = WeeklyLog.objects.count()
     total_drafts = WeeklyLog.objects.filter(status='draft').count()
     pending_logs = WeeklyLog.objects.filter(status='pending').count()
-    approved_logs = WeeklyLog.objects.filter(status='approved').count()
-    evaluated_logs = WeeklyLog.objects.filter(status='evaluated').count()
+    approved_logs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated']).count()
     rejected_logs = WeeklyLog.objects.filter(status='rejected').count()
-    evaluated_logs_qs = WeeklyLog.objects.filter(status='evaluated', evaluation_score__isnull=False)
+    approved_with_scores_qs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated'], evaluation_score__isnull=False)
     average_log_score = round(
-        sum(log.evaluation_score or 0 for log in evaluated_logs_qs) / evaluated_logs_qs.count(),
+        sum(log.evaluation_score or 0 for log in approved_with_scores_qs) / approved_with_scores_qs.count(),
         2
-    ) if evaluated_logs_qs.exists() else 0
+    ) if approved_with_scores_qs.exists() else 0
+
+    students_with_supervisors = Student.objects.filter(assigned_supervisor__isnull=False).count()
+    students_without_supervisors = students - students_with_supervisors
+    supervisor_coverage = round((students_with_supervisors / students) * 100, 2) if students else 0
+    average_logs_per_student = round(total_logs / students, 2) if students else 0
+
+    supervisor_stats = []
+    supervisor_scores = Supervisor.objects.annotate(
+        average_score=Avg('reviewed_logs__evaluation_score')
+    ).order_by('-average_score')[:5]
+    for supervisor in supervisor_scores:
+        supervisor_stats.append({
+            'supervisor_name': supervisor.users.name,
+            'supervisor_id': supervisor.id,
+            'average_score': round(float(supervisor.average_score), 2) if supervisor.average_score is not None else None,
+            'student_count': supervisor.assigned_students.count(),
+        })
+
+    recent_logs_qs = WeeklyLog.objects.select_related('student__users', 'supervisor__users').order_by('-date_submitted')[:10]
+    recent_logs = [
+        {
+            'id': log.id,
+            'student_name': log.student.users.name,
+            'supervisor_name': log.supervisor.users.name if log.supervisor else None,
+            'week_number': log.week_number,
+            'status': log.status,
+            'evaluation_score': float(log.evaluation_score) if log.evaluation_score is not None else None,
+            'submitted_at': log.date_submitted,
+        }
+        for log in recent_logs_qs
+    ]
 
     academic_qs = AcademicEvaluation.objects.all()
     total_academic_evaluations = academic_qs.count()
@@ -1277,11 +1414,15 @@ def get_reports(request):
                 'draft_logs': total_drafts,
                 'pending_logs': pending_logs,
                 'approved_logs': approved_logs,
-                'evaluated_logs': evaluated_logs,
                 'rejected_logs': rejected_logs,
                 'average_score': average_log_score,
+                'students_with_supervisors': students_with_supervisors,
+                'students_without_supervisors': students_without_supervisors,
+                'supervisor_coverage': supervisor_coverage,
+                'average_logs_per_student': average_logs_per_student,
             },
-            'recent_logs': [],
+            'recent_logs': recent_logs,
+            'supervisor_stats': supervisor_stats,
             'academic_overview': {
                 'total_academic_evaluations': total_academic_evaluations,
                 'average_academic_score': average_academic_score,

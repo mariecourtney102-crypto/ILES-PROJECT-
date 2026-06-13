@@ -106,6 +106,20 @@ export const reviewWeeklyLog = async (logId, payload) => {
   return res.data;
 };
 
+export const updateWeeklyLogStatus = async (logId, status, reason = null) => {
+  const payload = { status };
+  if (reason) {
+    payload.reason = reason;
+  }
+  const res = await api.patch(`/supervisor/weekly-logs/${logId}/update-status/`, payload);
+  return res.data;
+};
+
+export const deleteWeeklyLog = async (logId) => {
+  const res = await api.delete(`/weekly-logs/${logId}/delete/`);
+  return res.data;
+};
+
 export const fetchSupervisorEvaluations = async (weeklyLogId) => {
   const res = await api.get("/supervisor/evaluations/", {
     params: { weekly_log_id: weeklyLogId },
