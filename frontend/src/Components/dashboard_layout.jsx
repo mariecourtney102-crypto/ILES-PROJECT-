@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Sidebar from "./Sidebar";
+import Sidebar from "./sidebar";
 import NotificationBell from "./NotificationBell";
 import AccountStatus from "./AccountStatus";
 
