@@ -327,7 +327,7 @@ def signup(request):
         except DRFValidationError as exc:
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:
-            logger.exception("Signup failed unexpectedly")
+            logger.exception(" Signup failed unexpectedly ")
             return Response(
                 {"error": "Signup failed. Please check your details and try again."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
