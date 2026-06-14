@@ -216,7 +216,7 @@ def supervisor_evaluations(request):
         criteria_id = item.get('criteria_id')
         if not criteria_id:
             return Response(
-                {"error": "Each evaluation item requires criteria_id."},
+                {"error": " Each evaluation item requires criteria_id."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
