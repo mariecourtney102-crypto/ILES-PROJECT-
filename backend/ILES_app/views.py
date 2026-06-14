@@ -1,6 +1,5 @@
 from functools import wraps
 from unicodedata import name
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -70,7 +69,7 @@ def test_api(request):
 def require_role(user, allowed_roles):
     if user.role not in allowed_roles:
         return Response(
-            {"error": "You do not have permission to perform this action."},
+            {"error": " You do not have any permissions to perform this action. "},
             status=status.HTTP_403_FORBIDDEN
         )
     return None
@@ -177,14 +176,14 @@ def supervisor_evaluations(request):
 
     if weekly_log.status not in ['pending', 'approved', 'evaluated']:
         return Response(
-            {"error": "Evaluation is only available for pending, approved, or evaluated logs."},
+            {"error": "Evaluation is only and only available for pending, approved, or evaluated logs."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
     if placement is None:
         return Response(
-            {"error": "This student does not have an internship placement yet."},
+            {"error": " This student does not have an Internship placement yet ."},
             status=status.HTTP_404_NOT_FOUND,
         )
 
@@ -217,7 +216,7 @@ def supervisor_evaluations(request):
         criteria_id = item.get('criteria_id')
         if not criteria_id:
             return Response(
-                {"error": "Each evaluation item requires criteria_id."},
+                {"error": " Each evaluation item requires criteria_id."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -268,9 +267,9 @@ def supervisor_evaluations(request):
             weekly_log.reviewed_at = timezone.now()
             weekly_log.save(update_fields=['status', 'evaluation_score', 'supervisor', 'reviewed_at'])
     except Exception:
-        logger.exception("Failed to save supervisor evaluations")
+        logger.exception("Failed to save supervisor evaluations! ")
         return Response(
-            {"error": "Unable to save evaluations at the moment."},
+            {"error": "  Unable to save evaluations at the moment. !!"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -293,6 +292,11 @@ def supervisor_evaluations(request):
         },
         status=status.HTTP_200_OK,
     )
+
+
+# ---- ADDITIONAL CONTEXT FOR DEBUGGING ----
+# The following lines are inserted temporarily to mark the current end of the function.
+# They are not part of the actual code flow.
 
 
 def should_expose_verification_link():
@@ -323,9 +327,9 @@ def signup(request):
         except DRFValidationError as exc:
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:
-            logger.exception("Signup failed unexpectedly")
+            logger.exception(" Signup failed unexpectedly ")
             return Response(
-                {"error": "Signup failed. Please check your details and try again."},
+                {"error": " Signup failed. Please check all your details and try again."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -362,7 +366,7 @@ def verify_email(request, uidb64, token):
 
     if user_id is None:
         return Response(
-            {"error": "Invalid or expired verification link."},
+            {"error": " Invalid or expired verification link."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -376,7 +380,7 @@ def verify_email(request, uidb64, token):
 
     if user.is_verified:
         return Response(
-            {"message": "Email is already verified."},
+            {"message": " This email is already verified."},
             status=status.HTTP_200_OK,
         )
 
@@ -1193,7 +1197,7 @@ def update_log_status(request, log_id):
         reason = request.data.get('reason', '').strip()
         if not reason:
             return Response(
-                {"error": "A rejection reason is required."},
+                {"error": "A rejection reason is required please provide one."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         weekly_log.supervisor_comment = reason
@@ -1225,7 +1229,7 @@ def delete_weekly_log(request, log_id):
         student = Student.objects.get(users=request.user)
     except Student.DoesNotExist:
         return Response(
-            {"error": "User is not a registered student."},
+            {"error": "User is not a registered student. "},
             status=status.HTTP_403_FORBIDDEN
         )
 

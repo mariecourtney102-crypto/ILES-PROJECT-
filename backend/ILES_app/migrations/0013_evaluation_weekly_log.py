@@ -1,4 +1,8 @@
-# Generated manually to restore the migration chain referenced by 0014.
+"""
+Placeholder migration created to restore missing migration node.
+This migration intentionally contains no operations; it preserves migration
+history ordering so subsequent migration 0014 can run without NodeNotFoundError.
+"""
 from django.db import migrations
 
 
