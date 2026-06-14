@@ -294,6 +294,11 @@ def supervisor_evaluations(request):
     )
 
 
+# ---- ADDITIONAL CONTEXT FOR DEBUGGING ----
+# The following lines are inserted temporarily to mark the current end of the function.
+# They are not part of the actual code flow.
+
+
 def should_expose_verification_link():
     return settings.DEBUG or settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend'
     
