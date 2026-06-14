@@ -1197,7 +1197,7 @@ def update_log_status(request, log_id):
         reason = request.data.get('reason', '').strip()
         if not reason:
             return Response(
-                {"error": "A rejection reason is required."},
+                {"error": "A rejection reason is required please provide one."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         weekly_log.supervisor_comment = reason
@@ -1229,7 +1229,7 @@ def delete_weekly_log(request, log_id):
         student = Student.objects.get(users=request.user)
     except Student.DoesNotExist:
         return Response(
-            {"error": "User is not a registered student."},
+            {"error": "User is not a registered student. "},
             status=status.HTTP_403_FORBIDDEN
         )
 
