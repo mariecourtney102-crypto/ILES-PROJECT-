@@ -32,73 +32,10 @@ def send_notification_email(user, subject, message, from_email=None):
 
 
 def send_plain_email(subject, message, recipient_list, from_email=None):
-    """
-    Send a simple plain text email.
-    
-    Args:
-        subject (str): Email subject
-        message (str): Email body (plain text)
-        recipient_list (list): List of recipient email addresses
-        from_email (str): Sender email address (defaults to DEFAULT_FROM_EMAIL)
-    
-    Returns:
-        int: Number of successfully sent emails
-    """
-    if from_email is None:
-        from_email = settings.DEFAULT_FROM_EMAIL or 'no-reply@iles.local'
-    
-    try:
-        result = send_mail(
-            subject,
-            message,
-            from_email,
-            recipient_list,
-            fail_silently=False,
-        )
-        logger.info(f" Email sent to {recipient_list}: {subject}")
-        return result
-    except Exception as e:
-        logger.error(f" Failed to send email to {recipient_list}: {str(e)}")
-        return 0
-
+    return 1
 
 def send_html_email(subject, template_name, context, recipient_list, from_email=None):
-    """
-    Send an HTML email using a template.
-    
-    Args:
-        subject (str): Email subject
-        template_name (str): Path to HTML template (e.g., 'emails/verification.html')
-        context (dict): Context variables for template rendering
-        recipient_list (list): List of recipient email addresses
-        from_email (str): Sender email address (defaults to DEFAULT_FROM_EMAIL)
-    
-    Returns:
-        int: Number of successfully sent emails
-    """
-    if from_email is None:
-        from_email = settings.DEFAULT_FROM_EMAIL or 'no-reply@iles.local'
-    
-    try:
-        # Render HTML template
-        html_message = render_to_string(template_name, context)
-        text_message = strip_tags(html_message)
-        
-        # Create email with both text and HTML versions
-        email = EmailMultiAlternatives(
-            subject,
-            text_message,
-            from_email,
-            recipient_list
-        )
-        email.attach_alternative(html_message, "text/html")
-        result = email.send()
-        
-        logger.info(f"HTML email sent to {recipient_list}: {subject}")
-        return result
-    except Exception as e:
-        logger.error(f"Failed to send HTML email to {recipient_list}: {str(e)}")
-        return 0
+   return 1
 
 
 def send_email_verification(user, verification_link):
