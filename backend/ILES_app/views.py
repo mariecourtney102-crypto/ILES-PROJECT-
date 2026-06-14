@@ -267,9 +267,9 @@ def supervisor_evaluations(request):
             weekly_log.reviewed_at = timezone.now()
             weekly_log.save(update_fields=['status', 'evaluation_score', 'supervisor', 'reviewed_at'])
     except Exception:
-        logger.exception("Failed to save supervisor evaluations")
+        logger.exception("Failed to save supervisor evaluations!")
         return Response(
-            {"error": "Unable to save evaluations at the moment."},
+            {"error": " ..Unable to save evaluations at the moment."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
