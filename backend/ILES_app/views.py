@@ -176,7 +176,7 @@ def supervisor_evaluations(request):
 
     if weekly_log.status not in ['pending', 'approved', 'evaluated']:
         return Response(
-            {"error": "Evaluation is only available for pending, approved, or evaluated logs."},
+            {"error": "Evaluation is only and only available for pending, approved, or evaluated logs."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
