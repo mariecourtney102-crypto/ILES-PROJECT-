@@ -55,7 +55,7 @@ def send_plain_email(subject, message, recipient_list, from_email=None):
             recipient_list,
             fail_silently=False,
         )
-        logger.info(f"Email sent to {recipient_list}: {subject}")
+        logger.info(f" Email sent to {recipient_list}: {subject}")
         return result
     except Exception as e:
         logger.error(f" Failed to send email to {recipient_list}: {str(e)}")
