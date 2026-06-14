@@ -183,7 +183,7 @@ def supervisor_evaluations(request):
     placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
     if placement is None:
         return Response(
-            {"error": "This student does not have an internship placement yet."},
+            {"error": "This student does not have an Internship placement yet."},
             status=status.HTTP_404_NOT_FOUND,
         )
 
