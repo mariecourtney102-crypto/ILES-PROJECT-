@@ -419,7 +419,7 @@ def resend_verification_email(request):
 
     verification_token = token_service.generate_email_verification_token(user)
     if not verification_token:
-        return Response({"error": "Unable to generate verification link."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": " Unable to generate verification link."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     uidb64, token = verification_token
     verification_path = reverse(
