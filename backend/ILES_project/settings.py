@@ -13,6 +13,19 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+import dj_database_url
+
+
+RENDER = os.getenv('RENDER', False)
+
+if RENDER:
+    DEBUG = False
+    ALLOWED_HOSTS = [os.getenv('RENDER_EXTERNAL_HOSTNAME', '')]
+
+
+
+
+
 
 try:
     from dotenv import load_dotenv
@@ -100,11 +113,11 @@ WSGI_APPLICATION = 'ILES_project.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'default': dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
 
 
 # Password validation
@@ -141,9 +154,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-AUTH_USER_MODEL = 'ILES_app.CustomUser'
-CORS_ALLOW_ALL_ORIGINS = True
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = '/static/'
+STORAGES = {
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+}
 
 # JWT Configuration
 SIMPLE_JWT = {
@@ -192,3 +209,7 @@ CACHES = {
     }
 }
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
