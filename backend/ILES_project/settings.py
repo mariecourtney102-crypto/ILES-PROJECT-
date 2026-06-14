@@ -55,9 +55,9 @@ load_dotenv(BASE_DIR.parent / '.env')
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-fm6tjl9)o(*7jl&e1(u10o13=mz2n@b(yji)3h+gtg^)o-vkui')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True)
+DEBUG = config('DEBUG', default=False)
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver', config('ALLOWED_HOSTS', default='')]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -213,3 +213,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES['default'] = dj_database_url.parse(DATABASE_URL)    
