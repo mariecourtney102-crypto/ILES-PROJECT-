@@ -136,7 +136,7 @@ def send_registration_confirmation(user):
     Returns:
         int: Number of successfully sent emails
     """
-    subject = "Welcome to ILES System"
+    subject = " Welcome to ILES System "
     context = {
         'user_name': user.name or user.username,
         'role': user.get_role_display() if hasattr(user, 'get_role_display') else user.role,
