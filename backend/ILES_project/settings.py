@@ -218,3 +218,8 @@ if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+CORS_ALLOWED_ORIGINS = [
+    "https://iles-frontend-j5hq.onrender.com",  
+]
+
+CORS_ALLOW_CREDENTIALS = True
