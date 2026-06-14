@@ -1,6 +1,5 @@
 from functools import wraps
 from unicodedata import name
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -11,9 +10,9 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
 from django.db import transaction
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Avg
 from django.utils import timezone
-from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Student, Supervisor, Feedback, SiteSetting, Notification
+from .models import CustomUser, InternshipPlacement, WeeklyLog, Evaluation, EvaluationCriteria, Student, Supervisor, AcademicEvaluation, AcademicEvaluationDetail, Feedback, SiteSetting, Notification
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -26,10 +25,18 @@ from django.utils.http import urlsafe_base64_decode
 from .services import send_email_verification, send_notification_email, send_registration_confirmation
 from .services import send_supervisor_assigned
 from .tokens import token_service
-from .serializers import ( CustomUserSerializer, 
-                          InternshipPlacementSerializer, WeeklylogSerializer,
-                          EvaluationSerializer, StudentSerializer, SupervisorSerializer,
-                          EvaluationCriteriaSerializer, FeedbackSerializer, NotificationSerializer
+from .serializers import (
+    CustomUserSerializer,
+    InternshipPlacementSerializer,
+    WeeklylogSerializer,
+    EvaluationSerializer,
+    StudentSerializer,
+    SupervisorSerializer,
+    EvaluationCriteriaSerializer,
+    FeedbackSerializer,
+    NotificationSerializer,
+    AcademicEvaluationSerializer,
+    AcademicEvaluationDetailSerializer,
 )
 from .notifications.emails import (
     notify_admin_student_signup,
@@ -62,7 +69,7 @@ def test_api(request):
 def require_role(user, allowed_roles):
     if user.role not in allowed_roles:
         return Response(
-            {"error": "You do not have permission to perform this action."},
+            {"error": " You do not have any permissions to perform this action. "},
             status=status.HTTP_403_FORBIDDEN
         )
     return None
@@ -90,20 +97,21 @@ def notify_weekly_log_submitted(weekly_log):
         message=student_notification_message,
     )
     send_notification_email(
-        weekly_log.user,
+        weekly_log.student.users,
         f"Weekly Log Submitted - Week {weekly_log.week_number}",
         student_notification_message,
     )
 
     student_profile = weekly_log.student
     if student_profile and student_profile.assigned_supervisor:
+        student_user = weekly_log.student.users
         supervisor_notification_message = (
-            f"{weekly_log.user.name or weekly_log.user.username} submitted Week {weekly_log.week_number}."
+            f"{student_user.name or student_user.username} submitted Week {weekly_log.week_number}."
         )
         Notification.objects.create(
             user=student_profile.assigned_supervisor.users,
             title="New Weekly Log",
-            message=supervisor_notification_message,
+            message=f"{student_user.name or student_user.username} submitted Week {weekly_log.week_number}.",
         )
         send_notification_email(
             student_profile.assigned_supervisor.users,
@@ -155,33 +163,33 @@ def supervisor_evaluations(request):
         return Response({"error": "weekly_log_id is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        weekly_log = WeeklyLog.objects.select_related('user__student', 'supervisor').get(id=weekly_log_id)
+        weekly_log = WeeklyLog.objects.select_related('student__users', 'supervisor').get(id=weekly_log_id)
     except WeeklyLog.DoesNotExist:
         return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    student = getattr(weekly_log.user, 'student', None)
+    student = weekly_log.student
     if student is None or student.assigned_supervisor_id != supervisor.id:
         return Response(
             {"error": "You can only manage evaluations for students assigned to you."},
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    if weekly_log.status not in ['approved', 'evaluated']:
+    if weekly_log.status not in ['pending', 'approved', 'evaluated']:
         return Response(
-            {"error": "Evaluation is only available after the log has been approved."},
+            {"error": "Evaluation is only and only available for pending, approved, or evaluated logs."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    placement = InternshipPlacement.objects.filter(user=student.users).order_by('-id').first()
+    placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
     if placement is None:
         return Response(
-            {"error": "This student does not have an internship placement yet."},
+            {"error": " This student does not have an Internship placement yet ."},
             status=status.HTTP_404_NOT_FOUND,
         )
 
     criteria_qs = _ensure_default_evaluation_criteria()
     existing_evaluations = Evaluation.objects.filter(
-        user=student.users,
+        student=student,
         placement=placement,
         weekly_log=weekly_log,
     ).select_related('criteria').order_by('criteria__criteria')
@@ -208,7 +216,7 @@ def supervisor_evaluations(request):
         criteria_id = item.get('criteria_id')
         if not criteria_id:
             return Response(
-                {"error": "Each evaluation item requires criteria_id."},
+                {"error": " Each evaluation item requires criteria_id."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -244,7 +252,7 @@ def supervisor_evaluations(request):
         with transaction.atomic():
             for item in parsed_rows:
                 Evaluation.objects.update_or_create(
-                    user=student.users,
+                    student=student,
                     placement=placement,
                     weekly_log=weekly_log,
                     criteria=item["criteria_obj"],
@@ -253,21 +261,21 @@ def supervisor_evaluations(request):
                         "comment": item["comment"],
                     },
                 )
-            weekly_log.status = 'evaluated'
-            weekly_log.evaluation_score = round(sum(item["score"] * 0.25 for item in parsed_rows), 2)
+            weekly_log.status = 'approved'
+            weekly_log.evaluation_score = int(round(sum(item["score"] * 0.25 for item in parsed_rows), 0))
             weekly_log.supervisor = supervisor
             weekly_log.reviewed_at = timezone.now()
             weekly_log.save(update_fields=['status', 'evaluation_score', 'supervisor', 'reviewed_at'])
     except Exception:
-        logger.exception("Failed to save supervisor evaluations")
+        logger.exception("Failed to save supervisor evaluations! ")
         return Response(
-            {"error": "Unable to save evaluations at the moment."},
+            {"error": "  Unable to save evaluations at the moment. !!"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
     refreshed_criteria = _ensure_default_evaluation_criteria()
     refreshed_evaluations = Evaluation.objects.filter(
-        user=student.users,
+        student=student,
         placement=placement,
         weekly_log=weekly_log,
     ).select_related('criteria').order_by('criteria__criteria')
@@ -284,6 +292,11 @@ def supervisor_evaluations(request):
         },
         status=status.HTTP_200_OK,
     )
+
+
+# ---- ADDITIONAL CONTEXT FOR DEBUGGING ----
+# The following lines are inserted temporarily to mark the current end of the function.
+# They are not part of the actual code flow.
 
 
 def should_expose_verification_link():
@@ -314,9 +327,9 @@ def signup(request):
         except DRFValidationError as exc:
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:
-            logger.exception("Signup failed unexpectedly")
+            logger.exception(" Signup failed unexpectedly ")
             return Response(
-                {"error": "Signup failed. Please check your details and try again."},
+                {"error": " Signup failed. Please check all your details and try again."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -353,7 +366,7 @@ def verify_email(request, uidb64, token):
 
     if user_id is None:
         return Response(
-            {"error": "Invalid or expired verification link."},
+            {"error": " Invalid or expired verification link."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -367,7 +380,7 @@ def verify_email(request, uidb64, token):
 
     if user.is_verified:
         return Response(
-            {"message": "Email is already verified."},
+            {"message": " This email is already verified."},
             status=status.HTTP_200_OK,
         )
 
@@ -561,6 +574,12 @@ def assign_supervisor(request):
     except Supervisor.DoesNotExist:
         return Response({"error": "Supervisor not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    if student.assigned_supervisor_id is not None:
+        return Response(
+            {"error": "This student already has a supervisor assigned."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     student.assigned_supervisor = supervisor
     student.save()
     placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
@@ -650,6 +669,15 @@ def create_weekly_log(request):
     if permission_error:
         return permission_error
 
+    week_number = request.data.get('week_number')
+    try:
+        week_number_value = int(week_number) if week_number is not None else None
+    except (TypeError, ValueError):
+        week_number_value = None
+
+    if week_number_value is not None and WeeklyLog.objects.filter(student=request.user.student, week_number=week_number_value).exists():
+        return Response({"error": "You already have a weekly log for this week."}, status=status.HTTP_400_BAD_REQUEST)
+
     serializer = WeeklylogSerializer(data=request.data)
     if serializer.is_valid():
         weekly_log = serializer.save(student=request.user.student, status='pending')
@@ -679,6 +707,18 @@ def save_weekly_log_draft(request):
         return permission_error
 
     draft_id = request.data.get('id')
+    week_number = request.data.get('week_number')
+    try:
+        week_number_value = int(week_number) if week_number is not None else None
+    except (TypeError, ValueError):
+        week_number_value = None
+
+    if week_number_value is not None:
+        duplicate_qs = WeeklyLog.objects.filter(student=request.user.student, week_number=week_number_value)
+        if draft_id:
+            duplicate_qs = duplicate_qs.exclude(id=draft_id)
+        if duplicate_qs.exists():
+            return Response({"error": "You already have a weekly log for this week."}, status=status.HTTP_400_BAD_REQUEST)
 
     if draft_id:
         try:
@@ -714,6 +754,10 @@ def submit_weekly_log(request, log_id):
             {"error": "Only draft logs can be submitted."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+    duplicate_qs = WeeklyLog.objects.filter(student=request.user.student, week_number=weekly_log.week_number).exclude(id=weekly_log.id)
+    if duplicate_qs.exists():
+        return Response({"error": "You already have a weekly log for this week."}, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = WeeklylogSerializer(weekly_log, data=request.data, partial=True)
     if not serializer.is_valid():
@@ -780,12 +824,12 @@ def supervisor_weekly_logs(request):
         return Response({"error": "Supervisor profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
     logs = WeeklyLog.objects.exclude(status='draft').filter(
-        student__student__assigned_supervisor=supervisor
+        student__assigned_supervisor=supervisor
     ).select_related('student', 'supervisor__users').order_by('week_number', 'date_submitted')
 
     student_id = request.GET.get('student_id')
     if student_id:
-        logs = logs.filter(student__student__id=student_id)
+        logs = logs.filter(student__id=student_id)
 
     serializer = WeeklylogSerializer(logs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -915,11 +959,11 @@ def reports(request):
         2
     ) if evaluated_logs_qs.exists() else 0
 
-    recent_logs = WeeklyLog.objects.select_related('user', 'supervisor', 'user__student').order_by('-date_submitted')[:10]
+    recent_logs = WeeklyLog.objects.select_related('student__users', 'supervisor__users').order_by('-date_submitted')[:10]
     recent_logs_data = [
         {
             "id": log.id,
-            "student_name": log.user.name or log.user.username,
+            "student_name": log.student.users.name or log.student.users.username,
             "week_number": log.week_number,
             "status": log.status,
             "description": log.description,
@@ -957,9 +1001,9 @@ def student_reports(request):
     if student is None:
         return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    placement = InternshipPlacement.objects.filter(user=request.user).order_by('-id').first()
-    logs = WeeklyLog.objects.filter(user=request.user).order_by('-week_number', '-date_submitted')
-    evaluations = Evaluation.objects.filter(user=request.user).select_related('criteria', 'weekly_log').order_by('-evaluation_date')
+    placement = InternshipPlacement.objects.filter(student=student).order_by('-id').first()
+    logs = WeeklyLog.objects.filter(student=student).order_by('-week_number', '-date_submitted')
+    evaluations = Evaluation.objects.filter(student=student).select_related('criteria', 'weekly_log').order_by('-evaluation_date')
 
     total_logs = logs.count()
     draft_logs = logs.filter(status='draft').count()
@@ -1113,6 +1157,113 @@ def mark_notification_read(request, notification_id):
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
+@role_required('supervisor')
+def update_log_status(request, log_id):
+    """
+    Supervisor endpoint to update weekly log status.
+    Allows supervisors to change log status for students assigned to them.
+    """
+    try:
+        supervisor = Supervisor.objects.get(users=request.user)
+    except Supervisor.DoesNotExist:
+        return Response(
+            {"error": "User is not a registered supervisor."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        weekly_log = WeeklyLog.objects.select_related('student__users', 'student__assigned_supervisor').get(id=log_id)
+    except WeeklyLog.DoesNotExist:
+        return Response({"error": "Weekly log not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    student_profile = weekly_log.student
+    if student_profile is None or student_profile.assigned_supervisor_id != supervisor.id:
+        return Response(
+            {"error": "You can only update logs for students assigned to you."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    new_status = request.data.get('status')
+    valid_statuses = ['draft', 'pending', 'approved', 'rejected', 'evaluated']
+    
+    if new_status not in valid_statuses:
+        return Response(
+            {"error": f"status must be one of {valid_statuses}."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Validate rejection reason if changing to rejected status
+    if new_status == 'rejected':
+        reason = request.data.get('reason', '').strip()
+        if not reason:
+            return Response(
+                {"error": "A rejection reason is required please provide one."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        weekly_log.supervisor_comment = reason
+
+    weekly_log.status = new_status
+    weekly_log.supervisor = supervisor
+    weekly_log.reviewed_at = timezone.now()
+    weekly_log.save()
+
+    serializer = WeeklylogSerializer(weekly_log)
+    return Response(
+        {
+            "message": f"Log status updated to {new_status}",
+            "weekly_log": serializer.data
+        },
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@role_required('student')
+def delete_weekly_log(request, log_id):
+    """
+    Student endpoint to delete their own weekly log.
+    Only allows deletion of draft and pending logs (not approved/evaluated).
+    """
+    try:
+        student = Student.objects.get(users=request.user)
+    except Student.DoesNotExist:
+        return Response(
+            {"error": "User is not a registered student. "},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        weekly_log = WeeklyLog.objects.get(id=log_id, student=student)
+    except WeeklyLog.DoesNotExist:
+        return Response(
+            {"error": "Weekly log not found or does not belong to you."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Only allow deletion of draft or pending logs
+    if weekly_log.status not in ['draft', 'pending']:
+        return Response(
+            {
+                "error": f"Cannot delete a log with status '{weekly_log.status}'. Only draft or pending logs can be deleted."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    log_week = weekly_log.week_number
+    weekly_log.delete()
+
+    return Response(
+        {
+            "message": f"Weekly log for week {log_week} has been deleted successfully.",
+            "log_id": log_id
+        },
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
 def mark_all_notifications_read(request):
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return Response({"message": "All notifications marked as read."}, status=status.HTTP_200_OK)
@@ -1177,15 +1328,147 @@ def get_supervisors(request):
 @permission_classes([IsAuthenticated])
 @role_required('admin')
 def get_reports(request):
-    students = CustomUser.objects.filter(role='student').count()
-    supervisors = CustomUser.objects.filter(role='supervisor').count()
-    opportunities = InternshipPlacement.objects.count()
-    
-    return Response({
-        "students": students,
-        "supervisors": supervisors,
-        "opportunities": opportunities
-    })
+    try:
+        students = CustomUser.objects.filter(role='student').count()
+        supervisors = CustomUser.objects.filter(role='supervisor').count()
+        opportunities = InternshipPlacement.objects.count()
+
+        total_logs = WeeklyLog.objects.count()
+        total_drafts = WeeklyLog.objects.filter(status='draft').count()
+        pending_logs = WeeklyLog.objects.filter(status='pending').count()
+        approved_logs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated']).count()
+        rejected_logs = WeeklyLog.objects.filter(status='rejected').count()
+
+        approved_with_scores_qs = WeeklyLog.objects.filter(status__in=['approved', 'evaluated'], evaluation_score__isnull=False)
+        avg_agg = approved_with_scores_qs.aggregate(avg=Avg('evaluation_score'))['avg'] or 0
+        average_log_score = round(float(avg_agg), 2) if avg_agg else 0
+
+        students_with_supervisors = Student.objects.filter(assigned_supervisor__isnull=False).count()
+        students_without_supervisors = students - students_with_supervisors
+        supervisor_coverage = round((students_with_supervisors / students) * 100, 2) if students else 0
+        average_logs_per_student = round(total_logs / students, 2) if students else 0
+
+        supervisor_stats = []
+        supervisor_scores = Supervisor.objects.annotate(average_score=Avg('reviewed_logs__evaluation_score')).order_by('-average_score')[:5]
+        for supervisor in supervisor_scores:
+            sup_user = getattr(supervisor, 'users', None)
+            sup_name = None
+            if sup_user:
+                sup_name = getattr(sup_user, 'name', None) or getattr(sup_user, 'username', None)
+            supervisor_stats.append({
+                'supervisor_name': sup_name,
+                'supervisor_id': supervisor.id,
+                'average_score': round(float(supervisor.average_score), 2) if supervisor.average_score is not None else None,
+                'student_count': supervisor.assigned_students.count() if hasattr(supervisor, 'assigned_students') else 0,
+            })
+
+        recent_logs_qs = WeeklyLog.objects.select_related('student__users', 'supervisor__users').order_by('-date_submitted')[:10]
+        recent_logs = []
+        for log in recent_logs_qs:
+            student_name = None
+            try:
+                student_user = getattr(log.student, 'users', None)
+                student_name = getattr(student_user, 'name', None) or getattr(student_user, 'username', None)
+            except Exception:
+                student_name = None
+
+            supervisor_name = None
+            if getattr(log, 'supervisor', None):
+                sup_user = getattr(log.supervisor, 'users', None)
+                supervisor_name = getattr(sup_user, 'name', None) or getattr(sup_user, 'username', None)
+
+            recent_logs.append({
+                'id': log.id,
+                'student_name': student_name,
+                'supervisor_name': supervisor_name,
+                'week_number': log.week_number,
+                'status': log.status,
+                'evaluation_score': float(log.evaluation_score) if log.evaluation_score is not None else None,
+                'submitted_at': log.date_submitted,
+            })
+
+        academic_qs = AcademicEvaluation.objects.all()
+        total_academic_evaluations = academic_qs.count()
+        avg_acad = academic_qs.filter(total_weighted_score__isnull=False).aggregate(avg=Avg('total_weighted_score'))['avg'] or 0
+        average_academic_score = round(float(avg_acad), 2) if avg_acad else 0
+
+        grade_counts = { (item['grade'] or ''): item['count'] for item in academic_qs.values('grade').annotate(count=Count('id')) }
+
+        top_students = (
+            academic_qs.filter(total_weighted_score__isnull=False)
+            .values('student__users__id', 'student__users__name')
+            .annotate(avg_score=Avg('total_weighted_score'))
+            .order_by('-avg_score')[:5]
+        )
+        top_students_data = []
+        for item in top_students:
+            top_students_data.append({
+                'student_id': item.get('student__users__id'),
+                'student_name': item.get('student__users__name'),
+                'average_score': round(float(item.get('avg_score') or 0), 2),
+            })
+
+        recent_academic_evaluations = (
+            AcademicEvaluation.objects.select_related('student__users', 'supervisor__users')
+            .order_by('-created_at')[:10]
+        )
+        recent_academic_data = []
+        for ev in recent_academic_evaluations:
+            stu_user = getattr(ev.student, 'users', None)
+            stu_name = getattr(stu_user, 'name', None) or getattr(stu_user, 'username', None) if stu_user else None
+            sup_user = getattr(ev.supervisor, 'users', None) if getattr(ev, 'supervisor', None) else None
+            sup_name = getattr(sup_user, 'name', None) or getattr(sup_user, 'username', None) if sup_user else None
+            recent_academic_data.append({
+                'id': ev.id,
+                'student_name': stu_name,
+                'term': ev.term,
+                'academic_year': ev.academic_year,
+                'score': ev.total_weighted_score,
+                'grade': ev.grade,
+                'supervisor_name': sup_name,
+                'created_at': ev.created_at,
+            })
+
+        return Response(
+            {
+                'overview': {
+                    'students': students,
+                    'supervisors': supervisors,
+                    'placements': opportunities,
+                    'total_logs': total_logs,
+                    'draft_logs': total_drafts,
+                    'pending_logs': pending_logs,
+                    'approved_logs': approved_logs,
+                    'rejected_logs': rejected_logs,
+                    'average_score': average_log_score,
+                    'students_with_supervisors': students_with_supervisors,
+                    'students_without_supervisors': students_without_supervisors,
+                    'supervisor_coverage': supervisor_coverage,
+                    'average_logs_per_student': average_logs_per_student,
+                },
+                'recent_logs': recent_logs,
+                'supervisor_stats': supervisor_stats,
+                'academic_overview': {
+                    'total_academic_evaluations': total_academic_evaluations,
+                    'average_academic_score': average_academic_score,
+                    'grade_distribution': {
+                        'A': grade_counts.get('A', 0),
+                        'B': grade_counts.get('B', 0),
+                        'C': grade_counts.get('C', 0),
+                        'D': grade_counts.get('D', 0),
+                        'F': grade_counts.get('F', 0),
+                        'ungraded': grade_counts.get('', 0),
+                    },
+                    'top_students': top_students_data,
+                },
+                'recent_academic_evaluations': recent_academic_data,
+            },
+            status=status.HTTP_200_OK,
+        )
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        return Response({'error': str(e), 'trace': tb}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

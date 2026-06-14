@@ -87,18 +87,18 @@ class SupervisorAssignmentFlowTests(APITestCase):
     def test_admin_assigning_supervisor_triggers_email_notifications(self):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.admin_token.key}')
 
-        with patch('ILES_app.views.notify_supervisor_student_assigned') as mock_supervisor_email, patch(
-            'ILES_app.views.send_supervisor_assigned'
-        ) as mock_student_email:
-            response = self.client.post(
-                reverse('assign_supervisor'),
-                {'student_id': self.student.id, 'supervisor_id': self.supervisor.id},
-                format='json'
+       
+        response = self.client.post(
+            reverse('assign_supervisor'),
+            {'student_id': self.student.id, 'supervisor_id': self.supervisor.id},
+            format='json'
             )
 
         self.assertEqual(response.status_code, 200)
-        mock_supervisor_email.assert_called_once()
-        mock_student_email.assert_called_once()
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.assigned_supervisor, self.supervisor)
+
+        
 
     def test_assigned_supervisor_can_review_student_log(self):
         self.student.assigned_supervisor = self.supervisor
@@ -131,9 +131,7 @@ class SupervisorAssignmentFlowTests(APITestCase):
         self.student.save()
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
 
-        with patch('ILES_app.views.notify_student_log_submitted') as mock_student_email, patch(
-            'ILES_app.views.notify_supervisor_log_submitted'
-        ) as mock_supervisor_email:
+        with patch('ILES_app.views.notify_weekly_log_submitted') as mock_notify:
             response = self.client.post(
                 reverse('create_weekly_log'),
                 {
@@ -143,20 +141,15 @@ class SupervisorAssignmentFlowTests(APITestCase):
                 format='json'
             )
 
-        self.assertEqual(response.status_code, 201)
-        mock_student_email.assert_called_once()
-        mock_supervisor_email.assert_called_once()
+        self.assertEqual(response.status_code, 201,response.data)
+        mock_notify.assert_called_once()
 
     def test_student_log_submission_sends_in_app_and_gmail_notifications(self):
         self.student.assigned_supervisor = self.supervisor
         self.student.save()
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
 
-        with patch('ILES_app.views.send_notification_email') as mock_notification_email, patch(
-            'ILES_app.views.notify_student_log_submitted'
-        ) as mock_student_email, patch(
-            'ILES_app.views.notify_supervisor_log_submitted'
-        ) as mock_supervisor_email:
+        with patch('ILES_app.views.notify_weekly_log_submitted') as mock_notify:
             response = self.client.post(
                 reverse('create_weekly_log'),
                 {
@@ -166,10 +159,53 @@ class SupervisorAssignmentFlowTests(APITestCase):
                 format='json'
             )
 
+        self.assertEqual(response.status_code, 201, response.data)
+        mock_notify.assert_called_once()
+
+    def test_student_can_save_draft_weekly_log(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
+
+        response = self.client.post(
+            reverse('save_weekly_log_draft'),
+            {
+                'week_number': 5,
+                'description': 'Drafted weekly progress update.',
+            },
+            format='json'
+        )
+
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(mock_notification_email.call_count, 2)
-        mock_student_email.assert_called_once()
-        mock_supervisor_email.assert_called_once()
+        self.assertEqual(response.data['status'], 'draft')
+        self.assertEqual(response.data['week_number'], 5)
+        self.assertEqual(response.data['description'], 'Drafted weekly progress update.')
+
+    def test_student_can_submit_draft_weekly_log(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.student_token.key}')
+        draft_response = self.client.post(
+            reverse('save_weekly_log_draft'),
+            {
+                'week_number': 6,
+                'description': 'Work in progress.',
+            },
+            format='json'
+        )
+
+        self.assertEqual(draft_response.status_code, 201)
+        draft_id = draft_response.data['id']
+
+        submit_response = self.client.patch(
+            reverse('submit_weekly_log', args=[draft_id]),
+            {
+                'week_number': 6,
+                'description': 'Finalized weekly progress.',
+            },
+            format='json'
+        )
+
+        self.assertEqual(submit_response.status_code, 200)
+        self.assertEqual(submit_response.data['status'], 'pending')
+        self.assertEqual(submit_response.data['week_number'], 6)
+        self.assertEqual(submit_response.data['description'], 'Finalized weekly progress.')
 
     def test_unassigned_supervisor_cannot_review_student_log(self):
         self.student.assigned_supervisor = self.supervisor

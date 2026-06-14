@@ -83,7 +83,7 @@ function StudentDashboard() {
                   <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Status</p>
                   <div className="flex items-center gap-2">
                     <span className="inline-block w-3 h-3 rounded-full bg-[#3db88a]"></span>
-                    <p className="text-lg font-semibold text-[#0a7c6e] capitalize">{placement.status || "Active"}</p>
+                    <p className="text-lg font-semibold text-[#0a7c6e] capitalize">{placement?.status || "Active"}</p>
                   </div>
                 </div>
                 {placement.start_date && (

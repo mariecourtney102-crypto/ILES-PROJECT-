@@ -131,6 +131,7 @@ export const LogProvider = ({ children }) => {
     <LogContext.Provider
       value={{
         logs,
+        setLogs,
         loading,
         error,
         submitting,

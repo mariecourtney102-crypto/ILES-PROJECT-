@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "../../Components/dashboard_layout";
 import { MessageSquare } from "lucide-react";
 import { useLogs } from "../../context/LogContext";
-import { fetchSupervisorEvaluations, saveSupervisorEvaluations } from "../../api/api";
+import { fetchSupervisorEvaluations, saveSupervisorEvaluations, updateWeeklyLogStatus } from "../../api/api";
 import SupervisorEvaluationForm, { createFallbackEvaluationRows } from "./SupervisorEvaluationForm";
 
 const createEmptyEvaluationState = () => ({
@@ -20,11 +21,15 @@ function createEmptyReviewState() {
 }
 
 export default function SupervisorFeedback() {
+  const [searchParams] = useSearchParams();
   const { logs, loading, error, reviewLog, reviewingId, loadLogs } = useLogs();
   const [reviewState, setReviewState] = useState(createEmptyReviewState());
   const [activeEvaluationId, setActiveEvaluationId] = useState(null);
   const [evaluationState, setEvaluationState] = useState(createEmptyEvaluationState);
   const [localError, setLocalError] = useState("");
+  const [statusEditId, setStatusEditId] = useState(null);
+  const [statusEditForm, setStatusEditForm] = useState({ status: "", reason: "" });
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const reviewableLogs = logs.filter((log) => log.status !== "draft");
 
@@ -34,12 +39,25 @@ export default function SupervisorFeedback() {
   );
 
   useEffect(() => {
+    const weeklyLogId = Number(searchParams.get("weekly_log_id"));
+    if (!weeklyLogId || loading) {
+      return;
+    }
+
+    const log = reviewableLogs.find((item) => item.id === weeklyLogId);
+    if (log && (log.status === "pending" || log.status === "approved")) {
+      setActiveEvaluationId(weeklyLogId);
+      setLocalError("");
+    }
+  }, [searchParams, reviewableLogs, loading]);
+
+  useEffect(() => {
     if (!activeLog) {
       setEvaluationState(createEmptyEvaluationState());
       return;
     }
 
-    if (activeLog.status !== "approved" && activeLog.status !== "evaluated") {
+    if (activeLog.status !== "pending" && activeLog.status !== "approved") {
       setActiveEvaluationId(null);
       setEvaluationState(createEmptyEvaluationState());
       return;
@@ -142,8 +160,8 @@ export default function SupervisorFeedback() {
   };
 
   const openEvaluationForm = (log) => {
-    if (log.status !== "approved" && log.status !== "evaluated") {
-      setLocalError("Approval is required before evaluation can be opened.");
+    if (log.status !== "pending" && log.status !== "approved") {
+      setLocalError("Evaluation is only available for pending or approved logs.");
       return;
     }
 
@@ -236,6 +254,36 @@ export default function SupervisorFeedback() {
     }
   };
 
+  const handleStatusEditClick = (log) => {
+    setStatusEditId(log.id);
+    setStatusEditForm({ status: log.status, reason: "" });
+    setLocalError("");
+  };
+
+  const handleStatusUpdate = async () => {
+    if (!statusEditForm.status) {
+      setLocalError("Please select a status.");
+      return;
+    }
+
+    if (statusEditForm.status === "rejected" && !statusEditForm.reason.trim()) {
+      setLocalError("A rejection reason is required.");
+      return;
+    }
+
+    setUpdatingStatus(true);
+    try {
+      await updateWeeklyLogStatus(statusEditId, statusEditForm.status, statusEditForm.reason || null);
+      setStatusEditId(null);
+      setStatusEditForm({ status: "", reason: "" });
+      await loadLogs();
+    } catch (err) {
+      setLocalError(err.response?.data?.error || "Failed to update status.");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout title="Feedback">
@@ -261,8 +309,8 @@ export default function SupervisorFeedback() {
           <div className="space-y-4">
             {reviewableLogs.map((log) => {
               const currentForm = reviewState[log.id] || {};
-              const canEvaluate = log.status === "approved";
-              const isEvaluated = log.status === "evaluated";
+              const canEvaluate = log.status === "pending" || log.status === "approved";
+              const isEvaluated = false;
 
               return (
                 <div key={log.id} className="rounded-lg border border-gray-200 p-4">
@@ -300,12 +348,10 @@ export default function SupervisorFeedback() {
                     <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                       <p className="text-sm font-semibold text-gray-700">Review Status</p>
                       <p className="mt-2 text-sm text-gray-600">
-                        {isEvaluated
-                          ? "This log has been evaluated."
-                          : canEvaluate
-                          ? "This log is approved and ready for evaluation."
+                        {log.status === "approved"
+                          ? "This log has been approved and scored."
                           : log.status === "pending"
-                          ? "This log is waiting for approval."
+                          ? "This log is waiting for evaluation."
                           : "This log has been rejected."}
                       </p>
                       {log.evaluation_score !== null && log.evaluation_score !== undefined ? (
@@ -318,36 +364,46 @@ export default function SupervisorFeedback() {
 
                   <div className="mt-4 flex flex-wrap gap-3">
                     {log.status === "pending" ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => handleReview(log.id, "approved")}
-                          disabled={reviewingId === log.id}
-                          className="rounded-lg bg-[#0a7c6e] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70 hover:bg-[#065f52]"
-                        >
-                          {reviewingId === log.id ? "Saving..." : "Approve"}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleReview(log.id, "rejected")}
-                          disabled={reviewingId === log.id}
-                          className="rounded-lg bg-[#3db88a] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70 hover:bg-[#0d9e8c]"
-                        >
-                          {reviewingId === log.id ? "Saving..." : "Reject"}
-                        </button>
-                      </>
+                      <button
+                        type="button"
+                        onClick={() => openEvaluationForm(log)}
+                        className="rounded-lg bg-[#0a7c6e] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70 hover:bg-[#065f52]"
+                      >
+                        Evaluate & Approve
+                      </button>
                     ) : null}
 
-                    {canEvaluate ? (
+                    {log.status === "pending" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleReview(log.id, "rejected")}
+                        disabled={reviewingId === log.id}
+                        className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                      >
+                        Reject
+                      </button>
+                    ) : null}
+
+                    {log.status === "approved" ? (
                       <button
                         type="button"
                         onClick={() => openEvaluationForm(log)}
                         className="rounded-lg border border-[#0d9e8c] px-4 py-2 text-sm font-semibold text-[#0a7c6e] transition hover:bg-[#f1fbf8]"
                       >
-                        Evaluate
+                        Review Scores
                       </button>
                     ) : null}
+
+                    {log.status !== "pending" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleStatusEditClick(log)}
+                        className="rounded-lg border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                      >
+                        Edit Status
+                      </button>
+                    ) : null}
+
                   </div>
 
                   {activeEvaluationId === log.id ? (
@@ -364,6 +420,67 @@ export default function SupervisorFeedback() {
           </div>
         )}
       </div>
+
+      {statusEditId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="rounded-lg bg-white p-6 shadow-lg max-w-sm w-full mx-4">
+            <h2 className="text-lg font-bold text-gray-900">Edit Log Status</h2>
+            
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Status
+              </label>
+              <select
+                value={statusEditForm.status}
+                onChange={(e) => setStatusEditForm({ ...statusEditForm, status: e.target.value })}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-[#0d9e8c]"
+              >
+                <option value="">Select status</option>
+                <option value="draft">Draft</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="evaluated">Evaluated</option>
+              </select>
+            </div>
+
+            {statusEditForm.status === "rejected" && (
+              <div className="mt-3">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rejection Reason
+                </label>
+                <textarea
+                  value={statusEditForm.reason}
+                  onChange={(e) => setStatusEditForm({ ...statusEditForm, reason: e.target.value })}
+                  placeholder="Provide a reason for rejection"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm min-h-24 outline-none focus:border-[#0d9e8c]"
+                />
+              </div>
+            )}
+
+            {localError && (
+              <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{localError}</p>
+            )}
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setStatusEditId(null)}
+                disabled={updatingStatus}
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleStatusUpdate}
+                disabled={updatingStatus}
+                className="flex-1 rounded-lg bg-[#0a7c6e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#065f52] disabled:opacity-50"
+              >
+                {updatingStatus ? "Updating..." : "Update Status"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
