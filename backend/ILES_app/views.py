@@ -1237,7 +1237,7 @@ def delete_weekly_log(request, log_id):
         weekly_log = WeeklyLog.objects.get(id=log_id, student=student)
     except WeeklyLog.DoesNotExist:
         return Response(
-            {"error": "Weekly log not found or does not belong to you."},
+            {"error": "Weekly log not found or does not belong to you !."},
             status=status.HTTP_404_NOT_FOUND
         )
 
