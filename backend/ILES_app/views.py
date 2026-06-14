@@ -269,7 +269,7 @@ def supervisor_evaluations(request):
     except Exception:
         logger.exception("Failed to save supervisor evaluations!")
         return Response(
-            {"error": " ..Unable to save evaluations at the moment."},
+            {"error": "  Unable to save evaluations at the moment. !!"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
