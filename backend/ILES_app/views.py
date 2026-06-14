@@ -380,7 +380,7 @@ def verify_email(request, uidb64, token):
 
     if user.is_verified:
         return Response(
-            {"message": " Email is already verified."},
+            {"message": " This email is already verified."},
             status=status.HTTP_200_OK,
         )
 
