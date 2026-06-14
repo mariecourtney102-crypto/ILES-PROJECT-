@@ -329,7 +329,7 @@ def signup(request):
         except Exception as exc:
             logger.exception(" Signup failed unexpectedly ")
             return Response(
-                {"error": "Signup failed. Please check all your details and try again."},
+                {"error": " Signup failed. Please check all your details and try again."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
