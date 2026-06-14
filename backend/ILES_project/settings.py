@@ -210,6 +210,7 @@ CACHES = {
     }
 }
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'ILES_app.CustomUser'
 
 
 if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
