@@ -366,7 +366,7 @@ def verify_email(request, uidb64, token):
 
     if user_id is None:
         return Response(
-            {"error": "Invalid or expired verification link."},
+            {"error": " Invalid or expired verification link."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
