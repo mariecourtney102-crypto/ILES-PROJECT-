@@ -412,7 +412,7 @@ def resend_verification_email(request):
     try:
         user = CustomUser.objects.get(email=email)
     except CustomUser.DoesNotExist:
-        return Response({"message": "If an account exists, a verification email was sent."}, status=status.HTTP_200_OK)
+        return Response({"message": " If an account exists, a verification email was sent."}, status=status.HTTP_200_OK)
 
     if user.is_verified:
         return Response({"message": "Email is already verified."}, status=status.HTTP_200_OK)
